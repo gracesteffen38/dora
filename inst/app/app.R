@@ -568,7 +568,7 @@ $(document).ready(function() {
           uiOutput("second_plot_ui")
         ),
       ),
-      hidden(textInput("sidebar_state", "", value = "data"))
+      shinyjs::hidden(textInput("sidebar_state", "", value = "data"))
     ),
 
     mainPanel(
@@ -2837,4 +2837,5 @@ output$toolbar_download_all <- downloadHandler(
 }
 
 shinyApp(ui, server)
+
 
