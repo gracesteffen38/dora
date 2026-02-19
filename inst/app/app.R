@@ -408,7 +408,7 @@ $(document).ready(function() {
     tags$div(style = "height: 5px;")  # Spacer
   ),
 
-  sidebarlayout(
+  sidebarLayout(
     sidebarPanel(
 
       # DATA OPTIONS
@@ -2837,3 +2837,4 @@ output$toolbar_download_all <- downloadHandler(
 }
 
 shinyApp(ui, server)
+
