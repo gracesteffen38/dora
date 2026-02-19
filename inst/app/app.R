@@ -218,7 +218,7 @@ $(document).ready(function() {
 });
 ")),
   ),
-  useShinyjs(),
+  shinyjs::useShinyjs(),
   # Accessibility Settings Panel page 1
   tags$div(id = "accessibility-panel", class = "panel panel-default",
            style = "margin-bottom: 15px; border-left: 4px solid #17a2b8;",
@@ -2837,3 +2837,4 @@ output$toolbar_download_all <- downloadHandler(
 }
 
 shinyApp(ui, server)
+
