@@ -996,7 +996,7 @@ server <- function(input, output, session){
   # Store both original and converted data
   data_original <- reactive({
     req(input$file)
-    df <- read_csv(input$file$datapath, show_col_types = FALSE)
+    df <- readr::read_csv(input$file$datapath, show_col_types = FALSE)
 
     # Auto-detect and parse datetime columns
     for (col in names(df)) {
@@ -2837,3 +2837,4 @@ output$toolbar_download_all <- downloadHandler(
 }
 
 shinyApp(ui, server)
+
