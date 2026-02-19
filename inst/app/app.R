@@ -408,7 +408,7 @@ $(document).ready(function() {
     tags$div(style = "height: 5px;")  # Spacer
   ),
 
-  sidebarLayout(
+  sidebarplotly::layout(
     sidebarPanel(
 
       # DATA OPTIONS
@@ -579,7 +579,7 @@ $(document).ready(function() {
                  textOutput("plot_description"))
       ),
 
-      plotlyOutput("plot", height = "550px"),
+      plotly::plotlyOutput("plot", height = "550px"),
 
       conditionalPanel(
         condition = "input.show_second_plot == true",
@@ -587,7 +587,7 @@ $(document).ready(function() {
                  style = "margin-top: 15px; margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #007bff; border-radius: 4px; display: none;",
                  textOutput("plot2_description")),
 
-        plotlyOutput("plot2", height = "400px")
+        plotly::plotlyOutput("plot2", height = "400px")
       ),
 
       uiOutput("stats_section")
@@ -850,7 +850,7 @@ server <- function(input, output, session){
 
   # Apply CSS to page
   observeEvent(accessibility_css(), {
-    runjs(sprintf("document.getElementById('accessibility-styles').innerHTML = `%s`;", accessibility_css()))
+    shinyjs::runjs(sprintf("document.getElementById('accessibility-styles').innerHTML = `%s`;", accessibility_css()))
   }, ignoreInit = TRUE)
 
 
@@ -1405,7 +1405,7 @@ server <- function(input, output, session){
     }
   })
   # Plot
-  output$plot <- renderPlotly({
+  output$plot <- plotly::renderPlotly({
     fonts <- get_plot_fonts()
     margins <- get_plot_margins()
 
@@ -1449,22 +1449,22 @@ server <- function(input, output, session){
         default_legend = if(is_single_view) "Variable" else "Participant"
       )
 
-      p <- plot_ly()
+      p <- plotly::plot_ly()
 
       if (is_single_view) {
         for (var in input$yvar) {
-          p <- add_trace(p, x = filtered_data()[[input$xvar]], y = filtered_data()[[var]], name = var,
+          p <- plotly::add_trace(p, x = filtered_data()[[input$xvar]], y = filtered_data()[[var]], name = var,
                          type = "scatter", mode = ifelse(input$plot_type == "Line", "lines", "markers"))
         }
       } else {
         for (var in input$yvar) {
-          p <- add_trace(p, x = filtered_data()[[input$xvar]], y = filtered_data()[[var]],
+          p <- plotly::add_trace(p, x = filtered_data()[[input$xvar]], y = filtered_data()[[var]],
                          name = paste(filtered_data()[[input$idvar]], "-", var),
                          type = "scatter", mode = ifelse(input$plot_type == "Line", "lines", "markers"))
         }
       }
 
-      p <- p %>% layout(
+      p <- p %>% plotly::layout(
         title = list(text = labs$title, font = list(size = fonts$title_size)),
         xaxis =  get_datetime_axis(time_vec, labs$x, fonts),
         yaxis = list(
@@ -1604,16 +1604,16 @@ server <- function(input, output, session){
         default_legend = "Legend"
       )
 
-      p <- plot_ly()
+      p <- plotly::plot_ly()
 
       # 1. Add Continuous Lines
       for (var in input$signal_overlay) {
-        p <- add_trace(p, x = time_vec, y = filtered_data()[[var]], name = var, type = "scatter", mode = "lines")
+        p <- plotly::add_trace(p, x = time_vec, y = filtered_data()[[var]], name = var, type = "scatter", mode = "lines")
       }
 
       # 2. Add Dummy Legend Entries
       for (tr in legend_traces) {
-        p <- add_trace(p,
+        p <- plotly::add_trace(p,
                        x = time_vec[1],
                        y = y_min,
                        type = "scatter",
@@ -1626,7 +1626,7 @@ server <- function(input, output, session){
 
 
 
-      p <- p %>% layout(
+      p <- p %>% plotly::layout(
         title = list(text = labs$title, font = list(size = fonts$title_size)),
         xaxis = get_datetime_axis(time_vec, labs$x, fonts),
         yaxis = list(
@@ -1685,13 +1685,13 @@ server <- function(input, output, session){
         default_y = input$signal_var,
         default_legend = ""
       )
-      p <- plot_ly(x = x_vals, y = y_vals, type = "scatter", mode = "lines", name = "Trajectory")
+      p <- plotly::plot_ly(x = x_vals, y = y_vals, type = "scatter", mode = "lines", name = "Trajectory")
 
 
 
       return(
         p %>%
-          layout(
+          plotly::layout(
             title = list(text = labs$title, font = list(size = fonts$title_size)),
             xaxis =  get_datetime_axis(time_vec, labs$x, fonts),
             yaxis = list(
@@ -1730,7 +1730,7 @@ server <- function(input, output, session){
         default_legend = ""
       )
 
-      p <- plot_ly(x = win, y = avg, type = "scatter", mode = "lines",
+      p <- plotly::plot_ly(x = win, y = avg, type = "scatter", mode = "lines",
                    name = "Mean", line = list(width = 3, color = "blue"))
 
       # SE ribbon
@@ -1741,7 +1741,7 @@ server <- function(input, output, session){
         lower <- avg - se
 
         # Upper bound (invisible line, serves as ribbon top)
-        p <- add_trace(p,
+        p <- plotly::add_trace(p,
                        x = win, y = upper,
                        type = "scatter", mode = "lines",
                        line = list(color = "transparent"),
@@ -1750,7 +1750,7 @@ server <- function(input, output, session){
         )
 
         # Lower bound with fill to the upper trace
-        p <- add_trace(p,
+        p <- plotly::add_trace(p,
                        x = win, y = lower,
                        type = "scatter", mode = "lines",
                        fill = "tonexty",
@@ -1771,7 +1771,7 @@ server <- function(input, output, session){
       }
       fonts <- get_plot_fonts()
       margins <- get_plot_margins()
-      p <- p %>% layout(
+      p <- p %>% plotly::layout(
         title = list(text = labs$title, font = list(size = fonts$title_size)),
         xaxis = list(
           title = list(text = labs$x, font = list(size = fonts$axis_title_size)),
@@ -1894,7 +1894,7 @@ server <- function(input, output, session){
         paste0("rgba(", rgb_vals[1], ",", rgb_vals[2], ",", rgb_vals[3], ",", alpha, ")")
       }
 
-      p <- plot_ly()
+      p <- plotly::plot_ly()
 
       if (use_stacked) {
         row_height <- 1 / n_targets
@@ -1927,7 +1927,7 @@ server <- function(input, output, session){
             hover_text <- rep(paste0(target$label, "<br>", time_vec[active_idx]), each = 3)
           }
 
-          p <- add_trace(p,
+          p <- plotly::add_trace(p,
                          x = x_vals, y = y_vals,
                          type = "scatter", mode = "lines",
                          line = list(color = pal[t_idx], width = 1),
@@ -1978,7 +1978,7 @@ server <- function(input, output, session){
             hover_text <- rep(paste0(target$label, "<br>", time_vec[active_idx]), each = 3)
           }
 
-          p <- add_trace(p,
+          p <- plotly::add_trace(p,
                          x = x_vals, y = y_vals,
                          type = "scatter", mode = "lines",
                          line = list(color = hex_to_rgba(pal[t_idx], 0.5), width = 1),
@@ -2039,7 +2039,7 @@ server <- function(input, output, session){
           tickfont = list(size = fonts$axis_text_size)
         )
       }
-      p <- p %>% layout(
+      p <- p %>% plotly::layout(
         title = list(text = labs$title, font = list(size = fonts$title_size)),
         xaxis = x_axis_config,
         yaxis = y_axis_config,
@@ -2234,7 +2234,7 @@ server <- function(input, output, session){
     cat(txt, sep = "\n")
   })
 
-  output$plot2 <- renderPlotly({
+  output$plot2 <- plotly::renderPlotly({
     req(input$show_second_plot)
     req(input$second_plot_type)
 
@@ -2260,11 +2260,11 @@ server <- function(input, output, session){
       time_var <- selected_time()
       req(time_var)
       time_vec <- df[[input$xvar]]
-      p2 <- plot_ly(df, x = df[[time_var]], y = df[[input$second_yvar]],
+      p2 <- plotly::plot_ly(df, x = df[[time_var]], y = df[[input$second_yvar]],
                     type = "scatter", mode = "lines",
                     name = input$second_yvar)
 
-      p2 <- p2 %>% layout(
+      p2 <- p2 %>% plotly::layout(
         title = list(text = paste("Secondary Plot:", input$second_yvar), font = list(size = fonts$title_size)),
         xaxis = get_datetime_axis(time_vec, labs$x, fonts),
         yaxis = list(
@@ -2314,9 +2314,9 @@ server <- function(input, output, session){
                     "Could not compute Allan Factor. Try adjusting parameters."))
 
       # Build plot
-      p2 <- plot_ly()
+      p2 <- plotly::plot_ly()
 
-      p2 <- add_trace(p2,
+      p2 <- plotly::add_trace(p2,
                       x = af_result$abcis, y = af_result$actual,
                       type = "scatter", mode = "lines+markers",
                       name = "Actual",
@@ -2325,7 +2325,7 @@ server <- function(input, output, session){
       )
 
       if (isTRUE(input$af_show_shuffled) && !is.null(af_result$shuffled)) {
-        p2 <- add_trace(p2,
+        p2 <- plotly::add_trace(p2,
                         x = af_result$abcis_shuffled, y = af_result$shuffled,
                         type = "scatter", mode = "lines+markers",
                         name = "Shuffled",
@@ -2335,7 +2335,7 @@ server <- function(input, output, session){
       }
 
       # Add reference line at AF = 1
-      p2 <- add_trace(p2,
+      p2 <- plotly::add_trace(p2,
                       x = range(af_result$abcis), y = c(1, 1),
                       type = "scatter", mode = "lines",
                       name = "AF = 1 (Poisson)",
@@ -2376,7 +2376,7 @@ server <- function(input, output, session){
       # Always include 1 for reference
       if (!1 %in% y_ticks) y_ticks <- sort(c(y_ticks, 1))
 
-      p2 <- p2 %>% layout(
+      p2 <- p2 %>% plotly::layout(
         title = list(text = slope_text, font = list(size = fonts$title_size)),
         xaxis = list(
           title = list(text = "Window Size T (sec)", font = list(size = fonts$axis_title_size)),
@@ -2438,9 +2438,9 @@ server <- function(input, output, session){
         plot_title <- paste("Allan Deviation:", input$ad_var)
       }
 
-      p2 <- plot_ly()
+      p2 <- plotly::plot_ly()
 
-      p2 <- add_trace(p2,
+      p2 <- plotly::add_trace(p2,
                       x = ad_result$tau, y = y_vals,
                       type = "scatter", mode = "lines+markers",
                       name = y_label,
@@ -2448,7 +2448,7 @@ server <- function(input, output, session){
                       marker = list(color = "blue", symbol = "circle")
       )
 
-      p2 <- p2 %>% layout(
+      p2 <- p2 %>% plotly::layout(
         title = list(text = plot_title, font = list(size = fonts$title_size)),
         xaxis = list(
           title = list(text = "Tau (s)", font = list(size = fonts$axis_title_size)),
@@ -2581,7 +2581,7 @@ output$toolbar_download_plot_png <- downloadHandler(
     }
 
     # Rebuild a clean plotly object from the stored data
-    p_clean <- plotly_build(p)
+    p_clean <- plotly::plotly_build(p)
 
     # Try saving as PNG
     tryCatch({
@@ -2755,7 +2755,7 @@ output$toolbar_download_all <- downloadHandler(
 
       main_png <- file.path(tmpdir, "main_plot.png")
       tryCatch({
-        p1_built <- plotly_build(p1)
+        p1_built <- plotly::plotly_build(p1)
         save_plotly_png(p1_built, main_png)
         files_to_zip <- c(files_to_zip, main_png)
       }, error = function(e) {
@@ -2773,7 +2773,7 @@ output$toolbar_download_all <- downloadHandler(
 
         second_png <- file.path(tmpdir, "second_plot.png")
         tryCatch({
-          p2_built <- plotly_build(p2)
+          p2_built <- plotly::plotly_build(p2)
           save_plotly_png(p2_built, second_png)
           files_to_zip <- c(files_to_zip, second_png)
         }, error = function(e) {
@@ -2837,5 +2837,3 @@ output$toolbar_download_all <- downloadHandler(
 }
 
 shinyApp(ui, server)
-
-
