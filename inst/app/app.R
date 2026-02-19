@@ -408,7 +408,7 @@ $(document).ready(function() {
     tags$div(style = "height: 5px;")  # Spacer
   ),
 
-  sidebarplotly::layout(
+  sidebarlayout(
     sidebarPanel(
 
       # DATA OPTIONS
