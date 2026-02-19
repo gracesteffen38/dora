@@ -5,10 +5,11 @@
 #' @export
 run_app <- function(port = getOption("shiny.port"),
                     host = getOption("shiny.host", "127.0.0.1")) {
-  app_dir <- system.file("dora_app", package = "dora")
+  app_dir <- system.file("app", package = "dora")
   if (app_dir == "") {
     stop("Could not find app directory. Try re-installing the package.", call. = FALSE)
   }
   shiny::runApp(app_dir, port = port, host = host, display.mode = "normal")
 }
+
 
