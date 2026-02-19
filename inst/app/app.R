@@ -1039,7 +1039,7 @@ server <- function(input, output, session){
 
   diagnostics <- reactive({
     detect_dataset(data_reactive())
-  }) %>% bindCache(data_reactive())
+  }) |> bindCache(data_reactive())
 
   output$diagnostics <- renderPrint({
     d <- diagnostics()
@@ -1464,7 +1464,7 @@ server <- function(input, output, session){
         }
       }
 
-      p <- p %>% plotly::layout(
+      p <- p |> plotly::layout(
         title = list(text = labs$title, font = list(size = fonts$title_size)),
         xaxis =  get_datetime_axis(time_vec, labs$x, fonts),
         yaxis = list(
@@ -1626,7 +1626,7 @@ server <- function(input, output, session){
 
 
 
-      p <- p %>% plotly::layout(
+      p <- p |> plotly::layout(
         title = list(text = labs$title, font = list(size = fonts$title_size)),
         xaxis = get_datetime_axis(time_vec, labs$x, fonts),
         yaxis = list(
@@ -1690,7 +1690,7 @@ server <- function(input, output, session){
 
 
       return(
-        p %>%
+        p |>
           plotly::layout(
             title = list(text = labs$title, font = list(size = fonts$title_size)),
             xaxis =  get_datetime_axis(time_vec, labs$x, fonts),
@@ -1771,7 +1771,7 @@ server <- function(input, output, session){
       }
       fonts <- get_plot_fonts()
       margins <- get_plot_margins()
-      p <- p %>% plotly::layout(
+      p <- p |> plotly::layout(
         title = list(text = labs$title, font = list(size = fonts$title_size)),
         xaxis = list(
           title = list(text = labs$x, font = list(size = fonts$axis_title_size)),
@@ -2039,7 +2039,7 @@ server <- function(input, output, session){
           tickfont = list(size = fonts$axis_text_size)
         )
       }
-      p <- p %>% plotly::layout(
+      p <- p |> plotly::layout(
         title = list(text = labs$title, font = list(size = fonts$title_size)),
         xaxis = x_axis_config,
         yaxis = y_axis_config,
@@ -2264,7 +2264,7 @@ server <- function(input, output, session){
                     type = "scatter", mode = "lines",
                     name = input$second_yvar)
 
-      p2 <- p2 %>% plotly::layout(
+      p2 <- p2 |> plotly::layout(
         title = list(text = paste("Secondary Plot:", input$second_yvar), font = list(size = fonts$title_size)),
         xaxis = get_datetime_axis(time_vec, labs$x, fonts),
         yaxis = list(
@@ -2376,7 +2376,7 @@ server <- function(input, output, session){
       # Always include 1 for reference
       if (!1 %in% y_ticks) y_ticks <- sort(c(y_ticks, 1))
 
-      p2 <- p2 %>% plotly::layout(
+      p2 <- p2 |> plotly::layout(
         title = list(text = slope_text, font = list(size = fonts$title_size)),
         xaxis = list(
           title = list(text = "Window Size T (sec)", font = list(size = fonts$axis_title_size)),
@@ -2448,7 +2448,7 @@ server <- function(input, output, session){
                       marker = list(color = "blue", symbol = "circle")
       )
 
-      p2 <- p2 %>% plotly::layout(
+      p2 <- p2 |> plotly::layout(
         title = list(text = plot_title, font = list(size = fonts$title_size)),
         xaxis = list(
           title = list(text = "Tau (s)", font = list(size = fonts$axis_title_size)),
@@ -2837,4 +2837,3 @@ output$toolbar_download_all <- downloadHandler(
 }
 
 shinyApp(ui, server)
-
