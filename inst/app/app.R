@@ -420,9 +420,9 @@ $(document).ready(function() {
         # Demo dropdown first
         selectInput("demo_choice", "Select a demo dataset",
                     choices = c("None" = "",
-                                "Demo Dataset 1" = "demo1",
-                                "Demo Dataset 2" = "demo2",
-                                "Demo Dataset 3" = "demo3"),
+                                "Infant Object Play" = "demo1",
+                                "Daily Music Bouts" = "demo2",
+                                "Mother-Child Interactions" = "demo3"),
                     selected = "demo1"),  # default to first demo
 
         tags$div(style = "text-align: center; padding: 8px; color: #666; font-weight: bold;",
@@ -436,14 +436,14 @@ $(document).ready(function() {
            border-radius: 4px; font-size: 0.9em; margin-top: 8px;",
           textOutput("active_dataset_name")
         ),
-
-        conditionalPanel(
-          condition = "input.data_source != 'upload'",
-          tags$div(
-            style = "padding: 8px; background-color: #f8f9fa; border-radius: 4px; font-size: 0.9em; color: #666;",
-            "Demo data loaded. Switch to 'Upload your own CSV' to use your own data."
-          )
-        ),
+        #
+        # conditionalPanel(
+        #   condition = "input.data_source != 'upload'",
+        #   tags$div(
+        #     style = "padding: 8px; background-color: #f8f9fa; border-radius: 4px; font-size: 0.9em; color: #666;",
+        #     "Demo data loaded. Switch to 'Upload your own CSV' to use your own data."
+        #   )
+        # ),
         tags$div(id = "file-help", class = "help-text", style = "font-size: 0.9em; color: #666; display: none;",
                  "Upload a CSV file containing your time-series data"),
         conditionalPanel(
@@ -1137,9 +1137,9 @@ server <- function(input, output, session){
       paste("Currently using:", input$file$name)
     } else if (isTruthy(input$demo_choice) && input$demo_choice != "") {
       label <- switch(input$demo_choice,
-                      "demo1" = "Demo Dataset 1 name",
-                      "demo2" = "Demo Dataset 2 name",
-                      "demo3" = "Demo Dataset 3 name"
+                      "demo1" = "Infant Object Play",
+                      "demo2" = "Daily Music Bouts",
+                      "demo3" = "Mother-Child Interactions"
       )
       paste("Currently using:", label)
     } else {

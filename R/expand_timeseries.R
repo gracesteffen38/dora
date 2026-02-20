@@ -47,7 +47,7 @@ expand_timeseries <- function(data, id_var, var_name, start_time_var, end_time_v
     rowwise() %>%
     filter(internal_end >= internal_start) %>%
     mutate(time_seq = list(seq(from = internal_start, to = internal_end, by = time_unit))) %>%
-    unnest(time_seq) %>%
+    tidyr::unnest(time_seq) %>%
     select(internal_id, time_seq, internal_activity) %>%
     ungroup()
 
