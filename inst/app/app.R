@@ -435,7 +435,7 @@ $(document).ready(function() {
           style = "padding: 8px; background-color: #e8f4f8; border-left: 3px solid #17a2b8;
            border-radius: 4px; font-size: 0.9em; margin-top: 8px;",
           textOutput("active_dataset_name")
-        )
+        ),
 
         conditionalPanel(
           condition = "input.data_source != 'upload'",
