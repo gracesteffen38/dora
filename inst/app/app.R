@@ -1024,9 +1024,9 @@ server <- function(input, output, session){
   data_original <- reactive({
     df <- if (isTruthy(input$demo_choice) && input$demo_choice != "") {
       demo_file <- switch(input$demo_choice,
-                          "demo1" = system.file("extdata", "demo_data_1.rda", package = "dora"),
-                          "demo2" = system.file("extdata", "demo_data_2.rda", package = "dora"),
-                          "demo3" = system.file("extdata", "demo_data_3.rda", package = "dora")
+                          "demo1" = system.file("extdata", "demo_data_1.csv", package = "dora"),
+                          "demo2" = system.file("extdata", "demo_data_2.csv", package = "dora"),
+                          "demo3" = system.file("extdata", "demo_data_3.csv", package = "dora")
       )
       readr::read_csv(demo_file, show_col_types = FALSE)
 
