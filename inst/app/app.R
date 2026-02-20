@@ -417,18 +417,19 @@ $(document).ready(function() {
 
         h4("Step 1: Upload Data"),
 
-        fileInput("file", "Upload CSV", accept = ".csv"),
+        # Demo dropdown first
+        selectInput("demo_choice", "Select a demo dataset",
+                    choices = c("None" = "",
+                                "Demo Dataset 1" = "demo1",
+                                "Demo Dataset 2" = "demo2",
+                                "Demo Dataset 3" = "demo3"),
+                    selected = "demo1"),  # default to first demo
 
         tags$div(style = "text-align: center; padding: 8px; color: #666; font-weight: bold;",
                  "— OR —"
         ),
 
-        selectInput("demo_choice", "Select a demo dataset",
-                    choices = c("None selected" = "",
-                                "Demo Dataset 1 name" = "demo1",
-                                "Demo Dataset 2 name" = "demo2",
-                                "Demo Dataset 3 name" = "demo3"),
-                    selected = ""),
+        fileInput("file", "Upload your own CSV", accept = ".csv"),
 
         tags$div(id = "demo-note",
                  style = "padding: 8px; background-color: #f8f9fa; border-radius: 4px;
@@ -627,6 +628,24 @@ server <- function(input, output, session){
   plot_store  <- reactiveVal(NULL)
   plot2_store <- reactiveVal(NULL)
   stats_store <- reactiveVal(NULL)
+
+  last_data_source <- reactiveVal("demo")  # default to demo
+
+  observeEvent(input$file, {
+    last_data_source("file")
+    # Clear demo selection when file uploaded
+    updateSelectInput(session, "demo_choice", selected = "")
+  })
+
+  observeEvent(input$demo_choice, {
+    if (isTruthy(input$demo_choice) && input$demo_choice != "") {
+      last_data_source("demo")
+    }
+  })
+
+  file_is_newer <- reactive({
+    last_data_source() == "file"
+  })
 
   accessibility <- reactiveValues(
     high_contrast   = FALSE,
@@ -1017,28 +1036,34 @@ server <- function(input, output, session){
   })
 
   output$hasData <- reactive({
-    !is.null(input$file) || (isTruthy(input$demo_choice) && input$demo_choice != "")
+    last_data_source() == "demo" && isTruthy(input$demo_choice) ||
+      last_data_source() == "file" && !is.null(input$file)
   })
   outputOptions(output, "hasData", suspendWhenHidden = FALSE)
   # Store both original and converted data
   data_original <- reactive({
-    df <- if (isTruthy(input$demo_choice) && input$demo_choice != "") {
+
+    # If a file was uploaded more recently than demo was selected, use file
+    # Otherwise use demo
+    df <- if (!is.null(input$file) &&
+              (input$demo_choice == "" ||
+               isTRUE(file_is_newer()))) {
+      readr::read_csv(input$file$datapath, show_col_types = FALSE)
+
+    } else if (isTruthy(input$demo_choice) && input$demo_choice != "") {
       demo_file <- switch(input$demo_choice,
                           "demo1" = system.file("extdata", "demo_data_1.csv", package = "dora"),
                           "demo2" = system.file("extdata", "demo_data_2.csv", package = "dora"),
                           "demo3" = system.file("extdata", "demo_data_3.csv", package = "dora")
       )
+      if (demo_file == "") stop("Demo file not found. Try reinstalling the package.")
       readr::read_csv(demo_file, show_col_types = FALSE)
 
     } else {
-      req(input$file)
-      readr::read_csv(input$file$datapath, show_col_types = FALSE)
+      return(NULL)
     }
-    observeEvent(input$demo_choice, {
-      data_converted(NULL)
-      conversion_done(FALSE)
-    })
 
+    # Datetime parsing unchanged
     for (col in names(df)) {
       if (is.character(df[[col]])) {
         if (any(grepl("\\d{4}-\\d{2}-\\d{2}", df[[col]][1:min(10, nrow(df))]), na.rm = TRUE) ||
@@ -1075,7 +1100,7 @@ server <- function(input, output, session){
     conversion_done(FALSE)
     updateCheckboxInput(session, "is_interval_data", value = FALSE)
   })
-  observeEvent(input$data_source, {
+  observeEvent(list(input$demo_choice, input$file), {
     data_converted(NULL)
     conversion_done(FALSE)
   })
