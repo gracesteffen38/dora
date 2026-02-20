@@ -431,11 +431,11 @@ $(document).ready(function() {
 
         fileInput("file", "Upload your own CSV", accept = ".csv"),
 
-        tags$div(id = "demo-note",
-                 style = "padding: 8px; background-color: #f8f9fa; border-radius: 4px;
-           font-size: 0.9em; color: #666; margin-top: 5px;",
-                 "Selecting a demo dataset will override any uploaded file."
-        ),
+        tags$div(
+          style = "padding: 8px; background-color: #e8f4f8; border-left: 3px solid #17a2b8;
+           border-radius: 4px; font-size: 0.9em; margin-top: 8px;",
+          textOutput("active_dataset_name")
+        )
 
         conditionalPanel(
           condition = "input.data_source != 'upload'",
@@ -448,6 +448,13 @@ $(document).ready(function() {
                  "Upload a CSV file containing your time-series data"),
         conditionalPanel(
           condition = "output.hasData",
+          actionButton("peek_data", "Peek at data",
+                       class = "btn-sm btn-outline-info",
+                       icon = icon("table"),
+                       style = "margin-top: 5px;")
+        ),
+        conditionalPanel(
+          condition = "output.hasData",
           hr(),
           h4("Data Format Conversion"),
           checkboxInput("is_interval_data", "Data has start time and end time or duration columns", FALSE),
@@ -457,7 +464,13 @@ $(document).ready(function() {
             actionButton("convert_data", "Convert to Continuous Format", class = "btn-success",
                          accesskey = "c", title = "Convert Data (Alt+C)"),
             br(), br(),
-            textOutput("conversion_status")
+            textOutput("conversion_status"),
+            conditionalPanel(
+              condition = "output.conversionDone",
+              downloadButton("download_converted", "Download Converted Data (.csv)",
+                             class = "btn-sm btn-outline-success",
+                             style = "margin-top: 8px;")
+            )
           )
         ),
 
@@ -631,17 +644,20 @@ server <- function(input, output, session){
 
   last_data_source <- reactiveVal("demo")  # default to demo
 
+  last_data_source <- reactiveVal("demo")
+
+  # File upload wins when a new file is chosen
   observeEvent(input$file, {
     last_data_source("file")
-    # Clear demo selection when file uploaded
     updateSelectInput(session, "demo_choice", selected = "")
-  })
+  }, ignoreInit = TRUE)
 
+  # Demo wins when a new demo is chosen
   observeEvent(input$demo_choice, {
     if (isTruthy(input$demo_choice) && input$demo_choice != "") {
       last_data_source("demo")
     }
-  })
+  }, ignoreInit = FALSE)  # FALSE here so demo1 loads on startup
 
   file_is_newer <- reactive({
     last_data_source() == "file"
@@ -944,24 +960,25 @@ server <- function(input, output, session){
   })
 
   observeEvent(list(input$preset_vision, input$toolbar_preset_vision), {
+    req(input$preset_vision > 0 || input$toolbar_preset_vision > 0)
     accessibility$high_contrast   <- TRUE
     accessibility$large_text      <- TRUE
     accessibility$colorblind_safe <- TRUE
     accessibility$reduce_motion   <- TRUE
-    showNotification("Vision preset applied: high contrast, large text, colorblind-safe, reduced motion",
-                     type = "message", duration = 5)
-  })
+    showNotification("Vision preset applied", type = "message", duration = 5)
+  }, ignoreInit = TRUE)
 
   observeEvent(list(input$preset_motor, input$toolbar_preset_motor), {
+    req(input$preset_motor > 0 || input$toolbar_preset_motor > 0)
     accessibility$large_targets   <- TRUE
     accessibility$sticky_controls <- TRUE
     accessibility$reduce_motion   <- TRUE
     accessibility$confirm_actions <- TRUE
-    showNotification("Motor preset applied: large targets, sticky nav, reduced motion, action confirmations",
-                     type = "message", duration = 5)
-  })
+    showNotification("Motor preset applied", type = "message", duration = 5)
+  }, ignoreInit = TRUE)
 
   observeEvent(list(input$reset_accessibility, input$toolbar_reset_accessibility), {
+    req(input$reset_accessibility > 0 || input$toolbar_reset_accessibility > 0)
     accessibility$high_contrast     <- FALSE
     accessibility$large_text        <- FALSE
     accessibility$colorblind_safe   <- FALSE
@@ -972,7 +989,7 @@ server <- function(input, output, session){
     accessibility$show_descriptions <- FALSE
     accessibility$confirm_actions   <- FALSE
     showNotification("All accessibility settings reset", type = "message", duration = 3)
-  })
+  }, ignoreInit = TRUE)
 
   # Colorblind-safe palette generator
   get_accessible_palette <- function(n) {
@@ -1043,14 +1060,12 @@ server <- function(input, output, session){
   # Store both original and converted data
   data_original <- reactive({
 
-    # If a file was uploaded more recently than demo was selected, use file
-    # Otherwise use demo
-    df <- if (!is.null(input$file) &&
-              (input$demo_choice == "" ||
-               isTRUE(file_is_newer()))) {
+    df <- if (last_data_source() == "file") {
+      req(input$file)
       readr::read_csv(input$file$datapath, show_col_types = FALSE)
 
-    } else if (isTruthy(input$demo_choice) && input$demo_choice != "") {
+    } else {
+      req(isTruthy(input$demo_choice) && input$demo_choice != "")
       demo_file <- switch(input$demo_choice,
                           "demo1" = system.file("extdata", "demo_data_1.csv", package = "dora"),
                           "demo2" = system.file("extdata", "demo_data_2.csv", package = "dora"),
@@ -1058,9 +1073,6 @@ server <- function(input, output, session){
       )
       if (demo_file == "") stop("Demo file not found. Try reinstalling the package.")
       readr::read_csv(demo_file, show_col_types = FALSE)
-
-    } else {
-      return(NULL)
     }
 
     # Datetime parsing unchanged
@@ -1095,14 +1107,15 @@ server <- function(input, output, session){
     }
   })
 
-  observeEvent(input$file, {
-    data_converted(NULL)
-    conversion_done(FALSE)
-    updateCheckboxInput(session, "is_interval_data", value = FALSE)
-  })
+  # observeEvent(input$file, {
+  #   data_converted(NULL)
+  #   conversion_done(FALSE)
+  #   updateCheckboxInput(session, "is_interval_data", value = FALSE)
+  # })
   observeEvent(list(input$demo_choice, input$file), {
     data_converted(NULL)
     conversion_done(FALSE)
+    updateCheckboxInput(session, "is_interval_data", value = FALSE
   })
 
   diagnostics <- reactive({
@@ -1119,7 +1132,20 @@ server <- function(input, output, session){
       "Candidate time variables:\n", paste(d$time, collapse=", ")
     )
   })
-
+  output$active_dataset_name <- renderText({
+    if (last_data_source() == "file" && !is.null(input$file)) {
+      paste("Currently using:", input$file$name)
+    } else if (isTruthy(input$demo_choice) && input$demo_choice != "") {
+      label <- switch(input$demo_choice,
+                      "demo1" = "Demo Dataset 1 name",
+                      "demo2" = "Demo Dataset 2 name",
+                      "demo3" = "Demo Dataset 3 name"
+      )
+      paste("Currently using:", label)
+    } else {
+      "No dataset selected"
+    }
+  })
   # Interval data conversion UI
   output$interval_conversion_ui <- renderUI({
     df <- data_original()
@@ -1169,6 +1195,22 @@ server <- function(input, output, session){
       ""
     }
   })
+
+  output$conversionDone <- reactive({ conversion_done() })
+  outputOptions(output, "conversionDone", suspendWhenHidden = FALSE)
+  output$download_converted <- downloadHandler(
+    filename = function() {
+      paste0("converted_data_", Sys.Date(), ".csv")
+    },
+    content = function(file) {
+      df <- data_converted()
+      if (is.null(df)) {
+        write.csv(data.frame(Note = "No converted data available"), file, row.names = FALSE)
+      } else {
+        write.csv(df, file, row.names = FALSE)
+      }
+    }
+  )
   do_convert <- function() {
     req(input$start_time_col, input$event_var_col, input$time_unit_val)
 
@@ -1241,6 +1283,18 @@ server <- function(input, output, session){
       )
     })
   }
+  observeEvent(input$peek_data, {
+    df <- data_reactive()
+    showModal(modalDialog(
+      title = paste("Data Preview —", nrow(df), "rows,", ncol(df), "columns"),
+      size = "l",
+      easyClose = TRUE,
+      footer = modalButton("Close"),
+      renderTable({
+        head(df, 10)
+      })
+    ))
+  })
   # Convert interval data
   observeEvent(input$convert_data, {
     if (!show_confirmation("This will convert your interval data to continuous format. Continue?", "convert")) {
