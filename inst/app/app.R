@@ -416,16 +416,24 @@ $(document).ready(function() {
         condition = "input.sidebar_state == 'data'",
 
         h4("Step 1: Upload Data"),
-        radioButtons("data_source", "Data source",
-                     choices = c("Upload your own CSV" = "upload",
-                                 "Demo: Infant Object Play" = "demo1",
-                                 "Demo: Music Bouts" = "demo2",
-                                 "Demo: Mother-Child Interactions" = "demo3"),
-                     selected = "demo1"),
 
-        conditionalPanel(
-          condition = "input.data_source == 'upload'",
-          fileInput("file", "Upload CSV", accept = ".csv")
+        fileInput("file", "Upload CSV", accept = ".csv"),
+
+        tags$div(style = "text-align: center; padding: 8px; color: #666; font-weight: bold;",
+                 "— OR —"
+        ),
+
+        selectInput("demo_choice", "Select a demo dataset",
+                    choices = c("None selected" = "",
+                                "Demo Dataset 1 name" = "demo1",
+                                "Demo Dataset 2 name" = "demo2",
+                                "Demo Dataset 3 name" = "demo3"),
+                    selected = ""),
+
+        tags$div(id = "demo-note",
+                 style = "padding: 8px; background-color: #f8f9fa; border-radius: 4px;
+           font-size: 0.9em; color: #666; margin-top: 5px;",
+                 "Selecting a demo dataset will override any uploaded file."
         ),
 
         conditionalPanel(
@@ -1009,28 +1017,28 @@ server <- function(input, output, session){
   })
 
   output$hasData <- reactive({
-    input$data_source == "demo" || !is.null(input$file)
+    !is.null(input$file) || (isTruthy(input$demo_choice) && input$demo_choice != "")
   })
   outputOptions(output, "hasData", suspendWhenHidden = FALSE)
-
   # Store both original and converted data
   data_original <- reactive({
-
-    df <- if (input$data_source == "upload") {
-      req(input$file)
-      readr::read_csv(input$file$datapath, show_col_types = FALSE)
-
-    } else {
-      # Map each choice to its file
-      demo_file <- switch(input$data_source,
-                          "demo1" = system.file("extdata", "demo_data_1.csv", package = "dora"),
-                          "demo2" = system.file("extdata", "demo_data_2.csv", package = "dora"),
-                          "demo3" = system.file("extdata", "demo_data_3.csv", package = "dora")
+    df <- if (isTruthy(input$demo_choice) && input$demo_choice != "") {
+      demo_file <- switch(input$demo_choice,
+                          "demo1" = system.file("extdata", "demo_data_1.rda", package = "dora"),
+                          "demo2" = system.file("extdata", "demo_data_2.rda", package = "dora"),
+                          "demo3" = system.file("extdata", "demo_data_3.rda", package = "dora")
       )
       readr::read_csv(demo_file, show_col_types = FALSE)
-    }
 
-    # Your existing datetime parsing code unchanged below
+    } else {
+      req(input$file)
+      readr::read_csv(input$file$datapath, show_col_types = FALSE)
+    }
+    observeEvent(input$demo_choice, {
+      data_converted(NULL)
+      conversion_done(FALSE)
+    })
+
     for (col in names(df)) {
       if (is.character(df[[col]])) {
         if (any(grepl("\\d{4}-\\d{2}-\\d{2}", df[[col]][1:min(10, nrow(df))]), na.rm = TRUE) ||

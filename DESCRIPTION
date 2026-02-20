@@ -15,8 +15,7 @@ Description: Various functions to analyze, visualize, and reformat time series d
 License: MIT + file LICENSE
 Encoding: UTF-8
 Imports:
-    shiny
-Suggests:
+    shiny,
     dplyr,
     ggplot2,
     plotly,
