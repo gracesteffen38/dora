@@ -416,7 +416,25 @@ $(document).ready(function() {
         condition = "input.sidebar_state == 'data'",
 
         h4("Step 1: Upload Data"),
-        fileInput("file", "Upload CSV", accept = ".csv"),
+        radioButtons("data_source", "Data source",
+                     choices = c("Upload your own CSV" = "upload",
+                                 "Demo: Infant Object Play" = "demo1",
+                                 "Demo: Music Bouts" = "demo2",
+                                 "Demo: Mother-Child Interactions" = "demo3"),
+                     selected = "demo1"),
+
+        conditionalPanel(
+          condition = "input.data_source == 'upload'",
+          fileInput("file", "Upload CSV", accept = ".csv")
+        ),
+
+        conditionalPanel(
+          condition = "input.data_source != 'upload'",
+          tags$div(
+            style = "padding: 8px; background-color: #f8f9fa; border-radius: 4px; font-size: 0.9em; color: #666;",
+            "Demo data loaded. Switch to 'Upload your own CSV' to use your own data."
+          )
+        ),
         tags$div(id = "file-help", class = "help-text", style = "font-size: 0.9em; color: #666; display: none;",
                  "Upload a CSV file containing your time-series data"),
         conditionalPanel(
@@ -990,26 +1008,39 @@ server <- function(input, output, session){
     updateTextInput(session,"sidebar_state",value="data")
   })
 
-  output$hasData <- reactive({ !is.null(input$file) })
-  outputOptions(output,"hasData", suspendWhenHidden = FALSE)
+  output$hasData <- reactive({
+    input$data_source == "demo" || !is.null(input$file)
+  })
+  outputOptions(output, "hasData", suspendWhenHidden = FALSE)
 
   # Store both original and converted data
   data_original <- reactive({
-    req(input$file)
-    df <- readr::read_csv(input$file$datapath, show_col_types = FALSE)
 
-    # Auto-detect and parse datetime columns
+    df <- if (input$data_source == "upload") {
+      req(input$file)
+      readr::read_csv(input$file$datapath, show_col_types = FALSE)
+
+    } else {
+      # Map each choice to its file
+      demo_file <- switch(input$data_source,
+                          "demo1" = system.file("extdata", "demo_data_1.csv", package = "dora"),
+                          "demo2" = system.file("extdata", "demo_data_2.csv", package = "dora"),
+                          "demo3" = system.file("extdata", "demo_data_3.csv", package = "dora")
+      )
+      readr::read_csv(demo_file, show_col_types = FALSE)
+    }
+
+    # Your existing datetime parsing code unchanged below
     for (col in names(df)) {
       if (is.character(df[[col]])) {
         if (any(grepl("\\d{4}-\\d{2}-\\d{2}", df[[col]][1:min(10, nrow(df))]), na.rm = TRUE) ||
             any(grepl("\\d{2}:\\d{2}:\\d{2}", df[[col]][1:min(10, nrow(df))]), na.rm = TRUE)) {
-
           parsed <- suppressWarnings(
-            parse_date_time(df[[col]],
-                            orders = c("ymd HMS", "ymd HM", "dmy HMS", "dmy HM",
-                                       "mdy HMS", "mdy HM", "HMS", "HM",
-                                       "ymd", "dmy", "mdy"),
-                            quiet = TRUE)
+            lubridate::parse_date_time(df[[col]],
+                                       orders = c("ymd HMS", "ymd HM", "dmy HMS", "dmy HM",
+                                                  "mdy HMS", "mdy HM", "HMS", "HM",
+                                                  "ymd", "dmy", "mdy"),
+                                       quiet = TRUE)
           )
           if (sum(!is.na(parsed)) > 0.5 * length(parsed)) {
             df[[col]] <- parsed
@@ -1035,6 +1066,10 @@ server <- function(input, output, session){
     data_converted(NULL)
     conversion_done(FALSE)
     updateCheckboxInput(session, "is_interval_data", value = FALSE)
+  })
+  observeEvent(input$data_source, {
+    data_converted(NULL)
+    conversion_done(FALSE)
   })
 
   diagnostics <- reactive({
@@ -2837,4 +2872,3 @@ output$toolbar_download_all <- downloadHandler(
 }
 
 shinyApp(ui, server)
-
