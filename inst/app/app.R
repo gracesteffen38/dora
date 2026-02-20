@@ -1115,7 +1115,7 @@ server <- function(input, output, session){
   observeEvent(list(input$demo_choice, input$file), {
     data_converted(NULL)
     conversion_done(FALSE)
-    updateCheckboxInput(session, "is_interval_data", value = FALSE
+    updateCheckboxInput(session, "is_interval_data", value = FALSE)
   })
 
   diagnostics <- reactive({
