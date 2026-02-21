@@ -254,48 +254,48 @@ $(document).ready(function() {
   tags$div(id = "accessibility-panel", class = "panel panel-default",
            style = "margin-bottom: 15px; border-left: 4px solid #17a2b8;",
 
-    tags$div(class = "panel-heading", style = "background-color: #f8f9fa;",
-      tags$h5(class = "panel-title",
-        tags$a(href = "#accessibility-controls", `data-toggle` = "collapse",
-               `aria-expanded` = "false", `aria-controls` = "accessibility-controls",
-               style = "text-decoration: none;",
-          icon("universal-access"), " Accessibility Settings "
-        )
-      )
-    ),
+           tags$div(class = "panel-heading", style = "background-color: #f8f9fa;",
+                    tags$h5(class = "panel-title",
+                            tags$a(href = "#accessibility-controls", `data-toggle` = "collapse",
+                                   `aria-expanded` = "false", `aria-controls` = "accessibility-controls",
+                                   style = "text-decoration: none;",
+                                   icon("universal-access"), " Accessibility Settings "
+                            )
+                    )
+           ),
 
-    tags$div(id = "accessibility-controls", class = "panel-collapse collapse",
-      tags$div(class = "panel-body",
-        fluidRow(
-          column(3,
-            h6("Visual"),
-            checkboxInput("high_contrast", "High Contrast", FALSE),
-            checkboxInput("large_text", "Large Text", FALSE),
-            checkboxInput("colorblind_safe", "Colorblind-Safe", FALSE)
-          ),
-          column(3,
-            h6("Motor"),
-            checkboxInput("large_targets", "Large Targets", FALSE),
-            checkboxInput("reduce_motion", "Reduce Motion", FALSE),
-            checkboxInput("sticky_controls", "Sticky Nav", FALSE)
-          ),
-          column(3,
-            h6("Cognitive"),
-            checkboxInput("simplified_ui", "Simplified UI", FALSE),
-            checkboxInput("show_descriptions", "Extra Help", FALSE),
-            checkboxInput("confirm_actions", "Confirm Actions", FALSE)
-          ),
-          column(3,
-            h6("Presets"),
-            actionButton("preset_vision", "Vision Preset", class = "btn-sm btn-outline-primary"),
-            br(), br(),
-            actionButton("preset_motor", "Motor Preset", class = "btn-sm btn-outline-primary"),
-            br(), br(),
-            actionButton("reset_accessibility", "Reset All", class = "btn-sm btn-outline-secondary")
-          )
-        )
-      )
-    )
+           tags$div(id = "accessibility-controls", class = "panel-collapse collapse",
+                    tags$div(class = "panel-body",
+                             fluidRow(
+                               column(3,
+                                      h6("Visual"),
+                                      checkboxInput("high_contrast", "High Contrast", FALSE),
+                                      checkboxInput("large_text", "Large Text", FALSE),
+                                      checkboxInput("colorblind_safe", "Colorblind-Safe", FALSE)
+                               ),
+                               column(3,
+                                      h6("Motor"),
+                                      checkboxInput("large_targets", "Large Targets", FALSE),
+                                      checkboxInput("reduce_motion", "Reduce Motion", FALSE),
+                                      checkboxInput("sticky_controls", "Sticky Nav", FALSE)
+                               ),
+                               column(3,
+                                      h6("Cognitive"),
+                                      checkboxInput("simplified_ui", "Simplified UI", FALSE),
+                                      checkboxInput("show_descriptions", "Extra Help", FALSE),
+                                      checkboxInput("confirm_actions", "Confirm Actions", FALSE)
+                               ),
+                               column(3,
+                                      h6("Presets"),
+                                      actionButton("preset_vision", "Vision Preset", class = "btn-sm btn-outline-primary"),
+                                      br(), br(),
+                                      actionButton("preset_motor", "Motor Preset", class = "btn-sm btn-outline-primary"),
+                                      br(), br(),
+                                      actionButton("reset_accessibility", "Reset All", class = "btn-sm btn-outline-secondary")
+                               )
+                             )
+                    )
+           )
   ),
   titlePanel("Data Organization and Rhythm Analysis"),
 
@@ -454,7 +454,7 @@ $(document).ready(function() {
                         )
                )
              )
-             )
+    )
   ),
 
   # Add spacing so content doesn't hide under toolbar
@@ -472,21 +472,16 @@ $(document).ready(function() {
 
         h4("Step 1: Upload Data"),
 
-        # Two side-by-side buttons
-        fluidRow(
-          column(6,
-                 tags$label("Upload your own data", style = "display: block; margin-bottom: 5px;"),
-                 fileInput("file", NULL, accept = ".csv", buttonLabel = "Browse...",
-                           placeholder = "No file selected")
-          ),
-          column(6,
-                 tags$label("Or use a demo dataset", style = "display: block; margin-bottom: 5px;"),
-                 actionButton("open_demo_modal", "Select demo dataset...",
-                              class = "btn btn-default",
-                              style = "width: 100%; margin-top: 1px;",
-                              icon = icon("database"))
-          )
-        ),
+        tags$label("Upload your own data", style = "display: block; margin-bottom: 5px;"),
+        fileInput("file", NULL, accept = ".csv", buttonLabel = "Browse...",
+                  placeholder = "No file selected"),
+
+        tags$label("Or use a demo dataset", style = "display: block; margin-bottom: 5px;"),
+        actionButton("open_demo_modal", "Select demo dataset...",
+                     class = "btn btn-default",
+                     style = "width: 100%; margin-top: 1px;",
+                     icon = icon("database"))
+
 
         tags$div(
           style = "padding: 8px; background-color: #e8f4f8; border-left: 3px solid #17a2b8;
@@ -700,7 +695,7 @@ server <- function(input, output, session){
   plot2_store <- reactiveVal(NULL)
   stats_store <- reactiveVal(NULL)
 
-  #last_data_source <- reactiveVal("demo")  # default to demo
+  last_data_source <- reactiveVal("demo")  # default to demo
   # Track active demo choice separately from the input
   active_demo <- reactiveVal(NULL)
 
@@ -924,11 +919,11 @@ server <- function(input, output, session){
     list(accessibility$high_contrast, accessibility$large_text, accessibility$colorblind_safe,
          accessibility$large_targets, accessibility$reduce_motion, accessibility$sticky_controls,
          accessibility$simplified_ui, accessibility$show_descriptions, accessibility$confirm_actions), {
-    css_rules <- ""
+           css_rules <- ""
 
-    # High Contrast Mode
-    if (isTRUE(accessibility$high_contrast)) {
-      css_rules <- paste0(css_rules, "
+           # High Contrast Mode
+           if (isTRUE(accessibility$high_contrast)) {
+             css_rules <- paste0(css_rules, "
       body { background-color: #000000 !important; color: #ffffff !important; }
       .well { background-color: #1a1a1a !important; color: #ffffff !important; border: 2px solid #ffffff !important; }
       .form-control { background-color: #2d2d2d !important; color: #ffffff !important; border: 2px solid #ffffff !important; }
@@ -937,11 +932,11 @@ server <- function(input, output, session){
       .panel { background-color: #1a1a1a !important; border: 2px solid #ffffff !important; }
       .selectize-input { background-color: #2d2d2d !important; color: #ffffff !important; }
     ")
-    }
+           }
 
-    # Large Text
-    if (isTRUE(accessibility$large_text)) {
-      css_rules <- paste0(css_rules, "
+           # Large Text
+           if (isTRUE(accessibility$large_text)) {
+             css_rules <- paste0(css_rules, "
     body { font-size: 18px !important; }
     .form-control { font-size: 16px !important; }
     h1 { font-size: 3rem !important; }
@@ -973,11 +968,11 @@ server <- function(input, output, session){
       margin-top: 15px !important;
     }
   ")
-    }
+           }
 
-      # Large Click Targets
-    if (isTRUE(accessibility$large_targets)) {
-      css_rules <- paste0(css_rules, "
+           # Large Click Targets
+           if (isTRUE(accessibility$large_targets)) {
+             css_rules <- paste0(css_rules, "
     .btn {
       min-height: 50px !important;
       min-width: 50px !important;
@@ -1023,33 +1018,33 @@ server <- function(input, output, session){
       line-height: 24px !important;
     }
   ")
-    }
+           }
 
-    # Reduce Motion
-    if (isTRUE(accessibility$reduce_motion)) {
-      css_rules <- paste0(css_rules, "
+           # Reduce Motion
+           if (isTRUE(accessibility$reduce_motion)) {
+             css_rules <- paste0(css_rules, "
       * { transition: none !important; animation: none !important; }
       .plotly .traces { transition: none !important; }
     ")
-    }
+           }
 
-    # Sticky Navigation
-    if (isTRUE(accessibility$sticky_controls)) {
-      css_rules <- paste0(css_rules, "
+           # Sticky Navigation
+           if (isTRUE(accessibility$sticky_controls)) {
+             css_rules <- paste0(css_rules, "
       .col-sm-4 { position: sticky !important; top: 20px !important; }
     ")
-    }
+           }
 
-    # Simplified UI - work in progress
-    if (isTRUE(accessibility$simplified_ui)) {
-      css_rules <- paste0(css_rules, "
+           # Simplified UI - work in progress
+           if (isTRUE(accessibility$simplified_ui)) {
+             css_rules <- paste0(css_rules, "
     .well { border: 3px solid #007bff !important; }
   ")
-    }
+           }
 
-    # Extra Descriptions
-    if (isTRUE(accessibility$show_descriptions)) {
-      css_rules <- paste0(css_rules, "
+           # Extra Descriptions
+           if (isTRUE(accessibility$show_descriptions)) {
+             css_rules <- paste0(css_rules, "
     .help-text {
       display: block !important;
       font-weight: bold !important;
@@ -1060,14 +1055,14 @@ server <- function(input, output, session){
       border-left: 3px solid #007bff !important;
     }
   ")
-    } else {
-      css_rules <- paste0(css_rules, "
+           } else {
+             css_rules <- paste0(css_rules, "
     .help-text { display: none !important; }
   ")
-    }
+           }
 
-    accessibility_css(css_rules)
-  })
+           accessibility_css(css_rules)
+         })
 
   # Apply CSS to page
   observeEvent(accessibility_css(), {
@@ -1705,13 +1700,13 @@ server <- function(input, output, session){
       if (is_single_view) {
         for (var in input$yvar) {
           p <- plotly::add_trace(p, x = filtered_data()[[input$xvar]], y = filtered_data()[[var]], name = var,
-                         type = "scatter", mode = ifelse(input$plot_type == "Line", "lines", "markers"))
+                                 type = "scatter", mode = ifelse(input$plot_type == "Line", "lines", "markers"))
         }
       } else {
         for (var in input$yvar) {
           p <- plotly::add_trace(p, x = filtered_data()[[input$xvar]], y = filtered_data()[[var]],
-                         name = paste(filtered_data()[[input$idvar]], "-", var),
-                         type = "scatter", mode = ifelse(input$plot_type == "Line", "lines", "markers"))
+                                 name = paste(filtered_data()[[input$idvar]], "-", var),
+                                 type = "scatter", mode = ifelse(input$plot_type == "Line", "lines", "markers"))
         }
       }
 
@@ -1865,13 +1860,13 @@ server <- function(input, output, session){
       # 2. Add Dummy Legend Entries
       for (tr in legend_traces) {
         p <- plotly::add_trace(p,
-                       x = time_vec[1],
-                       y = y_min,
-                       type = "scatter",
-                       mode = "markers",
-                       marker = list(color = tr$color, symbol = "square"),
-                       name = tr$label,
-                       visible = "legendonly"
+                               x = time_vec[1],
+                               y = y_min,
+                               type = "scatter",
+                               mode = "markers",
+                               marker = list(color = tr$color, symbol = "square"),
+                               name = tr$label,
+                               visible = "legendonly"
         )
       }
 
@@ -1982,7 +1977,7 @@ server <- function(input, output, session){
       )
 
       p <- plotly::plot_ly(x = win, y = avg, type = "scatter", mode = "lines",
-                   name = "Mean", line = list(width = 3, color = "blue"))
+                           name = "Mean", line = list(width = 3, color = "blue"))
 
       # SE ribbon
       if (isTRUE(input$show_se_ribbon)) {
@@ -1993,22 +1988,22 @@ server <- function(input, output, session){
 
         # Upper bound (invisible line, serves as ribbon top)
         p <- plotly::add_trace(p,
-                       x = win, y = upper,
-                       type = "scatter", mode = "lines",
-                       line = list(color = "transparent"),
-                       showlegend = FALSE,
-                       name = "Upper SE"
+                               x = win, y = upper,
+                               type = "scatter", mode = "lines",
+                               line = list(color = "transparent"),
+                               showlegend = FALSE,
+                               name = "Upper SE"
         )
 
         # Lower bound with fill to the upper trace
         p <- plotly::add_trace(p,
-                       x = win, y = lower,
-                       type = "scatter", mode = "lines",
-                       fill = "tonexty",
-                       fillcolor = "rgba(0, 0, 255, 0.15)",
-                       line = list(color = "transparent"),
-                       showlegend = TRUE,
-                       name = "± 1 SE"
+                               x = win, y = lower,
+                               type = "scatter", mode = "lines",
+                               fill = "tonexty",
+                               fillcolor = "rgba(0, 0, 255, 0.15)",
+                               line = list(color = "transparent"),
+                               showlegend = TRUE,
+                               name = "± 1 SE"
         )
       }
 
@@ -2179,13 +2174,13 @@ server <- function(input, output, session){
           }
 
           p <- plotly::add_trace(p,
-                         x = x_vals, y = y_vals,
-                         type = "scatter", mode = "lines",
-                         line = list(color = pal[t_idx], width = 1),
-                         name = target$label,
-                         showlegend = TRUE,
-                         hoverinfo = "text",
-                         text = hover_text
+                                 x = x_vals, y = y_vals,
+                                 type = "scatter", mode = "lines",
+                                 line = list(color = pal[t_idx], width = 1),
+                                 name = target$label,
+                                 showlegend = TRUE,
+                                 hoverinfo = "text",
+                                 text = hover_text
           )
         }
 
@@ -2230,13 +2225,13 @@ server <- function(input, output, session){
           }
 
           p <- plotly::add_trace(p,
-                         x = x_vals, y = y_vals,
-                         type = "scatter", mode = "lines",
-                         line = list(color = hex_to_rgba(pal[t_idx], 0.5), width = 1),
-                         name = target$label,
-                         showlegend = TRUE,
-                         hoverinfo = "text",
-                         text = hover_text
+                                 x = x_vals, y = y_vals,
+                                 type = "scatter", mode = "lines",
+                                 line = list(color = hex_to_rgba(pal[t_idx], 0.5), width = 1),
+                                 name = target$label,
+                                 showlegend = TRUE,
+                                 hoverinfo = "text",
+                                 text = hover_text
           )
         }
 
@@ -2330,89 +2325,89 @@ server <- function(input, output, session){
 
   # Descriptive statistics
   output$desc_stats <- renderPrint({
-      req(input$viz_mode)
-      df <- data_reactive()
-      ids_to_process <- list()
+    req(input$viz_mode)
+    df <- data_reactive()
+    ids_to_process <- list()
 
-      # Determine which IDs to process
-      if (isTRUE(input$use_id)) {
-        req(input$idvar)
-        if (isTRUE(input$step_through)) {
-          ids_to_process <- all_ids()[id_index()]
-        } else {
-          ids_to_process <- input$selected_ids
-        }
+    # Determine which IDs to process
+    if (isTRUE(input$use_id)) {
+      req(input$idvar)
+      if (isTRUE(input$step_through)) {
+        ids_to_process <- all_ids()[id_index()]
       } else {
-        ids_to_process <- "All Data"
-        df$temp_id <- "All Data"
+        ids_to_process <- input$selected_ids
       }
+    } else {
+      ids_to_process <- "All Data"
+      df$temp_id <- "All Data"
+    }
 
-      id_col <- if (isTRUE(input$use_id)) input$idvar else "temp_id"
+    id_col <- if (isTRUE(input$use_id)) input$idvar else "temp_id"
 
-      # Filter for current plot
-      range <- visible_range()
-      zoom_active <- !is.null(range)
-      range_label <- NULL
+    # Filter for current plot
+    range <- visible_range()
+    zoom_active <- !is.null(range)
+    range_label <- NULL
 
-      if (zoom_active) {
-        # Determine which time column to filter on
-        time_col <- switch(input$viz_mode,
-                           "Raw time series"            = input$xvar,
-                           "Event + Continuous Overlay" = input$time_overlay,
-                           "Event durations (barcode)"  = input$barcode_time,
-                           diagnostics()$time[1]  # fallback for event-locked modes
-        )
-        if (!is.null(time_col) && time_col %in% names(df)) {
-          time_vals <- df[[time_col]]
+    if (zoom_active) {
+      # Determine which time column to filter on
+      time_col <- switch(input$viz_mode,
+                         "Raw time series"            = input$xvar,
+                         "Event + Continuous Overlay" = input$time_overlay,
+                         "Event durations (barcode)"  = input$barcode_time,
+                         diagnostics()$time[1]  # fallback for event-locked modes
+      )
+      if (!is.null(time_col) && time_col %in% names(df)) {
+        time_vals <- df[[time_col]]
 
-          # Handle both datetime and numeric x values from plotly
-          if (inherits(time_vals, c("POSIXct", "POSIXt"))) {
-            x_min <- as.POSIXct(as.numeric(range$min) / 1000, origin = "1970-01-01", tz = "UTC")
-            x_max <- as.POSIXct(as.numeric(range$max) / 1000, origin = "1970-01-01", tz = "UTC")
-            df <- df[!is.na(time_vals) & time_vals >= x_min & time_vals <= x_max, ]
-            range_label <- paste("From", format(x_min, "%H:%M:%S"),
-                                 "to", format(x_max, "%H:%M:%S"))
-          } else {
-            x_min <- as.numeric(range$min)
-            x_max <- as.numeric(range$max)
-            df <- df[!is.na(time_vals) & time_vals >= x_min & time_vals <= x_max, ]
-            range_label <- paste("From", round(x_min, 2), "to", round(x_max, 2), "seconds")
-          }
+        # Handle both datetime and numeric x values from plotly
+        if (inherits(time_vals, c("POSIXct", "POSIXt"))) {
+          x_min <- as.POSIXct(as.numeric(range$min) / 1000, origin = "1970-01-01", tz = "UTC")
+          x_max <- as.POSIXct(as.numeric(range$max) / 1000, origin = "1970-01-01", tz = "UTC")
+          df <- df[!is.na(time_vals) & time_vals >= x_min & time_vals <= x_max, ]
+          range_label <- paste("From", format(x_min, "%H:%M:%S"),
+                               "to", format(x_max, "%H:%M:%S"))
+        } else {
+          x_min <- as.numeric(range$min)
+          x_max <- as.numeric(range$max)
+          df <- df[!is.na(time_vals) & time_vals >= x_min & time_vals <= x_max, ]
+          range_label <- paste("From", round(x_min, 2), "to", round(x_max, 2), "seconds")
         }
       }
-      # Initialize variables to hold selection names
-      cont_vars <- NULL
-      event_vars <- NULL
-      calc_type <- NULL
+    }
+    # Initialize variables to hold selection names
+    cont_vars <- NULL
+    event_vars <- NULL
+    calc_type <- NULL
 
-      # 1. Determine Calculation Type based on Viz Mode
-      if (input$viz_mode == "Event + Continuous Overlay") {
-        req(input$signal_overlay, input$event_overlay)
-        cont_vars <- input$signal_overlay
-        event_vars <- input$event_overlay
-        calc_type <- "both"
+    # 1. Determine Calculation Type based on Viz Mode
+    if (input$viz_mode == "Event + Continuous Overlay") {
+      req(input$signal_overlay, input$event_overlay)
+      cont_vars <- input$signal_overlay
+      event_vars <- input$event_overlay
+      calc_type <- "both"
 
-      } else if (input$viz_mode == "Raw time series") {
-        req(input$yvar)
-        cont_vars <- input$yvar
-        calc_type <- "continuous"
+    } else if (input$viz_mode == "Raw time series") {
+      req(input$yvar)
+      cont_vars <- input$yvar
+      calc_type <- "continuous"
 
-      } else if (input$viz_mode == "Event durations (barcode)") {
-        req(input$barcode_var)
-        event_vars <- input$barcode_var
-        calc_type <- "event"
+    } else if (input$viz_mode == "Event durations (barcode)") {
+      req(input$barcode_var)
+      event_vars <- input$barcode_var
+      calc_type <- "event"
 
-      } else if (grepl("Event-locked", input$viz_mode)) {
-        req(input$signal_var)
-        cont_vars <- input$signal_var
-        calc_type <- "continuous"
-      }
+    } else if (grepl("Event-locked", input$viz_mode)) {
+      req(input$signal_var)
+      cont_vars <- input$signal_var
+      calc_type <- "continuous"
+    }
 
-      if (is.null(calc_type) || length(ids_to_process) == 0) {
-        cat("No statistics available for this view.")
-        return()
-      }
-      txt <- capture.output({
+    if (is.null(calc_type) || length(ids_to_process) == 0) {
+      cat("No statistics available for this view.")
+      return()
+    }
+    txt <- capture.output({
       # 2. Print General Header
       cat(paste(rep("=", 60), collapse = ""), "\n")
       if (calc_type == "both") {
@@ -2508,18 +2503,18 @@ server <- function(input, output, session){
 
     })
 
-      lines <- character(0)
-      lines <- c(lines, paste(rep("=", 60), collapse = ""))
+    lines <- character(0)
+    lines <- c(lines, paste(rep("=", 60), collapse = ""))
 
-      if (zoom_active && !is.null(range_label)) {
-        lines <- c(lines, paste(" Showing zoomed view:", range_label))
-        lines <- c(lines, paste(rep("=", 60), collapse = ""))
-      } else {
-        lines <- c(lines, " Showing full dataset")
-        lines <- c(lines, paste(rep("=", 60), collapse = ""))
-      }
-      stats_store(paste(txt, collapse = "\n"))
-      cat(txt, sep = "\n")
+    if (zoom_active && !is.null(range_label)) {
+      lines <- c(lines, paste(" Showing zoomed view:", range_label))
+      lines <- c(lines, paste(rep("=", 60), collapse = ""))
+    } else {
+      lines <- c(lines, " Showing full dataset")
+      lines <- c(lines, paste(rep("=", 60), collapse = ""))
+    }
+    stats_store(paste(txt, collapse = "\n"))
+    cat(txt, sep = "\n")
   })
 
   output$plot2 <- plotly::renderPlotly({
@@ -2555,8 +2550,8 @@ server <- function(input, output, session){
       req(time_var)
       time_vec <- df[[input$xvar]]
       p2 <- plotly::plot_ly(df, x = df[[time_var]], y = df[[input$second_yvar]],
-                    type = "scatter", mode = "lines",
-                    name = input$second_yvar)
+                            type = "scatter", mode = "lines",
+                            name = input$second_yvar)
 
       p2 <- p2 |> plotly::layout(
         title = list(text = paste("Secondary Plot:", input$second_yvar), font = list(size = fonts$title_size)),
@@ -2611,30 +2606,30 @@ server <- function(input, output, session){
       p2 <- plotly::plot_ly()
 
       p2 <- plotly::add_trace(p2,
-                      x = af_result$abcis, y = af_result$actual,
-                      type = "scatter", mode = "lines+markers",
-                      name = "Actual",
-                      line = list(color = "red"),
-                      marker = list(color = "red", symbol = "circle")
+                              x = af_result$abcis, y = af_result$actual,
+                              type = "scatter", mode = "lines+markers",
+                              name = "Actual",
+                              line = list(color = "red"),
+                              marker = list(color = "red", symbol = "circle")
       )
 
       if (isTRUE(input$af_show_shuffled) && !is.null(af_result$shuffled)) {
         p2 <- plotly::add_trace(p2,
-                        x = af_result$abcis_shuffled, y = af_result$shuffled,
-                        type = "scatter", mode = "lines+markers",
-                        name = "Shuffled",
-                        line = list(color = "blue", dash = "dash"),
-                        marker = list(color = "blue", symbol = "triangle-up")
+                                x = af_result$abcis_shuffled, y = af_result$shuffled,
+                                type = "scatter", mode = "lines+markers",
+                                name = "Shuffled",
+                                line = list(color = "blue", dash = "dash"),
+                                marker = list(color = "blue", symbol = "triangle-up")
         )
       }
 
       # Add reference line at AF = 1
       p2 <- plotly::add_trace(p2,
-                      x = range(af_result$abcis), y = c(1, 1),
-                      type = "scatter", mode = "lines",
-                      name = "AF = 1 (Poisson)",
-                      line = list(color = "gray", dash = "dot", width = 1),
-                      showlegend = TRUE
+                              x = range(af_result$abcis), y = c(1, 1),
+                              type = "scatter", mode = "lines",
+                              name = "AF = 1 (Poisson)",
+                              line = list(color = "gray", dash = "dot", width = 1),
+                              showlegend = TRUE
       )
 
       slope_text <- if (!is.null(af_result$slope)) {
@@ -2735,11 +2730,11 @@ server <- function(input, output, session){
       p2 <- plotly::plot_ly()
 
       p2 <- plotly::add_trace(p2,
-                      x = ad_result$tau, y = y_vals,
-                      type = "scatter", mode = "lines+markers",
-                      name = y_label,
-                      line = list(color = "blue"),
-                      marker = list(color = "blue", symbol = "circle")
+                              x = ad_result$tau, y = y_vals,
+                              type = "scatter", mode = "lines+markers",
+                              name = y_label,
+                              line = list(color = "blue"),
+                              marker = list(color = "blue", symbol = "circle")
       )
 
       p2 <- p2 |> plotly::layout(
@@ -2764,198 +2759,248 @@ server <- function(input, output, session){
   })
 
   # Generate accessible plot descriptions
-output$plot_description <- renderText({
-  req(input$sidebar_state == "viz")
-  req(input$viz_mode)
+  output$plot_description <- renderText({
+    req(input$sidebar_state == "viz")
+    req(input$viz_mode)
 
-  # Build description based on current plot
-  desc <- switch(input$viz_mode,
+    # Build description based on current plot
+    desc <- switch(input$viz_mode,
 
-    "Raw time series" = {
-      if (!is.null(input$xvar) && !is.null(input$yvar)) {
-        n_vars <- length(input$yvar)
-        var_text <- if (n_vars == 1) input$yvar[1] else paste(n_vars, "variables")
-        paste("Line plot showing", var_text, "over", input$xvar, "for",
-              ifelse(isTRUE(input$use_id) && !isTRUE(input$step_through),
-                     length(input$selected_ids), 1), "participant(s)")
-      } else {
-        "Raw time series plot - select variables to view description"
-      }
+                   "Raw time series" = {
+                     if (!is.null(input$xvar) && !is.null(input$yvar)) {
+                       n_vars <- length(input$yvar)
+                       var_text <- if (n_vars == 1) input$yvar[1] else paste(n_vars, "variables")
+                       paste("Line plot showing", var_text, "over", input$xvar, "for",
+                             ifelse(isTRUE(input$use_id) && !isTRUE(input$step_through),
+                                    length(input$selected_ids), 1), "participant(s)")
+                     } else {
+                       "Raw time series plot - select variables to view description"
+                     }
+                   },
+
+                   "Event + Continuous Overlay" = {
+                     if (!is.null(input$signal_overlay) && !is.null(input$event_overlay)) {
+                       paste("Overlay plot combining", length(input$signal_overlay), "continuous signal(s) with",
+                             length(input$event_overlay), "event type(s) over", input$time_overlay)
+                     } else {
+                       "Event overlay plot - select signals and events to view description"
+                     }
+                   },
+
+                   "Event durations (barcode)" = {
+                     if (!is.null(input$barcode_var)) {
+                       paste("Barcode plot showing event durations and patterns for", input$barcode_var,
+                             "over", input$barcode_time)
+                     } else {
+                       "Event barcode plot - select variables to view description"
+                     }
+                   },
+
+                   "Event-locked average" = {
+                     if (!is.null(input$event_var) && !is.null(input$signal_var)) {
+                       paste("Average response of", input$signal_var, "around", input$event_var, "events,",
+                             input$pre, "seconds before to", input$post, "seconds after event onset")
+                     } else {
+                       "Event-locked average - select event and signal variables to view description"
+                     }
+                   },
+
+                   "Event-locked single event" = {
+                     if (!is.null(input$event_var) && !is.null(input$signal_var)) {
+                       paste("Single event view of", input$signal_var, "around one", input$event_var, "event")
+                     } else {
+                       "Single event view - select variables to view description"
+                     }
+                   },
+
+                   "Select a visualization type to see plot description"
+    )
+
+    paste("Plot Description:", desc)
+  })
+
+  # Description for second plot
+  output$plot2_description <- renderText({
+    req(input$show_second_plot, input$second_plot_type)
+
+    desc <- switch(input$second_plot_type,
+                   "raw" = paste("📈 Secondary Plot: Line plot showing", input$second_yvar, "over time"),
+                   "allan_factor" = paste("📈 Allan Factor: Log-log plot of Allan Factor A(T) vs window size T for",
+                                          input$af_var,
+                                          "- slope > 0 indicates fractal/bursty temporal structure"),
+                   "allan_deviation" = paste("📈 Allan Deviation: Log-log plot of",
+                                             if(isTRUE(input$ad_show_variance)) "Allan Variance" else "Allan Deviation",
+                                             "vs tau for", input$ad_var)
+    )
+
+    desc
+  })
+
+  # Main Plot - HTML
+  output$toolbar_download_plot_html <- downloadHandler(
+    filename = function() {
+      paste0("plot_", Sys.Date(), ".html")
     },
-
-    "Event + Continuous Overlay" = {
-      if (!is.null(input$signal_overlay) && !is.null(input$event_overlay)) {
-        paste("Overlay plot combining", length(input$signal_overlay), "continuous signal(s) with",
-              length(input$event_overlay), "event type(s) over", input$time_overlay)
-      } else {
-        "Event overlay plot - select signals and events to view description"
-      }
-    },
-
-    "Event durations (barcode)" = {
-      if (!is.null(input$barcode_var)) {
-        paste("Barcode plot showing event durations and patterns for", input$barcode_var,
-              "over", input$barcode_time)
-      } else {
-        "Event barcode plot - select variables to view description"
-      }
-    },
-
-    "Event-locked average" = {
-      if (!is.null(input$event_var) && !is.null(input$signal_var)) {
-        paste("Average response of", input$signal_var, "around", input$event_var, "events,",
-              input$pre, "seconds before to", input$post, "seconds after event onset")
-      } else {
-        "Event-locked average - select event and signal variables to view description"
-      }
-    },
-
-    "Event-locked single event" = {
-      if (!is.null(input$event_var) && !is.null(input$signal_var)) {
-        paste("Single event view of", input$signal_var, "around one", input$event_var, "event")
-      } else {
-        "Single event view - select variables to view description"
-      }
-    },
-
-    "Select a visualization type to see plot description"
-  )
-
-  paste("Plot Description:", desc)
-})
-
-# Description for second plot
-output$plot2_description <- renderText({
-  req(input$show_second_plot, input$second_plot_type)
-
-  desc <- switch(input$second_plot_type,
-                 "raw" = paste("📈 Secondary Plot: Line plot showing", input$second_yvar, "over time"),
-                 "allan_factor" = paste("📈 Allan Factor: Log-log plot of Allan Factor A(T) vs window size T for",
-                                        input$af_var,
-                                        "- slope > 0 indicates fractal/bursty temporal structure"),
-                 "allan_deviation" = paste("📈 Allan Deviation: Log-log plot of",
-                                           if(isTRUE(input$ad_show_variance)) "Allan Variance" else "Allan Deviation",
-                                           "vs tau for", input$ad_var)
-  )
-
-  desc
-})
-
-# Main Plot - HTML
-output$toolbar_download_plot_html <- downloadHandler(
-  filename = function() {
-    paste0("plot_", Sys.Date(), ".html")
-  },
-  content = function(file) {
-    p <- plot_store()
-    # Convert to pure plotly widget (strips Shiny bindings)
-    p <- plotly::as_widget(p)
-    tmpfile <- tempfile(fileext = ".html")
-    htmlwidgets::saveWidget(p, tmpfile, selfcontained = TRUE)
-    file.copy(tmpfile, file, overwrite = TRUE)
-    unlink(tmpfile)
-  }
-)
-
-output$toolbar_download_plot_png <- downloadHandler(
-  filename = function() {
-    paste0("plot_", Sys.Date(), ".png")
-  },
-  content = function(file) {
-    p <- isolate(plot_store())
-
-    if (is.null(p)) {
-      showNotification("No plot available to save.", type = "error")
-      # Create a blank placeholder
-      png(file, width = 800, height = 600)
-      plot.new()
-      text(0.5, 0.5, "No plot available", cex = 2)
-      dev.off()
-      return()
+    content = function(file) {
+      p <- plot_store()
+      # Convert to pure plotly widget (strips Shiny bindings)
+      p <- plotly::as_widget(p)
+      tmpfile <- tempfile(fileext = ".html")
+      htmlwidgets::saveWidget(p, tmpfile, selfcontained = TRUE)
+      file.copy(tmpfile, file, overwrite = TRUE)
+      unlink(tmpfile)
     }
+  )
 
-    # Rebuild a clean plotly object from the stored data
-    p_clean <- plotly::plotly_build(p)
+  output$toolbar_download_plot_png <- downloadHandler(
+    filename = function() {
+      paste0("plot_", Sys.Date(), ".png")
+    },
+    content = function(file) {
+      p <- isolate(plot_store())
 
-    # Try saving as PNG
-    tryCatch({
-      save_plotly_png(p_clean, file)
-    }, error = function(e) {
-      message("PNG method failed, trying ggplot fallback: ", e$message)
-
-      # Last resort fallback: use plotly's built-in export
-      tryCatch({
-        tmphtml <- tempfile(fileext = ".html")
-        htmlwidgets::saveWidget(plotly::as_widget(p), tmphtml, selfcontained = TRUE)
-        webshot2::webshot(tmphtml, file, vwidth = 1200, vheight = 700, delay = 1)
-        unlink(tmphtml)
-      }, error = function(e2) {
-        showNotification(
-          paste("PNG export failed:", e2$message,
-                "\nTry installing kaleido: reticulate::py_install('kaleido')"),
-          type = "error", duration = 10
-        )
-        # Create error image
+      if (is.null(p)) {
+        showNotification("No plot available to save.", type = "error")
+        # Create a blank placeholder
         png(file, width = 800, height = 600)
         plot.new()
-        text(0.5, 0.5, "Export failed - see console", cex = 1.5)
+        text(0.5, 0.5, "No plot available", cex = 2)
         dev.off()
-      })
-    })
-  }
-)
-
-# Stats - Text File
-output$toolbar_download_stats_txt <- downloadHandler(
-  filename = function() {
-    paste0("stats_", Sys.Date(), ".txt")
-  },
-  content = function(file) {
-    stats_text <- stats_store()
-    if (is.null(stats_text) || stats_text == "") {
-      stats_text <- "No descriptive statistics available. Please generate a plot first."
-    }
-    writeLines(stats_text, file)
-  }
-)
-
-# Stats - CSV File
-output$toolbar_download_stats_csv <- downloadHandler(
-  filename = function() {
-    paste0("stats_", Sys.Date(), ".csv")
-  },
-  content = function(file) {
-    df <- data_reactive()
-
-    # Build stats dataframe based on current viz mode
-    stats_df <- tryCatch({
-
-      ids_to_process <- NULL
-
-      if (isTRUE(input$use_id)) {
-        id_col <- input$idvar
-        if (isTRUE(input$step_through)) {
-          ids_to_process <- all_ids()[id_index()]
-        } else {
-          ids_to_process <- input$selected_ids
-        }
-      } else {
-        df$temp_id <- "All Data"
-        id_col <- "temp_id"
-        ids_to_process <- "All Data"
+        return()
       }
 
-      results <- data.frame()
+      # Rebuild a clean plotly object from the stored data
+      p_clean <- plotly::plotly_build(p)
 
-      for (id in ids_to_process) {
-        sub_df <- df[df[[id_col]] == id, ]
+      # Try saving as PNG
+      tryCatch({
+        save_plotly_png(p_clean, file)
+      }, error = function(e) {
+        message("PNG method failed, trying ggplot fallback: ", e$message)
 
-        if (input$viz_mode == "Raw time series" && !is.null(input$yvar)) {
-          for (var_name in input$yvar) {
-            vals <- sub_df[[var_name]]
+        # Last resort fallback: use plotly's built-in export
+        tryCatch({
+          tmphtml <- tempfile(fileext = ".html")
+          htmlwidgets::saveWidget(plotly::as_widget(p), tmphtml, selfcontained = TRUE)
+          webshot2::webshot(tmphtml, file, vwidth = 1200, vheight = 700, delay = 1)
+          unlink(tmphtml)
+        }, error = function(e2) {
+          showNotification(
+            paste("PNG export failed:", e2$message,
+                  "\nTry installing kaleido: reticulate::py_install('kaleido')"),
+            type = "error", duration = 10
+          )
+          # Create error image
+          png(file, width = 800, height = 600)
+          plot.new()
+          text(0.5, 0.5, "Export failed - see console", cex = 1.5)
+          dev.off()
+        })
+      })
+    }
+  )
+
+  # Stats - Text File
+  output$toolbar_download_stats_txt <- downloadHandler(
+    filename = function() {
+      paste0("stats_", Sys.Date(), ".txt")
+    },
+    content = function(file) {
+      stats_text <- stats_store()
+      if (is.null(stats_text) || stats_text == "") {
+        stats_text <- "No descriptive statistics available. Please generate a plot first."
+      }
+      writeLines(stats_text, file)
+    }
+  )
+
+  # Stats - CSV File
+  output$toolbar_download_stats_csv <- downloadHandler(
+    filename = function() {
+      paste0("stats_", Sys.Date(), ".csv")
+    },
+    content = function(file) {
+      df <- data_reactive()
+
+      # Build stats dataframe based on current viz mode
+      stats_df <- tryCatch({
+
+        ids_to_process <- NULL
+
+        if (isTRUE(input$use_id)) {
+          id_col <- input$idvar
+          if (isTRUE(input$step_through)) {
+            ids_to_process <- all_ids()[id_index()]
+          } else {
+            ids_to_process <- input$selected_ids
+          }
+        } else {
+          df$temp_id <- "All Data"
+          id_col <- "temp_id"
+          ids_to_process <- "All Data"
+        }
+
+        results <- data.frame()
+
+        for (id in ids_to_process) {
+          sub_df <- df[df[[id_col]] == id, ]
+
+          if (input$viz_mode == "Raw time series" && !is.null(input$yvar)) {
+            for (var_name in input$yvar) {
+              vals <- sub_df[[var_name]]
+              results <- rbind(results, data.frame(
+                Participant = id,
+                Variable = var_name,
+                Type = "Continuous",
+                Mean = round(mean(vals, na.rm = TRUE), 4),
+                SD = round(sd(vals, na.rm = TRUE), 4),
+                Min = round(min(vals, na.rm = TRUE), 4),
+                Max = round(max(vals, na.rm = TRUE), 4),
+                Burstiness = NA,
+                stringsAsFactors = FALSE
+              ))
+            }
+
+          } else if (input$viz_mode == "Event + Continuous Overlay") {
+            for (c_var in input$signal_overlay) {
+              c_vals <- sub_df[[c_var]]
+              for (e_var in input$event_overlay) {
+                e_vals <- sub_df[[e_var]]
+                b <- get_burstiness(e_vals)
+                results <- rbind(results, data.frame(
+                  Participant = id,
+                  Variable = paste(c_var, "+", e_var),
+                  Type = "Overlay",
+                  Mean = round(mean(c_vals, na.rm = TRUE), 4),
+                  SD = round(sd(c_vals, na.rm = TRUE), 4),
+                  Min = round(min(c_vals, na.rm = TRUE), 4),
+                  Max = round(max(c_vals, na.rm = TRUE), 4),
+                  Burstiness = if (!is.na(b)) round(b, 4) else NA,
+                  stringsAsFactors = FALSE
+                ))
+              }
+            }
+
+          } else if (input$viz_mode == "Event durations (barcode)" && !is.null(input$barcode_var)) {
+            vals <- sub_df[[input$barcode_var]]
+            b <- get_burstiness(vals)
             results <- rbind(results, data.frame(
               Participant = id,
-              Variable = var_name,
+              Variable = input$barcode_var,
+              Type = "Event",
+              Mean = NA,
+              SD = NA,
+              Min = NA,
+              Max = NA,
+              Burstiness = if (!is.na(b)) round(b, 4) else NA,
+              stringsAsFactors = FALSE
+            ))
+
+          } else if (grepl("Event-locked", input$viz_mode) && !is.null(input$signal_var)) {
+            vals <- sub_df[[input$signal_var]]
+            results <- rbind(results, data.frame(
+              Participant = id,
+              Variable = input$signal_var,
               Type = "Continuous",
               Mean = round(mean(vals, na.rm = TRUE), 4),
               SD = round(sd(vals, na.rm = TRUE), 4),
@@ -2965,169 +3010,119 @@ output$toolbar_download_stats_csv <- downloadHandler(
               stringsAsFactors = FALSE
             ))
           }
+        }
 
-        } else if (input$viz_mode == "Event + Continuous Overlay") {
-          for (c_var in input$signal_overlay) {
-            c_vals <- sub_df[[c_var]]
-            for (e_var in input$event_overlay) {
-              e_vals <- sub_df[[e_var]]
-              b <- get_burstiness(e_vals)
+        results
+
+      }, error = function(e) {
+        data.frame(
+          Note = "Could not generate statistics. Please ensure a plot is displayed.",
+          stringsAsFactors = FALSE
+        )
+      })
+
+      write.csv(stats_df, file, row.names = FALSE)
+    }
+  )
+
+  # Save Everything - ZIP
+  output$toolbar_download_all <- downloadHandler(
+    filename = function() {
+      paste0("all_outputs_", Sys.Date(), ".zip")
+    },
+    content = function(zipfile) {
+      tmpdir <- tempdir()
+      files_to_zip <- c()
+
+      p1 <- isolate(plot_store())
+
+      if (!is.null(p1)) {
+        main_html <- file.path(tmpdir, "main_plot.html")
+        p1_widget <- plotly::as_widget(p1)
+        htmlwidgets::saveWidget(p1_widget, main_html, selfcontained = TRUE)
+        files_to_zip <- c(files_to_zip, main_html)
+
+        main_png <- file.path(tmpdir, "main_plot.png")
+        tryCatch({
+          p1_built <- plotly::plotly_build(p1)
+          save_plotly_png(p1_built, main_png)
+          files_to_zip <- c(files_to_zip, main_png)
+        }, error = function(e) {
+          message("Main PNG failed: ", e$message)
+        })
+      }
+
+      if (isTRUE(input$show_second_plot)) {
+        p2 <- isolate(plot2_store())
+        if (!is.null(p2)) {
+          second_html <- file.path(tmpdir, "second_plot.html")
+          p2_widget <- plotly::as_widget(p2)
+          htmlwidgets::saveWidget(p2_widget, second_html, selfcontained = TRUE)
+          files_to_zip <- c(files_to_zip, second_html)
+
+          second_png <- file.path(tmpdir, "second_plot.png")
+          tryCatch({
+            p2_built <- plotly::plotly_build(p2)
+            save_plotly_png(p2_built, second_png)
+            files_to_zip <- c(files_to_zip, second_png)
+          }, error = function(e) {
+            message("Second PNG failed: ", e$message)
+          })
+        }
+      }
+
+      stats_text <- isolate(stats_store())
+      if (!is.null(stats_text) && stats_text != "") {
+        stats_txt <- file.path(tmpdir, "stats.txt")
+        writeLines(stats_text, stats_txt)
+        files_to_zip <- c(files_to_zip, stats_txt)
+      }
+
+      stats_csv <- file.path(tmpdir, "stats.csv")
+      tryCatch({
+        df <- data_reactive()
+        ids_to_process <- NULL
+
+        if (isTRUE(input$use_id)) {
+          id_col <- input$idvar
+          if (isTRUE(input$step_through)) {
+            ids_to_process <- all_ids()[id_index()]
+          } else {
+            ids_to_process <- input$selected_ids
+          }
+        } else {
+          df$temp_id <- "All Data"
+          id_col <- "temp_id"
+          ids_to_process <- "All Data"
+        }
+
+        results <- data.frame()
+        for (id in ids_to_process) {
+          sub_df <- df[df[[id_col]] == id, ]
+          if (input$viz_mode == "Raw time series" && !is.null(input$yvar)) {
+            for (var_name in input$yvar) {
+              vals <- sub_df[[var_name]]
               results <- rbind(results, data.frame(
                 Participant = id,
-                Variable = paste(c_var, "+", e_var),
-                Type = "Overlay",
-                Mean = round(mean(c_vals, na.rm = TRUE), 4),
-                SD = round(sd(c_vals, na.rm = TRUE), 4),
-                Min = round(min(c_vals, na.rm = TRUE), 4),
-                Max = round(max(c_vals, na.rm = TRUE), 4),
-                Burstiness = if (!is.na(b)) round(b, 4) else NA,
+                Variable = var_name,
+                Mean = round(mean(vals, na.rm = TRUE), 4),
+                SD = round(sd(vals, na.rm = TRUE), 4),
+                Min = round(min(vals, na.rm = TRUE), 4),
+                Max = round(max(vals, na.rm = TRUE), 4),
                 stringsAsFactors = FALSE
               ))
             }
           }
-
-        } else if (input$viz_mode == "Event durations (barcode)" && !is.null(input$barcode_var)) {
-          vals <- sub_df[[input$barcode_var]]
-          b <- get_burstiness(vals)
-          results <- rbind(results, data.frame(
-            Participant = id,
-            Variable = input$barcode_var,
-            Type = "Event",
-            Mean = NA,
-            SD = NA,
-            Min = NA,
-            Max = NA,
-            Burstiness = if (!is.na(b)) round(b, 4) else NA,
-            stringsAsFactors = FALSE
-          ))
-
-        } else if (grepl("Event-locked", input$viz_mode) && !is.null(input$signal_var)) {
-          vals <- sub_df[[input$signal_var]]
-          results <- rbind(results, data.frame(
-            Participant = id,
-            Variable = input$signal_var,
-            Type = "Continuous",
-            Mean = round(mean(vals, na.rm = TRUE), 4),
-            SD = round(sd(vals, na.rm = TRUE), 4),
-            Min = round(min(vals, na.rm = TRUE), 4),
-            Max = round(max(vals, na.rm = TRUE), 4),
-            Burstiness = NA,
-            stringsAsFactors = FALSE
-          ))
         }
-      }
-
-      results
-
-    }, error = function(e) {
-      data.frame(
-        Note = "Could not generate statistics. Please ensure a plot is displayed.",
-        stringsAsFactors = FALSE
-      )
-    })
-
-    write.csv(stats_df, file, row.names = FALSE)
-  }
-)
-
-# Save Everything - ZIP
-output$toolbar_download_all <- downloadHandler(
-  filename = function() {
-    paste0("all_outputs_", Sys.Date(), ".zip")
-  },
-  content = function(zipfile) {
-    tmpdir <- tempdir()
-    files_to_zip <- c()
-
-    p1 <- isolate(plot_store())
-
-    if (!is.null(p1)) {
-      main_html <- file.path(tmpdir, "main_plot.html")
-      p1_widget <- plotly::as_widget(p1)
-      htmlwidgets::saveWidget(p1_widget, main_html, selfcontained = TRUE)
-      files_to_zip <- c(files_to_zip, main_html)
-
-      main_png <- file.path(tmpdir, "main_plot.png")
-      tryCatch({
-        p1_built <- plotly::plotly_build(p1)
-        save_plotly_png(p1_built, main_png)
-        files_to_zip <- c(files_to_zip, main_png)
-      }, error = function(e) {
-        message("Main PNG failed: ", e$message)
-      })
-    }
-
-    if (isTRUE(input$show_second_plot)) {
-      p2 <- isolate(plot2_store())
-      if (!is.null(p2)) {
-        second_html <- file.path(tmpdir, "second_plot.html")
-        p2_widget <- plotly::as_widget(p2)
-        htmlwidgets::saveWidget(p2_widget, second_html, selfcontained = TRUE)
-        files_to_zip <- c(files_to_zip, second_html)
-
-        second_png <- file.path(tmpdir, "second_plot.png")
-        tryCatch({
-          p2_built <- plotly::plotly_build(p2)
-          save_plotly_png(p2_built, second_png)
-          files_to_zip <- c(files_to_zip, second_png)
-        }, error = function(e) {
-          message("Second PNG failed: ", e$message)
-        })
-      }
-    }
-
-    stats_text <- isolate(stats_store())
-    if (!is.null(stats_text) && stats_text != "") {
-      stats_txt <- file.path(tmpdir, "stats.txt")
-      writeLines(stats_text, stats_txt)
-      files_to_zip <- c(files_to_zip, stats_txt)
-    }
-
-    stats_csv <- file.path(tmpdir, "stats.csv")
-    tryCatch({
-      df <- data_reactive()
-      ids_to_process <- NULL
-
-      if (isTRUE(input$use_id)) {
-        id_col <- input$idvar
-        if (isTRUE(input$step_through)) {
-          ids_to_process <- all_ids()[id_index()]
-        } else {
-          ids_to_process <- input$selected_ids
+        if (nrow(results) > 0) {
+          write.csv(results, stats_csv, row.names = FALSE)
+          files_to_zip <- c(files_to_zip, stats_csv)
         }
-      } else {
-        df$temp_id <- "All Data"
-        id_col <- "temp_id"
-        ids_to_process <- "All Data"
-      }
+      }, error = function(e) {})
 
-      results <- data.frame()
-      for (id in ids_to_process) {
-        sub_df <- df[df[[id_col]] == id, ]
-        if (input$viz_mode == "Raw time series" && !is.null(input$yvar)) {
-          for (var_name in input$yvar) {
-            vals <- sub_df[[var_name]]
-            results <- rbind(results, data.frame(
-              Participant = id,
-              Variable = var_name,
-              Mean = round(mean(vals, na.rm = TRUE), 4),
-              SD = round(sd(vals, na.rm = TRUE), 4),
-              Min = round(min(vals, na.rm = TRUE), 4),
-              Max = round(max(vals, na.rm = TRUE), 4),
-              stringsAsFactors = FALSE
-            ))
-          }
-        }
-      }
-      if (nrow(results) > 0) {
-        write.csv(results, stats_csv, row.names = FALSE)
-        files_to_zip <- c(files_to_zip, stats_csv)
-      }
-    }, error = function(e) {})
-
-    zip::zipr(zipfile, files_to_zip)
-  }
-)
+      zip::zipr(zipfile, files_to_zip)
+    }
+  )
 }
 
 shinyApp(ui, server)
