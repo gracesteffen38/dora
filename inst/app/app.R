@@ -1191,23 +1191,22 @@ server <- function(input, output, session){
     updateCheckboxInput(session, "is_interval_data", value = FALSE)
   })
 
-  # Replace your existing diagnostics reactive with this
   diagnostics <- reactive({
     df <- data_reactive()
     req(!is.null(df) && nrow(df) > 0)
     detect_dataset(df)
-  }) |> bindCache(data_reactive())
+  }) #|> bindCache(data_reactive())
 
-  output$diagnostics <- renderPrint({
-    d <- diagnostics()
-    cat(
-      "Rows:", d$n_rows, "\n",
-      "Columns:", d$n_cols, "\n\n",
-      "Numeric variables:\n", paste(d$numeric, collapse=", "), "\n\n",
-      "Binary/event variables:\n", paste(d$binary, collapse=", "), "\n\n",
-      "Candidate time variables:\n", paste(d$time, collapse=", ")
-    )
-  })
+  # output$diagnostics <- renderPrint({
+  #   d <- diagnostics()
+  #   cat(
+  #     "Rows:", d$n_rows, "\n",
+  #     "Columns:", d$n_cols, "\n\n",
+  #     "Numeric variables:\n", paste(d$numeric, collapse=", "), "\n\n",
+  #     "Binary/event variables:\n", paste(d$binary, collapse=", "), "\n\n",
+  #     "Candidate time variables:\n", paste(d$time, collapse=", ")
+  #   )
+  # })
   output$active_dataset_name <- renderText({
     if (last_data_source() == "file" && !is.null(input$file)) {
       paste("Currently using:", input$file$name)
