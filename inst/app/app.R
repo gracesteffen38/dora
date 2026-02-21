@@ -472,25 +472,28 @@ $(document).ready(function() {
 
         h4("Step 1: Upload Data"),
 
-        # Demo dropdown first
-        selectInput("demo_choice", "Select a demo dataset",
-                    choices = c("None" = "",
-                                "Infant Object Play" = "demo1",
-                                "Daily Music Bouts" = "demo2",
-                                "Mother-Child Interactions" = "demo3"),
-                    selected = "demo1"),  # default to first demo
-
-        tags$div(style = "text-align: center; padding: 8px; color: #666; font-weight: bold;",
-                 "— OR —"
+        # Two side-by-side buttons
+        fluidRow(
+          column(6,
+                 tags$label("Upload your own data", style = "display: block; margin-bottom: 5px;"),
+                 fileInput("file", NULL, accept = ".csv", buttonLabel = "Browse...",
+                           placeholder = "No file selected")
+          ),
+          column(6,
+                 tags$label("Or use a demo dataset", style = "display: block; margin-bottom: 5px;"),
+                 actionButton("open_demo_modal", "Select demo dataset...",
+                              class = "btn btn-default",
+                              style = "width: 100%; margin-top: 1px;",
+                              icon = icon("database"))
+          )
         ),
-
-        fileInput("file", "Upload your own CSV", accept = ".csv"),
 
         tags$div(
           style = "padding: 8px; background-color: #e8f4f8; border-left: 3px solid #17a2b8;
            border-radius: 4px; font-size: 0.9em; margin-top: 8px;",
           textOutput("active_dataset_name")
         ),
+
         #
         # conditionalPanel(
         #   condition = "input.data_source != 'upload'",
@@ -697,25 +700,109 @@ server <- function(input, output, session){
   plot2_store <- reactiveVal(NULL)
   stats_store <- reactiveVal(NULL)
 
-  last_data_source <- reactiveVal("demo")  # default to demo
+  #last_data_source <- reactiveVal("demo")  # default to demo
+  # Track active demo choice separately from the input
+  active_demo <- reactiveVal(NULL)
 
-  last_data_source <- reactiveVal("demo")
+  observeEvent(input$open_demo_modal, {
+    showModal(modalDialog(
+      title = "Select a Demo Dataset",
+      size = "m",
+      easyClose = TRUE,
+      footer = modalButton("Cancel"),
 
-  # File upload wins when a new file is chosen
-  observeEvent(input$file, {
-    last_data_source("file")
-    updateSelectInput(session, "demo_choice", selected = "")
+      tags$p(style = "color: #666; margin-bottom: 15px;",
+             "Select a dataset to load it and dismiss this menu."),
+
+      # Each dataset is a clickable panel
+      tags$div(
+        style = "cursor: pointer; padding: 12px; border: 1px solid #ddd;
+               border-radius: 6px; margin-bottom: 10px;",
+        onclick = "Shiny.setInputValue('demo_selected', 'demo1', {priority: 'event'})",
+        tags$strong("Infant Object Play"),
+        tags$p(style = "margin: 4px 0 0 0; color: #666; font-size: 0.9em;",
+               "Continuous time series with event-coded object interactions")
+      ),
+
+      tags$div(
+        style = "cursor: pointer; padding: 12px; border: 1px solid #ddd;
+               border-radius: 6px; margin-bottom: 10px;",
+        onclick = "Shiny.setInputValue('demo_selected', 'demo2', {priority: 'event'})",
+        tags$strong("Daily Music Bouts"),
+        tags$p(style = "margin: 4px 0 0 0; color: #666; font-size: 0.9em;",
+               "Event-coded music listening episodes across the day")
+      ),
+
+      tags$div(
+        style = "cursor: pointer; padding: 12px; border: 1px solid #ddd;
+               border-radius: 6px; margin-bottom: 10px;",
+        onclick = "Shiny.setInputValue('demo_selected', 'demo3', {priority: 'event'})",
+        tags$strong("Mother-Child Interactions"),
+        tags$p(style = "margin: 4px 0 0 0; color: #666; font-size: 0.9em;",
+               "Mixed continuous and event data from dyadic observations")
+      )
+    ))
+  })
+
+  # When a demo is clicked in the modal
+  observeEvent(input$demo_selected, {
+    active_demo(input$demo_selected)
+    last_data_source("demo")
+    data_converted(NULL)
+    conversion_done(FALSE)
+    removeModal()
   }, ignoreInit = TRUE)
 
-  # Demo wins when a new demo is chosen
-  observeEvent(input$demo_choice, {
-    if (isTruthy(input$demo_choice) && input$demo_choice != "") {
-      last_data_source("demo")
-    }
-  }, ignoreInit = FALSE)  # FALSE here so demo1 loads on startup
+  # When a file is uploaded
+  observeEvent(input$file, {
+    active_demo(NULL)
+    last_data_source("file")
+    data_converted(NULL)
+    conversion_done(FALSE)
+  }, ignoreInit = TRUE)
 
-  file_is_newer <- reactive({
-    last_data_source() == "file"
+  output$hasData <- reactive({
+    (last_data_source() == "demo" && !is.null(active_demo())) ||
+      (last_data_source() == "file" && !is.null(input$file))
+  })
+  outputOptions(output, "hasData", suspendWhenHidden = FALSE)
+  # Store both original and converted data
+  data_original <- reactive({
+
+    df <- if (last_data_source() == "demo") {
+      req(!is.null(active_demo()))
+      demo_file <- switch(active_demo(),
+                          "demo1" = system.file("extdata", "demo_data_1.csv", package = "dora"),
+                          "demo2" = system.file("extdata", "demo_data_2.csv", package = "dora"),
+                          "demo3" = system.file("extdata", "demo_data_3.csv", package = "dora")
+      )
+      if (demo_file == "") stop("Demo file not found. Try reinstalling the package.")
+      readr::read_csv(demo_file, show_col_types = FALSE)
+
+    } else {
+      req(input$file)
+      readr::read_csv(input$file$datapath, show_col_types = FALSE)
+    }
+
+    # Datetime parsing unchanged
+    for (col in names(df)) {
+      if (is.character(df[[col]])) {
+        if (any(grepl("\\d{4}-\\d{2}-\\d{2}", df[[col]][1:min(10, nrow(df))]), na.rm = TRUE) ||
+            any(grepl("\\d{2}:\\d{2}:\\d{2}", df[[col]][1:min(10, nrow(df))]), na.rm = TRUE)) {
+          parsed <- suppressWarnings(
+            lubridate::parse_date_time(df[[col]],
+                                       orders = c("ymd HMS", "ymd HM", "dmy HMS", "dmy HM",
+                                                  "mdy HMS", "mdy HM", "HMS", "HM",
+                                                  "ymd", "dmy", "mdy"),
+                                       quiet = TRUE)
+          )
+          if (sum(!is.na(parsed)) > 0.5 * length(parsed)) {
+            df[[col]] <- parsed
+          }
+        }
+      }
+    }
+    df
   })
 
   accessibility <- reactiveValues(
@@ -1125,52 +1212,6 @@ server <- function(input, output, session){
     updateTextInput(session,"sidebar_state",value="data")
   })
 
-  output$hasData <- reactive({
-    # True if any valid data source is currently active
-    has_demo <- isTruthy(input$demo_choice) && input$demo_choice != ""
-    has_file <- !is.null(input$file)
-    has_demo || has_file
-  })
-  outputOptions(output, "hasData", suspendWhenHidden = FALSE)
-  # Store both original and converted data
-  data_original <- reactive({
-
-    df <- if (isTruthy(input$demo_choice) && input$demo_choice != "" && last_data_source() == "demo") {
-      demo_file <- switch(input$demo_choice,
-                          "demo1" = system.file("extdata", "demo_data_1.csv", package = "dora"),
-                          "demo2" = system.file("extdata", "demo_data_2.csv", package = "dora"),
-                          "demo3" = system.file("extdata", "demo_data_3.csv", package = "dora")
-      )
-      if (demo_file == "") stop("Demo file not found. Try reinstalling the package.")
-      readr::read_csv(demo_file, show_col_types = FALSE)
-
-    } else if (!is.null(input$file)) {
-      readr::read_csv(input$file$datapath, show_col_types = FALSE)
-
-    } else {
-      return(NULL)
-    }
-
-    # Datetime parsing unchanged
-    for (col in names(df)) {
-      if (is.character(df[[col]])) {
-        if (any(grepl("\\d{4}-\\d{2}-\\d{2}", df[[col]][1:min(10, nrow(df))]), na.rm = TRUE) ||
-            any(grepl("\\d{2}:\\d{2}:\\d{2}", df[[col]][1:min(10, nrow(df))]), na.rm = TRUE)) {
-          parsed <- suppressWarnings(
-            lubridate::parse_date_time(df[[col]],
-                                       orders = c("ymd HMS", "ymd HM", "dmy HMS", "dmy HM",
-                                                  "mdy HMS", "mdy HM", "HMS", "HM",
-                                                  "ymd", "dmy", "mdy"),
-                                       quiet = TRUE)
-          )
-          if (sum(!is.na(parsed)) > 0.5 * length(parsed)) {
-            df[[col]] <- parsed
-          }
-        }
-      }
-    }
-    df
-  }) |> bindCache(input$file$datapath, input$demo_choice) # check on exactly what this does - got idea from https://engineering-shiny.org/optimizing-shiny-code.html
 
   data_converted <- reactiveVal(NULL)
   conversion_done <- reactiveVal(FALSE)
@@ -1213,15 +1254,15 @@ server <- function(input, output, session){
   output$active_dataset_name <- renderText({
     if (last_data_source() == "file" && !is.null(input$file)) {
       paste("Currently using:", input$file$name)
-    } else if (isTruthy(input$demo_choice) && input$demo_choice != "") {
-      label <- switch(input$demo_choice,
+    } else if (last_data_source() == "demo" && !is.null(active_demo())) {
+      label <- switch(active_demo(),
                       "demo1" = "Infant Object Play",
                       "demo2" = "Daily Music Bouts",
                       "demo3" = "Mother-Child Interactions"
       )
       paste("Currently using:", label)
     } else {
-      "No dataset selected"
+      "No dataset selected — browse for a file or select a demo above"
     }
   })
   # Interval data conversion UI
