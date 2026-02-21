@@ -446,15 +446,15 @@ $(document).ready(function() {
                                     class = "btn btn-outline-secondary btn-sm",
                                     type = "button",
                                     title = "Help",
-                                    style = "width: 36px; height: 36px; padding: 0;
-                     border-radius: 50%; border: 2px solid #6c757d;",
+                                    style = "width: 36px; height: 36px; padding: 5px;
+                     border-radius: 50%; border: 2px solid #6c757d; font-size: 18px;",
                                     icon("circle-question")),
                         tags$div(id = "help-dropdown-menu",
                                  style = "display: none; position: absolute; right: 0; top: 100%;
                       min-width: 220px; background: white; border: 1px solid #ddd;
                       border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
                       z-index: 2000; padding: 8px 0;",
-                                 tags$a(href = "https://forms.gle/YOUR_FORM_ID_HERE",
+                                 tags$a(href = "https://forms.gle/G3MxUSmnZzFqC5Yj8",
                                         target = "_blank",
                                         style = "display: block; padding: 8px 16px; color: #333;
                 text-decoration: none; font-size: 14px;",
@@ -482,7 +482,7 @@ $(document).ready(function() {
 
         fileInput("file", "Upload your own CSV", accept = ".csv"),
 
-        tags$div(style = "text-align: center; padding: 0px; color: #666; font-weight: bold;",
+        tags$div(style = "text-align: center; padding: 20px; color: #666; font-weight: bold;",
                  "— OR —"
         ),
 
@@ -497,14 +497,6 @@ $(document).ready(function() {
           textOutput("active_dataset_name")
         ),
 
-        #
-        # conditionalPanel(
-        #   condition = "input.data_source != 'upload'",
-        #   tags$div(
-        #     style = "padding: 8px; background-color: #f8f9fa; border-radius: 4px; font-size: 0.9em; color: #666;",
-        #     "Demo data loaded. Switch to 'Upload your own CSV' to use your own data."
-        #   )
-        # ),
         tags$div(id = "file-help", class = "help-text", style = "font-size: 0.9em; color: #666; display: none;",
                  "Upload a CSV file containing your time-series data"),
         conditionalPanel(
@@ -512,7 +504,7 @@ $(document).ready(function() {
           actionButton("peek_data", "Peek at data",
                        class = "btn-sm btn-outline-info",
                        icon = icon("table"),
-                       style = "margin-top: 5px;")
+                       style = "margin-top: 5px; align:center;")
         ),
         conditionalPanel(
           condition = "output.hasData == 'true'",
