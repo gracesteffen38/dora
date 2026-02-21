@@ -546,7 +546,7 @@ $(document).ready(function() {
                                     title = "Help (Alt+H)",
                                     style = "width: 36px; height: 36px; padding: 5px;
                      border-radius: 50%; border: none;
-                     background: transparent; color: #6c757d; font-size: 18px;",
+                     background: transparent; color: #6c757d; font-size: 24px;",
                                     icon("circle-question")),
                         tags$div(id = "help-dropdown-menu",
                                  style = "display: none; position: absolute; right: 0; top: 100%;
