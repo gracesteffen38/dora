@@ -731,23 +731,23 @@ server <- function(input, output, session){
         onclick = "Shiny.setInputValue('demo_selected', 'demo1', {priority: 'event'})",
         tags$strong("Infant Object Play"),
         tags$p(style = "margin: 4px 0 0 0; color: #666; font-size: 0.9em;",
-               "Continuous time series with event-coded object interactions")
+               "Event-coded object interactions")
       ),
       tags$div(
         style = "cursor: pointer; padding: 12px; border: 1px solid #ddd;
                border-radius: 6px; margin-bottom: 10px; background: white;",
         onclick = "Shiny.setInputValue('demo_selected', 'demo2', {priority: 'event'})",
-        tags$strong("Daily Music Bouts"),
+        tags$strong("Mother-Child Interactions"),
         tags$p(style = "margin: 4px 0 0 0; color: #666; font-size: 0.9em;",
-               "Event-coded music listening episodes across the day")
+               "Mixed continuous and event data from dyadic observations")
       ),
       tags$div(
         style = "cursor: pointer; padding: 12px; border: 1px solid #ddd;
                border-radius: 6px; margin-bottom: 10px; background: white;",
         onclick = "Shiny.setInputValue('demo_selected', 'demo3', {priority: 'event'})",
-        tags$strong("Mother-Child Interactions"),
+        tags$strong("Daily Music Bouts"),
         tags$p(style = "margin: 4px 0 0 0; color: #666; font-size: 0.9em;",
-               "Mixed continuous and event data from dyadic observations")
+               "Event-coded music listening episodes across the day")
       )
     ))
   })
@@ -1265,8 +1265,8 @@ server <- function(input, output, session){
     } else if (last_data_source() == "demo" && !is.null(active_demo())) {
       label <- switch(active_demo(),
                       "demo1" = "Infant Object Play",
-                      "demo2" = "Daily Music Bouts",
-                      "demo3" = "Mother-Child Interactions"
+                      "demo2" = "Mother-Child Interactions",
+                      "demo3" = "Daily Music Bouts"
       )
       paste("Currently using:", label)
     } else {
