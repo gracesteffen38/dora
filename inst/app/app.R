@@ -439,21 +439,21 @@ $(document).ready(function() {
                         )
                )
              ),
-             # Help button - add after the save menu div
+             # Help button
              tags$div(
                tags$div(class = "btn-group",
                         tags$button(id = "help-dropdown-btn",
                                     class = "btn btn-outline-secondary btn-sm",
                                     type = "button",
                                     title = "Help",
-                                    style = "width: 36px; height: 36px; padding: 5px;
+                                    style = "width: 36px; height: 36px; padding: 0;
                      border-radius: 50%; border: 2px solid #6c757d; font-size: 18px;",
                                     icon("circle-question")),
                         tags$div(id = "help-dropdown-menu",
                                  style = "display: none; position: absolute; right: 0; top: 100%;
                       min-width: 220px; background: white; border: 1px solid #ddd;
                       border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                      z-index: 2000; padding: 8px 0;",
+                      z-index: 2000; padding: 8px;",
                                  tags$a(href = "https://forms.gle/G3MxUSmnZzFqC5Yj8",
                                         target = "_blank",
                                         style = "display: block; padding: 8px 16px; color: #333;
@@ -501,10 +501,14 @@ $(document).ready(function() {
                  "Upload a CSV file containing your time-series data"),
         conditionalPanel(
           condition = "output.hasData == 'true'",
-          actionButton("peek_data", "Peek at data",
-                       class = "btn-sm btn-outline-info",
-                       icon = icon("table"),
-                       style = "margin-top: 5px; align:center;")
+          fluidRow(
+            column(12, align = "center",
+                   actionButton("peek_data", "Peek at data",
+                                class = "btn-sm btn-outline-info",
+                                icon = icon("table"),
+                                style = "margin-top: 5px; align:center;")
+            )
+
         ),
         conditionalPanel(
           condition = "output.hasData == 'true'",
