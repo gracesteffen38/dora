@@ -472,16 +472,16 @@ $(document).ready(function() {
 
         h4("Step 1: Upload Data"),
 
-        tags$label("Upload your own data", style = "display: block; margin-bottom: 5px;"),
-        fileInput("file", NULL, accept = ".csv", buttonLabel = "Browse...",
-                  placeholder = "No file selected"),
+        fileInput("file", "Upload your own CSV", accept = ".csv"),
 
-        tags$label("Or use a demo dataset", style = "display: block; margin-bottom: 5px;"),
-        actionButton("open_demo_modal", "Select demo dataset...",
+        tags$div(style = "text-align: center; padding: 8px; color: #666; font-weight: bold;",
+                 "— OR —"
+        ),
+
+        actionButton("open_demo_modal", "Select a demo dataset...",
                      class = "btn btn-default",
-                     style = "width: 100%; margin-top: 1px;",
-                     icon = icon("database"))
-
+                     style = "width: 100%;",
+                     icon = icon("database")),
 
         tags$div(
           style = "padding: 8px; background-color: #e8f4f8; border-left: 3px solid #17a2b8;
@@ -1224,11 +1224,17 @@ server <- function(input, output, session){
   #   conversion_done(FALSE)
   #   updateCheckboxInput(session, "is_interval_data", value = FALSE)
   # })
-  observeEvent(list(input$demo_choice, input$file), {
+  observeEvent(input$demo_selected, {
     data_converted(NULL)
     conversion_done(FALSE)
     updateCheckboxInput(session, "is_interval_data", value = FALSE)
-  })
+  }, ignoreInit = TRUE)
+
+  observeEvent(input$file, {
+    data_converted(NULL)
+    conversion_done(FALSE)
+    updateCheckboxInput(session, "is_interval_data", value = FALSE)
+  }, ignoreInit = TRUE)
 
   diagnostics <- reactive({
     df <- data_reactive()
