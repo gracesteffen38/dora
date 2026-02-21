@@ -201,6 +201,37 @@ $(document).on('click', function(e) {
   }
 });
 
+// Help dropdown toggle
+$(document).on('click', '#help-dropdown-btn', function(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  var helpMenu = document.getElementById('help-dropdown-menu');
+  if (helpMenu) {
+    var isVisible = helpMenu.style.display !== 'none';
+    helpMenu.style.display = isVisible ? 'none' : 'block';
+  }
+  // Close other menus
+  var saveMenu = document.getElementById('save-dropdown-menu');
+  var accMenu = document.getElementById('accessibility-dropdown-menu');
+  if (saveMenu) saveMenu.style.display = 'none';
+  if (accMenu) accMenu.style.display = 'none';
+});
+
+// Close help menu when clicking outside
+$(document).on('click', function(e) {
+  if (!$(e.target).closest('#help-dropdown-btn, #help-dropdown-menu').length) {
+    var helpMenu = document.getElementById('help-dropdown-menu');
+    if (helpMenu) helpMenu.style.display = 'none';
+  }
+});
+
+// Listen for plotly zoom/pan events
+$(document).on('shiny:connected', function() {
+  document.getElementById('plot').on('plotly_relayout', function(eventData) {
+    Shiny.setInputValue('plot_relayout', eventData, {priority: 'event'});
+  });
+});
+
 $(document).ready(function() {
   // ARIA connections
   $('#file').attr('aria-describedby', 'file-help');
@@ -396,6 +427,30 @@ $(document).ready(function() {
                                           download = "", target = "_blank", style = "width: 100%; display: block; text-align: center;",
                                           "Save Everything (ZIP)")
                                  )
+                        )
+               )
+             ),
+             # Help button - add after the save menu div
+             tags$div(
+               tags$div(class = "btn-group",
+                        tags$button(id = "help-dropdown-btn",
+                                    class = "btn btn-outline-secondary btn-sm",
+                                    type = "button",
+                                    title = "Help",
+                                    style = "border-radius: 50%; width: 36px; height: 36px;
+                         padding: 0; font-size: 16px; border: 2px solid #6c757d;",
+                                    HTML("&#9432;")),  # circled i character
+                        tags$div(id = "help-dropdown-menu",
+                                 style = "display: none; position: absolute; right: 0; top: 100%;
+                      min-width: 220px; background: white; border: 1px solid #ddd;
+                      border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                      z-index: 2000; padding: 8px 0;",
+                                 tags$a(href = paste0("mailto:dorashinyapp@gmail.com",
+                                                      "?subject=", utils::URLencode("DORA Bug Report"),
+                                                      "&body=", utils::URLencode("Describe the bug:\n\nSteps to reproduce:\n\nExpected behaviour:\n\nActual behaviour:")),
+                                        style = "display: block; padding: 8px 16px; color: #333;
+                      text-decoration: none; font-size: 14px;",
+                                        icon("bug"), " Report a bug...")
                         )
                )
              )
@@ -757,7 +812,25 @@ server <- function(input, output, session){
     }
     return(TRUE)
   }
-  # Helper function to get font sizes based on accessibility settings
+
+  # Get current plot selection for descriptive stats
+  visible_range <- reactive({
+    relayout <- input$plot_relayout
+
+    # If no zoom has happened or axis was reset, return NULL (show all data)
+    if (is.null(relayout)) return(NULL)
+
+    x_min <- relayout[["xaxis.range[0]"]]
+    x_max <- relayout[["xaxis.range[1]"]]
+
+    # autorange means the user reset/unzoomed
+    if (!is.null(relayout[["xaxis.autorange"]]) &&
+        isTRUE(relayout[["xaxis.autorange"]])) return(NULL)
+
+    if (is.null(x_min) || is.null(x_max)) return(NULL)
+
+    list(min = x_min, max = x_max)
+  })
 
   # Update CSS based on accessibility settings
   observeEvent(
@@ -1118,8 +1191,11 @@ server <- function(input, output, session){
     updateCheckboxInput(session, "is_interval_data", value = FALSE)
   })
 
+  # Replace your existing diagnostics reactive with this
   diagnostics <- reactive({
-    detect_dataset(data_reactive())
+    df <- data_reactive()
+    req(!is.null(df) && nrow(df) > 0)
+    detect_dataset(df)
   }) |> bindCache(data_reactive())
 
   output$diagnostics <- renderPrint({
@@ -1148,7 +1224,7 @@ server <- function(input, output, session){
   })
   # Interval data conversion UI
   output$interval_conversion_ui <- renderUI({
-    df <- data_original()
+    df <- data_reactive() #previously data_original() - does not update with new selection...
     all_vars <- names(df)
 
     tagList(
@@ -1283,6 +1359,12 @@ server <- function(input, output, session){
       )
     })
   }
+  observeEvent(data_reactive(), {
+    selected_time(NULL)
+    selected_signal(NULL)
+    selected_event(NULL)
+  }, ignoreInit = TRUE)
+
   observeEvent(input$peek_data, {
     df <- data_reactive()
     showModal(modalDialog(
@@ -1402,6 +1484,7 @@ server <- function(input, output, session){
 
   # Variable selection
   output$var_ui <- renderUI({
+    data_reactive()
     d <- diagnostics()
     tagList(
       selectInput("xvar", "Time (x) variable", d$time, selected = selected_time()),
@@ -1410,6 +1493,7 @@ server <- function(input, output, session){
   })
 
   output$event_ui <- renderUI({
+    data_reactive()
     d <- diagnostics()
     tagList(
       selectInput("event_var", "Event variable (0/1)", d$binary, selected = selected_event()),
@@ -1418,6 +1502,7 @@ server <- function(input, output, session){
   })
 
   output$second_plot_ui <- renderUI({
+    data_reactive()
     d <- diagnostics()
 
     tagList(
@@ -1457,6 +1542,7 @@ server <- function(input, output, session){
   })
 
   output$overlay_ui <- renderUI({
+    data_reactive()
     d <- diagnostics()
     df <- data_reactive()
 
@@ -1478,6 +1564,7 @@ server <- function(input, output, session){
   })
 
   output$barcode_ui <- renderUI({
+    data_reactive()
     d <- diagnostics()
     df <- data_reactive()
 
@@ -2201,9 +2288,6 @@ server <- function(input, output, session){
 
   # Descriptive statistics
   output$desc_stats <- renderPrint({
-
-
-
       req(input$viz_mode)
       df <- data_reactive()
       ids_to_process <- list()
@@ -2223,6 +2307,37 @@ server <- function(input, output, session){
 
       id_col <- if (isTRUE(input$use_id)) input$idvar else "temp_id"
 
+      # Filter for current plot
+      range <- visible_range()
+      zoom_active <- !is.null(range)
+      range_label <- NULL
+
+      if (zoom_active) {
+        # Determine which time column to filter on
+        time_col <- switch(input$viz_mode,
+                           "Raw time series"            = input$xvar,
+                           "Event + Continuous Overlay" = input$time_overlay,
+                           "Event durations (barcode)"  = input$barcode_time,
+                           diagnostics()$time[1]  # fallback for event-locked modes
+        )
+        if (!is.null(time_col) && time_col %in% names(df)) {
+          time_vals <- df[[time_col]]
+
+          # Handle both datetime and numeric x values from plotly
+          if (inherits(time_vals, c("POSIXct", "POSIXt"))) {
+            x_min <- as.POSIXct(as.numeric(range$min) / 1000, origin = "1970-01-01", tz = "UTC")
+            x_max <- as.POSIXct(as.numeric(range$max) / 1000, origin = "1970-01-01", tz = "UTC")
+            df <- df[!is.na(time_vals) & time_vals >= x_min & time_vals <= x_max, ]
+            range_label <- paste("From", format(x_min, "%H:%M:%S"),
+                                 "to", format(x_max, "%H:%M:%S"))
+          } else {
+            x_min <- as.numeric(range$min)
+            x_max <- as.numeric(range$max)
+            df <- df[!is.na(time_vals) & time_vals >= x_min & time_vals <= x_max, ]
+            range_label <- paste("From", round(x_min, 2), "to", round(x_max, 2), "seconds")
+          }
+        }
+      }
       # Initialize variables to hold selection names
       cont_vars <- NULL
       event_vars <- NULL
@@ -2349,11 +2464,20 @@ server <- function(input, output, session){
         }
       }
 
-    })  # END capture.output()
+    })
 
-    stats_store(paste(txt, collapse = "\n"))
+      lines <- character(0)
+      lines <- c(lines, paste(rep("=", 60), collapse = ""))
 
-    cat(txt, sep = "\n")
+      if (zoom_active && !is.null(range_label)) {
+        lines <- c(lines, paste(" Showing zoomed view:", range_label))
+        lines <- c(lines, paste(rep("=", 60), collapse = ""))
+      } else {
+        lines <- c(lines, " Showing full dataset")
+        lines <- c(lines, paste(rep("=", 60), collapse = ""))
+      }
+      stats_store(paste(txt, collapse = "\n"))
+      cat(txt, sep = "\n")
   })
 
   output$plot2 <- plotly::renderPlotly({
@@ -2378,6 +2502,12 @@ server <- function(input, output, session){
     # additional time series
     if (input$second_plot_type == "raw") {
       req(input$second_yvar)
+      labs <- get_labels(
+        default_title = paste("Raw Time Series"),
+        default_x = input$xvar,
+        default_y = "Value",
+        default_legend = if(is_single_view) "Variable" else "Participant"
+      )
 
       time_var <- selected_time()
       req(time_var)
