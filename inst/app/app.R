@@ -546,7 +546,7 @@ $(document).ready(function() {
                                     title = "Help (Alt+H)",
                                     style = "width: 36px; height: 36px; padding: 5px;
                      border-radius: 50%; border: none;
-                     background: transparent; color: #6c757d;",
+                     background: transparent; color: #6c757d; font-size:16px;",
                                     icon("circle-question")),
                         tags$div(id = "help-dropdown-menu",
                                  style = "display: none; position: absolute; right: 0; top: 100%;
@@ -580,6 +580,7 @@ $(document).ready(function() {
         h4("Step 1: Upload Data"),
 
         fileInput("file", "Upload your own CSV", accept = ".csv"),
+        div(style = "margin-top: -30px"),
 
         tags$div(style = "text-align: center; padding: 20px; color: #666; font-weight: bold;",
                  "— OR —"
@@ -609,7 +610,7 @@ $(document).ready(function() {
                                 style = "margin-top: 5px; align:center;")
             )
 
-        )
+          )
         ),
         conditionalPanel(
           condition = "output.hasData == 'true'",
