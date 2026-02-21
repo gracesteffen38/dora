@@ -546,7 +546,7 @@ $(document).ready(function() {
                                     title = "Help (Alt+H)",
                                     style = "width: 36px; height: 36px; padding: 5px;
                      border-radius: 50%; border: none;
-                     background: transparent; color: #6c757d; font-size:16px;",
+                     background: transparent; color: #6c757d; font-size: 18px;",
                                     icon("circle-question")),
                         tags$div(id = "help-dropdown-menu",
                                  style = "display: none; position: absolute; right: 0; top: 100%;
@@ -580,9 +580,9 @@ $(document).ready(function() {
         h4("Step 1: Upload Data"),
 
         fileInput("file", "Upload your own CSV", accept = ".csv"),
-        div(style = "margin-top: -30px"),
+        div(style = "margin-top: -40px"),
 
-        tags$div(style = "text-align: center; padding: 20px; color: #666; font-weight: bold;",
+        tags$div(style = "text-align: center; padding: 10px; color: #666; font-weight: bold;",
                  "— OR —"
         ),
 
@@ -601,6 +601,7 @@ $(document).ready(function() {
                  "Upload a CSV file containing your time-series data"),
         conditionalPanel(
           condition = "output.hasData == 'true'",
+          div(style = "margin-top: 10px"),
           fluidRow(
             column(12, align = "center",
                    actionButton("peek_data", "Peek at data",
