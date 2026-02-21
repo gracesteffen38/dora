@@ -696,6 +696,9 @@ server <- function(input, output, session){
   stats_store <- reactiveVal(NULL)
   data_converted <- reactiveVal(NULL)
   conversion_done <- reactiveVal(FALSE)
+  last_data_source <- reactiveVal("demo")
+  # Track active demo choice separately from the input
+  active_demo <- reactiveVal(NULL)
 
   data_reactive <- reactive({
     if (conversion_done() && !is.null(data_converted())) {
@@ -704,10 +707,6 @@ server <- function(input, output, session){
       data_original()
     }
   })
-
-  last_data_source <- reactiveVal("demo")  # default to demo
-  # Track active demo choice separately from the input
-  active_demo <- reactiveVal(NULL)
 
   observeEvent(input$open_demo_modal, {
     showModal(modalDialog(
@@ -761,12 +760,7 @@ server <- function(input, output, session){
     conversion_done(FALSE)
   }, ignoreInit = TRUE)
 
-  output$hasData <- renderText({
-    has <- (last_data_source() == "demo" && !is.null(active_demo())) ||
-      (last_data_source() == "file" && !is.null(input$file))
-    if (has) "true" else "false"
-  })
-  outputOptions(output, "hasData", suspendWhenHidden = FALSE)
+
   # Store both original and converted data
   data_original <- reactive({
 
@@ -805,6 +799,13 @@ server <- function(input, output, session){
     }
     df
   })
+
+  output$hasData <- renderText({
+    has <- (last_data_source() == "demo" && !is.null(active_demo())) ||
+      (last_data_source() == "file" && !is.null(input$file))
+    if (has) "true" else "false"
+  })
+  outputOptions(output, "hasData", suspendWhenHidden = FALSE)
 
   accessibility <- reactiveValues(
     high_contrast   = FALSE,
