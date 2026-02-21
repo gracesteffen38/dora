@@ -1167,7 +1167,7 @@ server <- function(input, output, session){
       }
     }
     df
-  }) |> bindCache(input$file$datapath) # check on exactly what this does - got idea from https://engineering-shiny.org/optimizing-shiny-code.html
+  }) |> bindCache(input$file$datapath, input$demo_choice) # check on exactly what this does - got idea from https://engineering-shiny.org/optimizing-shiny-code.html
 
   data_converted <- reactiveVal(NULL)
   conversion_done <- reactiveVal(FALSE)
@@ -1392,7 +1392,6 @@ server <- function(input, output, session){
   # Participant handling
   output$idvar_ui <- renderUI({
     df <- data_reactive()
-    # FIX: Use isTRUE() to safely handle cases where the conversion UI (input$conv_has_id) is NULL/hidden
     sel <- if(isTRUE(input$conv_has_id) && !is.null(input$conv_id_col)) input$conv_id_col else NULL
 
     selectInput("idvar", "Participant ID variable", names(df), selected = sel)
