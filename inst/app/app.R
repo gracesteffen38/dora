@@ -500,14 +500,14 @@ $(document).ready(function() {
         tags$div(id = "file-help", class = "help-text", style = "font-size: 0.9em; color: #666; display: none;",
                  "Upload a CSV file containing your time-series data"),
         conditionalPanel(
-          condition = "output.hasData",
+          condition = "output.hasData == 'true'",
           actionButton("peek_data", "Peek at data",
                        class = "btn-sm btn-outline-info",
                        icon = icon("table"),
                        style = "margin-top: 5px;")
         ),
         conditionalPanel(
-          condition = "output.hasData",
+          condition = "output.hasData == 'true'",
           hr(),
           h4("Data Format Conversion"),
           checkboxInput("is_interval_data", "Data has start time and end time or duration columns", FALSE),
@@ -528,7 +528,7 @@ $(document).ready(function() {
         ),
 
         conditionalPanel(
-          condition = "output.hasData",
+          condition = "output.hasData == 'true'",
           hr(),
           h4("Step 2: Describe Dataset"),
 
@@ -694,6 +694,16 @@ server <- function(input, output, session){
   plot_store  <- reactiveVal(NULL)
   plot2_store <- reactiveVal(NULL)
   stats_store <- reactiveVal(NULL)
+  data_converted <- reactiveVal(NULL)
+  conversion_done <- reactiveVal(FALSE)
+
+  data_reactive <- reactive({
+    if (conversion_done() && !is.null(data_converted())) {
+      data_converted()
+    } else {
+      data_original()
+    }
+  })
 
   last_data_source <- reactiveVal("demo")  # default to demo
   # Track active demo choice separately from the input
@@ -705,32 +715,27 @@ server <- function(input, output, session){
       size = "m",
       easyClose = TRUE,
       footer = modalButton("Cancel"),
-
       tags$p(style = "color: #666; margin-bottom: 15px;",
              "Select a dataset to load it and dismiss this menu."),
-
-      # Each dataset is a clickable panel
       tags$div(
         style = "cursor: pointer; padding: 12px; border: 1px solid #ddd;
-               border-radius: 6px; margin-bottom: 10px;",
+               border-radius: 6px; margin-bottom: 10px; background: white;",
         onclick = "Shiny.setInputValue('demo_selected', 'demo1', {priority: 'event'})",
         tags$strong("Infant Object Play"),
         tags$p(style = "margin: 4px 0 0 0; color: #666; font-size: 0.9em;",
                "Continuous time series with event-coded object interactions")
       ),
-
       tags$div(
         style = "cursor: pointer; padding: 12px; border: 1px solid #ddd;
-               border-radius: 6px; margin-bottom: 10px;",
+               border-radius: 6px; margin-bottom: 10px; background: white;",
         onclick = "Shiny.setInputValue('demo_selected', 'demo2', {priority: 'event'})",
         tags$strong("Daily Music Bouts"),
         tags$p(style = "margin: 4px 0 0 0; color: #666; font-size: 0.9em;",
                "Event-coded music listening episodes across the day")
       ),
-
       tags$div(
         style = "cursor: pointer; padding: 12px; border: 1px solid #ddd;
-               border-radius: 6px; margin-bottom: 10px;",
+               border-radius: 6px; margin-bottom: 10px; background: white;",
         onclick = "Shiny.setInputValue('demo_selected', 'demo3', {priority: 'event'})",
         tags$strong("Mother-Child Interactions"),
         tags$p(style = "margin: 4px 0 0 0; color: #666; font-size: 0.9em;",
@@ -756,9 +761,10 @@ server <- function(input, output, session){
     conversion_done(FALSE)
   }, ignoreInit = TRUE)
 
-  output$hasData <- reactive({
-    (last_data_source() == "demo" && !is.null(active_demo())) ||
+  output$hasData <- renderText({
+    has <- (last_data_source() == "demo" && !is.null(active_demo())) ||
       (last_data_source() == "file" && !is.null(input$file))
+    if (has) "true" else "false"
   })
   outputOptions(output, "hasData", suspendWhenHidden = FALSE)
   # Store both original and converted data
@@ -1208,16 +1214,7 @@ server <- function(input, output, session){
   })
 
 
-  data_converted <- reactiveVal(NULL)
-  conversion_done <- reactiveVal(FALSE)
 
-  data_reactive <- reactive({
-    if (conversion_done() && !is.null(data_converted())) {
-      data_converted()
-    } else {
-      data_original()
-    }
-  })
 
   # observeEvent(input$file, {
   #   data_converted(NULL)
