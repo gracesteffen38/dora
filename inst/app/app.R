@@ -446,19 +446,18 @@ $(document).ready(function() {
                                     class = "btn btn-outline-secondary btn-sm",
                                     type = "button",
                                     title = "Help",
-                                    style = "border-radius: 50%; width: 36px; height: 36px;
-                         padding: 0; font-size: 16px; border: 2px solid #6c757d;",
-                                    HTML("&#9432;")),  # circled i character
+                                    style = "width: 36px; height: 36px; padding: 0;
+                     border-radius: 50%; border: 2px solid #6c757d;",
+                                    icon("circle-question")),
                         tags$div(id = "help-dropdown-menu",
                                  style = "display: none; position: absolute; right: 0; top: 100%;
                       min-width: 220px; background: white; border: 1px solid #ddd;
                       border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
                       z-index: 2000; padding: 8px 0;",
-                                 tags$a(href = paste0("mailto:dorashinyapp@gmail.com",
-                                                      "?subject=", utils::URLencode("DORA Bug Report"),
-                                                      "&body=", utils::URLencode("Describe the bug:\n\nSteps to reproduce:\n\nExpected behaviour:\n\nActual behaviour:")),
+                                 tags$a(href = "https://forms.gle/YOUR_FORM_ID_HERE",
+                                        target = "_blank",
                                         style = "display: block; padding: 8px 16px; color: #333;
-                      text-decoration: none; font-size: 14px;",
+                text-decoration: none; font-size: 14px;",
                                         icon("bug"), " Report a bug...")
                         )
                )
@@ -483,7 +482,7 @@ $(document).ready(function() {
 
         fileInput("file", "Upload your own CSV", accept = ".csv"),
 
-        tags$div(style = "text-align: center; padding: 8px; color: #666; font-weight: bold;",
+        tags$div(style = "text-align: center; padding: 0px; color: #666; font-weight: bold;",
                  "— OR —"
         ),
 
@@ -1423,9 +1422,10 @@ server <- function(input, output, session){
       size = "l",
       easyClose = TRUE,
       footer = modalButton("Close"),
-      renderTable({
-        head(df, 10)
-      })
+      tags$div(
+        style = "overflow-x: auto; max-height: 400px; overflow-y: auto;",
+        renderTable({ head(df, 10) })
+      )
     ))
   })
   # Convert interval data
