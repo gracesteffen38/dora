@@ -72,6 +72,11 @@ ui <- fluidPage(
   #labels-toggle:hover {
     color: #007bff !important;
   }
+
+  body.keyboard-nav *:focus {
+    outline: 3px solid #17a2b8 !important;
+    outline-offset: 2px !important;
+  }
   ")),
 
     # Bootstrap collapse JavaScript
@@ -82,52 +87,145 @@ var saveMenuBound = false;
 
 // Keyboard shortcuts
 $(document).on('keydown', function(e) {
-  // Arrow keys - only when not in input
-  if (!$(e.target).is('input, textarea, select')) {
-    if (e.which == 37) {
-      $('#prev_id').click();
-      e.preventDefault();
-    } else if (e.which == 39) {
-      $('#next_id').click();
-      e.preventDefault();
+  var tag = $(e.target).prop('tagName');
+  var inInput = $(e.target).is('input, textarea, select, .selectize-input');
+
+  // === ARROW KEYS — participant navigation (when not in text input) ===
+  if (!inInput) {
+    if (e.which == 37) { $('#prev_id').click(); e.preventDefault(); }
+    if (e.which == 39) { $('#next_id').click(); e.preventDefault(); }
+    // Up/Down for event navigation
+    if (e.which == 38) { $('#prev_event').click(); e.preventDefault(); }
+    if (e.which == 40) { $('#next_event').click(); e.preventDefault(); }
+  }
+
+  // === ALT SHORTCUTS ===
+  if (e.altKey) {
+    switch(e.which) {
+
+      // Alt+H — Help menu
+      case 72:
+        e.preventDefault();
+        var helpMenu = document.getElementById('help-dropdown-menu');
+        if (helpMenu) {
+          var isVisible = helpMenu.style.display !== 'none';
+          helpMenu.style.display = isVisible ? 'none' : 'block';
+          document.getElementById('save-dropdown-menu').style.display = 'none';
+          document.getElementById('accessibility-dropdown-menu').style.display = 'none';
+        }
+        break;
+
+      // Alt+A — Accessibility menu
+      case 65:
+        e.preventDefault();
+        var accMenu = document.getElementById('accessibility-dropdown-menu');
+        if (accMenu) {
+          var isVisible = accMenu.style.display !== 'none';
+          accMenu.style.display = isVisible ? 'none' : 'block';
+          document.getElementById('save-dropdown-menu').style.display = 'none';
+          var hm = document.getElementById('help-dropdown-menu');
+          if (hm) hm.style.display = 'none';
+        }
+        break;
+
+      // Alt+B — Back to data
+      case 66:
+        e.preventDefault();
+        $('#back_data').click();
+        break;
+
+      // Alt+V — Go to visualizations
+      case 86:
+        e.preventDefault();
+        $('#go_viz').click();
+        break;
+
+      // Alt+C — Convert data
+      case 67:
+        e.preventDefault();
+        $('#convert_data').click();
+        break;
+
+      // Alt+P — Peek at data
+      case 80:
+        e.preventDefault();
+        $('#peek_data').click();
+        break;
+
+      // Alt+S — Save menu
+      case 83:
+        e.preventDefault();
+        var saveMenu = document.getElementById('save-dropdown-menu');
+        if (saveMenu) {
+          var isVisible = saveMenu.style.display !== 'none';
+          saveMenu.style.display = isVisible ? 'none' : 'block';
+          if (!isVisible && !saveMenuBound) {
+            try { Shiny.bindAll(saveMenu); } catch(err) {}
+            saveMenuBound = true;
+          }
+          document.getElementById('accessibility-dropdown-menu').style.display = 'none';
+          var hm = document.getElementById('help-dropdown-menu');
+          if (hm) hm.style.display = 'none';
+        }
+        break;
+
+      // Alt+D — Toggle second plot
+      case 68:
+        e.preventDefault();
+        var cb = document.getElementById('show_second_plot');
+        if (cb) { cb.click(); }
+        break;
+
+      // Alt+I — Toggle step through participants
+      case 73:
+        e.preventDefault();
+        var st = document.getElementById('step_through');
+        if (st) { st.click(); }
+        break;
+
+      // Alt+M — Toggle multiple participants checkbox
+      case 77:
+        e.preventDefault();
+        var uid = document.getElementById('use_id');
+        if (uid) { uid.click(); }
+        break;
     }
   }
 
-  // Ctrl + S for save
-  if (e.ctrlKey && e.which == 83) {
-    e.preventDefault();
-    var saveMenu = document.getElementById('save-dropdown-menu');
-    if (saveMenu) {
-      var isVisible = saveMenu.style.display !== 'none';
-      saveMenu.style.display = isVisible ? 'none' : 'block';
-      if (!isVisible && !saveMenuBound) {
-        try { Shiny.bindAll(saveMenu); } catch(err) {}
-        saveMenuBound = true;
-      }
-      var accMenu = document.getElementById('accessibility-dropdown-menu');
-      if (accMenu) accMenu.style.display = 'none';
-    }
-  }
-
-  // Alt + A for accessibility
-  if (e.altKey && e.which == 65) {
-    e.preventDefault();
-    var accMenu = document.getElementById('accessibility-dropdown-menu');
-    if (accMenu) {
-      var isVisible = accMenu.style.display !== 'none';
-      accMenu.style.display = isVisible ? 'none' : 'block';
+  // === CTRL SHORTCUTS ===
+  if (e.ctrlKey) {
+    // Ctrl+S — Save menu (keep original)
+    if (e.which == 83) {
+      e.preventDefault();
       var saveMenu = document.getElementById('save-dropdown-menu');
-      if (saveMenu) saveMenu.style.display = 'none';
+      if (saveMenu) {
+        var isVisible = saveMenu.style.display !== 'none';
+        saveMenu.style.display = isVisible ? 'none' : 'block';
+        if (!isVisible && !saveMenuBound) {
+          try { Shiny.bindAll(saveMenu); } catch(err) {}
+          saveMenuBound = true;
+        }
+      }
     }
   }
 
-  // Escape closes all
+  // === ESCAPE — close all menus ===
   if (e.which == 27) {
-    var saveMenu = document.getElementById('save-dropdown-menu');
-    var accMenu = document.getElementById('accessibility-dropdown-menu');
-    if (saveMenu) saveMenu.style.display = 'none';
-    if (accMenu) accMenu.style.display = 'none';
+    document.getElementById('save-dropdown-menu').style.display = 'none';
+    document.getElementById('accessibility-dropdown-menu').style.display = 'none';
+    var hm = document.getElementById('help-dropdown-menu');
+    if (hm) hm.style.display = 'none';
   }
+
+  // === TAB — ensure focus visible (accessibility) ===
+  if (e.which == 9) {
+    document.body.classList.add('keyboard-nav');
+  }
+});
+
+// Remove keyboard-nav class on mouse use
+$(document).on('mousedown', function() {
+  document.body.classList.remove('keyboard-nav');
 });
 
 
@@ -443,17 +541,18 @@ $(document).ready(function() {
              tags$div(
                tags$div(class = "btn-group",
                         tags$button(id = "help-dropdown-btn",
-                                    class = "btn btn-outline-secondary btn-sm",
+                                    class = "btn btn-sm",
                                     type = "button",
-                                    title = "Help",
-                                    style = "width: 36px; height: 36px; padding: 0;
-                     border-radius: 50%; border: 2px solid #6c757d; font-size: 18px;",
+                                    title = "Help (Alt+H)",
+                                    style = "width: 36px; height: 36px; padding: 5px;
+                     border-radius: 50%; border: none;
+                     background: transparent; color: #6c757d;",
                                     icon("circle-question")),
                         tags$div(id = "help-dropdown-menu",
                                  style = "display: none; position: absolute; right: 0; top: 100%;
                       min-width: 220px; background: white; border: 1px solid #ddd;
                       border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                      z-index: 2000; padding: 8px;",
+                      z-index: 2000; padding: 8px 0;",
                                  tags$a(href = "https://forms.gle/G3MxUSmnZzFqC5Yj8",
                                         target = "_blank",
                                         style = "display: block; padding: 8px 16px; color: #333;
@@ -506,6 +605,7 @@ $(document).ready(function() {
                    actionButton("peek_data", "Peek at data",
                                 class = "btn-sm btn-outline-info",
                                 icon = icon("table"),
+                                title = "Peek at data (Alt+P)",
                                 style = "margin-top: 5px; align:center;")
             )
 
