@@ -1126,19 +1126,16 @@ server <- function(input, output, session){
   })
 
   output$hasData <- reactive({
-    last_data_source() == "demo" && isTruthy(input$demo_choice) ||
-      last_data_source() == "file" && !is.null(input$file)
+    # True if any valid data source is currently active
+    has_demo <- isTruthy(input$demo_choice) && input$demo_choice != ""
+    has_file <- !is.null(input$file)
+    has_demo || has_file
   })
   outputOptions(output, "hasData", suspendWhenHidden = FALSE)
   # Store both original and converted data
   data_original <- reactive({
 
-    df <- if (last_data_source() == "file") {
-      req(input$file)
-      readr::read_csv(input$file$datapath, show_col_types = FALSE)
-
-    } else {
-      req(isTruthy(input$demo_choice) && input$demo_choice != "")
+    df <- if (isTruthy(input$demo_choice) && input$demo_choice != "" && last_data_source() == "demo") {
       demo_file <- switch(input$demo_choice,
                           "demo1" = system.file("extdata", "demo_data_1.csv", package = "dora"),
                           "demo2" = system.file("extdata", "demo_data_2.csv", package = "dora"),
@@ -1146,6 +1143,12 @@ server <- function(input, output, session){
       )
       if (demo_file == "") stop("Demo file not found. Try reinstalling the package.")
       readr::read_csv(demo_file, show_col_types = FALSE)
+
+    } else if (!is.null(input$file)) {
+      readr::read_csv(input$file$datapath, show_col_types = FALSE)
+
+    } else {
+      return(NULL)
     }
 
     # Datetime parsing unchanged
