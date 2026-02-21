@@ -2516,18 +2516,26 @@ server <- function(input, output, session){
 
     })
 
+    # Replace the bottom of desc_stats where lines/stats_store/cat are:
+
     lines <- character(0)
     lines <- c(lines, paste(rep("=", 60), collapse = ""))
+    lines <- c(lines, "  DORA — Descriptive Statistics")
 
     if (zoom_active && !is.null(range_label)) {
-      lines <- c(lines, paste(" Showing zoomed view:", range_label))
-      lines <- c(lines, paste(rep("=", 60), collapse = ""))
+      lines <- c(lines, paste(rep("-", 60), collapse = ""))
+      lines <- c(lines, paste("  Time window:", range_label))
     } else {
-      lines <- c(lines, " Showing full dataset")
-      lines <- c(lines, paste(rep("=", 60), collapse = ""))
+      lines <- c(lines, paste(rep("-", 60), collapse = ""))
+      lines <- c(lines, "  Time window: Full dataset")
     }
-    stats_store(paste(txt, collapse = "\n"))
-    cat(txt, sep = "\n")
+    lines <- c(lines, paste(rep("=", 60), collapse = ""))
+
+    # Combine header + stats body
+    full_output <- c(lines, "", txt)
+
+    stats_store(paste(full_output, collapse = "\n"))
+    cat(full_output, sep = "\n")
   })
 
   output$plot2 <- plotly::renderPlotly({
