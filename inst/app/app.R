@@ -507,8 +507,9 @@ $(document).ready(function() {
                                 class = "btn-sm btn-outline-info",
                                 icon = icon("table"),
                                 style = "margin-top: 5px; align:center;")
-            ),
+            )
 
+        )
         ),
         conditionalPanel(
           condition = "output.hasData == 'true'",
