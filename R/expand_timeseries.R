@@ -24,19 +24,19 @@ expand_timeseries <- function(data, id_var, var_name, start_time_var, end_time_v
   data[[start_time_var]] <- start_col
   data[[end_time_var]]   <- end_col
 
-  working_df <- data %>%
+  working_df <- data |>
     dplyr::rename(
       internal_id       = dplyr::all_of(id_var),
       internal_activity = dplyr::all_of(var_name),
       internal_start    = dplyr::all_of(start_time_var),
       internal_end      = dplyr::all_of(end_time_var)
-    ) %>%
+    ) |>
     dplyr::filter(!is.na(internal_start), !is.na(internal_end))
 
   if (nrow(working_df) == 0) stop("No valid rows found after date parsing.")
 
   # Filter first
-  working_df <- working_df %>%
+  working_df <- working_df |>
     dplyr::filter(internal_end >= internal_start)
 
   if (nrow(working_df) == 0) stop("No valid rows after filtering.")
@@ -50,28 +50,28 @@ expand_timeseries <- function(data, id_var, var_name, start_time_var, end_time_v
 
   working_df$time_seq <- time_seqs
 
-  expanded <- working_df %>%
-    tidyr::unnest(time_seq) %>%
-    dplyr::select(internal_id, time_seq, internal_activity) %>%
+  expanded <- working_df |>
+    tidyr::unnest(time_seq) |>
+    dplyr::select(internal_id, time_seq, internal_activity) |>
     dplyr::ungroup()
 
-  unique_time_df <- expanded %>%
-    dplyr::group_by(internal_id, time_seq) %>%
+  unique_time_df <- expanded |>
+    dplyr::group_by(internal_id, time_seq) |>
     dplyr::summarise(internal_activity = max(internal_activity, na.rm = TRUE), .groups = "drop")
 
   fill_val <- if (is.numeric(unique_time_df$internal_activity)) 0 else "0"
 
-  final_df <- unique_time_df %>%
-    dplyr::group_by(internal_id) %>%
+  final_df <- unique_time_df |>
+    dplyr::group_by(internal_id) |>
     tidyr::complete(
       time_seq = seq(from = min(time_seq, na.rm = TRUE),
                      to   = max(time_seq, na.rm = TRUE),
                      by   = time_unit),
       fill = list(internal_activity = fill_val)
-    ) %>%
+    ) |>
     dplyr::ungroup()
 
-  final_df <- final_df %>%
+  final_df <- final_df |>
     dplyr::rename(
       !!id_var   := internal_id,
       !!var_name := internal_activity,
