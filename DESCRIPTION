@@ -28,7 +28,8 @@ Imports:
     webshot2,
     reticulate,
     zip,
-    stats
+    stats,
+    purrr
 LazyData: true
 RoxygenNote: 7.3.3
 URL: https://github.com/gracesteffen38/dora

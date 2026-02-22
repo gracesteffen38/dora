@@ -44,9 +44,11 @@ expand_timeseries <- function(data, id_var, var_name, start_time_var, end_time_v
   if (nrow(working_df) == 0) stop("No valid rows found after date parsing.")
 
   expanded <- working_df %>%
-    dplyr::rowwise() %>%
     dplyr::filter(internal_end >= internal_start) %>%
-    dplyr::mutate(time_seq = list(seq(from = internal_start, to = internal_end, by = by_unit))) %>%
+    dplyr::mutate(
+      time_seq = purrr::map2(internal_start, internal_end,
+                             ~seq(from = .x, to = .y, by = by_unit))
+    ) %>%
     tidyr::unnest(time_seq) %>%
     dplyr::select(internal_id, time_seq, internal_activity) %>%
     dplyr::ungroup()
@@ -60,7 +62,9 @@ expand_timeseries <- function(data, id_var, var_name, start_time_var, end_time_v
   final_df <- unique_time_df %>%
     dplyr::group_by(internal_id) %>%
     tidyr::complete(
-      time_seq = seq(from = min(time_seq), to = max(time_seq), by = by_unit),
+      time_seq = seq(from = min(time_seq, na.rm = TRUE),
+                     to   = max(time_seq, na.rm = TRUE),
+                     by   = by_unit),
       fill = list(internal_activity = fill_val)
     ) %>%
     dplyr::ungroup()
