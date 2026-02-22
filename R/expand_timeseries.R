@@ -43,12 +43,22 @@ expand_timeseries <- function(data, id_var, var_name, start_time_var, end_time_v
 
   if (nrow(working_df) == 0) stop("No valid rows found after date parsing.")
 
+  # Filter first
+  working_df <- working_df %>%
+    dplyr::filter(internal_end >= internal_start)
+
+  if (nrow(working_df) == 0) stop("No valid rows after filtering.")
+
+  # Build sequences outside of dplyr to preserve POSIXct class
+  time_seqs <- lapply(seq_len(nrow(working_df)), function(i) {
+    seq(from = working_df$internal_start[[i]],
+        to   = working_df$internal_end[[i]],
+        by   = by_unit)
+  })
+
+  working_df$time_seq <- time_seqs
+
   expanded <- working_df %>%
-    dplyr::filter(internal_end >= internal_start) %>%
-    dplyr::mutate(
-      time_seq = purrr::map2(internal_start, internal_end,
-                             ~seq(from = .x, to = .y, by = by_unit))
-    ) %>%
     tidyr::unnest(time_seq) %>%
     dplyr::select(internal_id, time_seq, internal_activity) %>%
     dplyr::ungroup()
