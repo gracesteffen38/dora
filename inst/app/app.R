@@ -544,7 +544,7 @@ $(document).ready(function() {
                                     class = "btn btn-sm",
                                     type = "button",
                                     title = "Help (Alt+H)",
-                                    style = "width: 36px; height: 36px; padding: 5px;
+                                    style = "width: 36px; height: 36px; padding: 0px;
                      border-radius: 50%; border: none;
                      background: transparent; color: #6c757d; font-size: 24px;",
                                     icon("circle-question")),
