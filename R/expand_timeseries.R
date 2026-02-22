@@ -16,8 +16,6 @@ expand_timeseries <- function(data, id_var, var_name, start_time_var, end_time_v
   start_col <- data[[start_time_var]]
   end_col   <- data[[end_time_var]]
 
-  is_datetime <- inherits(data[[start_time_var]], c("POSIXct", "POSIXt", "POSIXlt"))
-
   if (is.character(start_col))
     start_col <- lubridate::parse_date_time(start_col, orders = c("ymd HMS", "ymd HM", "HMS", "HM", "ymd"), quiet = TRUE)
   if (is.character(end_col))
