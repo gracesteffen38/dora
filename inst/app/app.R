@@ -377,14 +377,12 @@ $(document).ready(function() {
                                column(3,
                                       h6("Visual"),
                                       checkboxInput("high_contrast", "High Contrast", FALSE),
-                                      checkboxInput("large_text", "Large Text", FALSE),
-                                      checkboxInput("colorblind_safe", "Colorblind-Safe", FALSE)
+                                      checkboxInput("large_text", "Large Text", FALSE)
                                ),
                                column(3,
                                       h6("Motor"),
                                       checkboxInput("large_targets", "Large Targets", FALSE),
-                                      checkboxInput("reduce_motion", "Reduce Motion", FALSE),
-                                      checkboxInput("sticky_controls", "Sticky Nav", FALSE)
+                                      checkboxInput("reduce_motion", "Reduce Motion", FALSE)
                                ),
                                column(3,
                                       h6("Cognitive"),
@@ -437,14 +435,12 @@ $(document).ready(function() {
                                            column(4,
                                                   tags$h6("Visual", style = "font-weight: bold; margin-bottom: 10px;"),
                                                   checkboxInput("toolbar_high_contrast", "High Contrast", FALSE),
-                                                  checkboxInput("toolbar_large_text", "Large Text", FALSE),
-                                                  checkboxInput("toolbar_colorblind_safe", "Colorblind-Safe", FALSE)
+                                                  checkboxInput("toolbar_large_text", "Large Text", FALSE)
                                            ),
                                            column(4,
                                                   tags$h6("Motor", style = "font-weight: bold; margin-bottom: 10px;"),
                                                   checkboxInput("toolbar_large_targets", "Large Targets", FALSE),
-                                                  checkboxInput("toolbar_reduce_motion", "Reduce Motion", FALSE),
-                                                  checkboxInput("toolbar_sticky_controls", "Sticky Nav", FALSE)
+                                                  checkboxInput("toolbar_reduce_motion", "Reduce Motion", FALSE)
                                            ),
                                            column(4,
                                                   tags$h6("Cognitive", style = "font-weight: bold; margin-bottom: 10px;"),
@@ -797,6 +793,21 @@ $(document).ready(function() {
 
 
 server <- function(input, output, session){
+
+  hex_to_rgba <- function(hex, alpha = 0.2) {
+    rgb_vals <- col2rgb(hex)
+    paste0("rgba(", rgb_vals[1], ",", rgb_vals[2], ",", rgb_vals[3], ",", alpha, ")")
+  }
+
+  get_labels <- function(input, default_title, default_x, default_y, default_legend) {
+    list(
+      title  = if (isTruthy(input$custom_title))  input$custom_title  else default_title,
+      x      = if (isTruthy(input$custom_xlab))   input$custom_xlab   else default_x,
+      y      = if (isTruthy(input$custom_ylab))   input$custom_ylab   else default_y,
+      legend = if (isTruthy(input$custom_legend)) input$custom_legend else default_legend
+    )
+  }
+
   # Store main plot, secondary plot, and stats for saving
   plot_store  <- reactiveVal(NULL)
   plot2_store <- reactiveVal(NULL)
@@ -917,10 +928,10 @@ server <- function(input, output, session){
   accessibility <- reactiveValues(
     high_contrast   = FALSE,
     large_text      = FALSE,
-    colorblind_safe = FALSE,
+    #colorblind_safe = FALSE,
     large_targets   = FALSE,
     reduce_motion   = FALSE,
-    sticky_controls = FALSE,
+    #sticky_controls = FALSE,
     simplified_ui   = FALSE,
     show_descriptions = FALSE,
     confirm_actions = FALSE
@@ -1030,8 +1041,7 @@ server <- function(input, output, session){
 
   # Update CSS based on accessibility settings
   observeEvent(
-    list(accessibility$high_contrast, accessibility$large_text, accessibility$colorblind_safe,
-         accessibility$large_targets, accessibility$reduce_motion, accessibility$sticky_controls,
+    list(accessibility$high_contrast, accessibility$large_text, accessibility$large_targets, accessibility$reduce_motion,
          accessibility$simplified_ui, accessibility$show_descriptions, accessibility$confirm_actions), {
            css_rules <- ""
 
@@ -1143,11 +1153,11 @@ server <- function(input, output, session){
            }
 
            # Sticky Navigation
-           if (isTRUE(accessibility$sticky_controls)) {
-             css_rules <- paste0(css_rules, "
-      .col-sm-4 { position: sticky !important; top: 20px !important; }
-    ")
-           }
+    #        if (isTRUE(accessibility$sticky_controls)) {
+    #          css_rules <- paste0(css_rules, "
+    #   .col-sm-4 { position: sticky !important; top: 20px !important; }
+    # ")
+    #        }
 
            # Simplified UI - work in progress
            if (isTRUE(accessibility$simplified_ui)) {
@@ -1183,84 +1193,103 @@ server <- function(input, output, session){
     shinyjs::runjs(sprintf("document.getElementById('accessibility-styles').innerHTML = `%s`;", accessibility_css()))
   }, ignoreInit = TRUE)
 
+  sync_accessibility <- function(session, field, val) {
+    updateCheckboxInput(session, field, value = val)
+    updateCheckboxInput(session, paste0("toolbar_", field), value = val)
+  }
 
   # Sync toolbar accessibility controls with main controls
-  observeEvent(input$high_contrast,      { accessibility$high_contrast     <- input$high_contrast })
-  observeEvent(input$large_text,         { accessibility$large_text        <- input$large_text })
-  observeEvent(input$colorblind_safe,    { accessibility$colorblind_safe   <- input$colorblind_safe })
-  observeEvent(input$large_targets,      { accessibility$large_targets     <- input$large_targets })
-  observeEvent(input$reduce_motion,      { accessibility$reduce_motion     <- input$reduce_motion })
-  observeEvent(input$sticky_controls,    { accessibility$sticky_controls   <- input$sticky_controls })
-  observeEvent(input$simplified_ui,      { accessibility$simplified_ui     <- input$simplified_ui })
-  observeEvent(input$show_descriptions,  { accessibility$show_descriptions <- input$show_descriptions })
-  observeEvent(input$confirm_actions,    { accessibility$confirm_actions   <- input$confirm_actions })
+  observeEvent(input$high_contrast,      { accessibility$high_contrast     <- input$high_contrast
+  updateCheckboxInput(session, "toolbar_high_contrast", value = input$high_contrast)}, ignoreInit = TRUE)
 
-  # Toolbar inputs write to shared state
-  observeEvent(input$toolbar_high_contrast,     { accessibility$high_contrast     <- input$toolbar_high_contrast })
-  observeEvent(input$toolbar_large_text,        { accessibility$large_text        <- input$toolbar_large_text })
-  observeEvent(input$toolbar_colorblind_safe,   { accessibility$colorblind_safe   <- input$toolbar_colorblind_safe })
-  observeEvent(input$toolbar_large_targets,     { accessibility$large_targets     <- input$toolbar_large_targets })
-  observeEvent(input$toolbar_reduce_motion,     { accessibility$reduce_motion     <- input$toolbar_reduce_motion })
-  observeEvent(input$toolbar_sticky_controls,   { accessibility$sticky_controls   <- input$toolbar_sticky_controls })
-  observeEvent(input$toolbar_simplified_ui,     { accessibility$simplified_ui     <- input$toolbar_simplified_ui })
-  observeEvent(input$toolbar_show_descriptions, { accessibility$show_descriptions <- input$toolbar_show_descriptions })
-  observeEvent(input$toolbar_confirm_actions,   { accessibility$confirm_actions   <- input$toolbar_confirm_actions })
-
-  # Shared state syncs both UIs
-  observe({
-    updateCheckboxInput(session, "high_contrast",              value = accessibility$high_contrast)
-    updateCheckboxInput(session, "toolbar_high_contrast",      value = accessibility$high_contrast)
-    updateCheckboxInput(session, "large_text",                 value = accessibility$large_text)
-    updateCheckboxInput(session, "toolbar_large_text",         value = accessibility$large_text)
-    updateCheckboxInput(session, "colorblind_safe",            value = accessibility$colorblind_safe)
-    updateCheckboxInput(session, "toolbar_colorblind_safe",    value = accessibility$colorblind_safe)
-    updateCheckboxInput(session, "large_targets",              value = accessibility$large_targets)
-    updateCheckboxInput(session, "toolbar_large_targets",      value = accessibility$large_targets)
-    updateCheckboxInput(session, "reduce_motion",              value = accessibility$reduce_motion)
-    updateCheckboxInput(session, "toolbar_reduce_motion",      value = accessibility$reduce_motion)
-    updateCheckboxInput(session, "sticky_controls",            value = accessibility$sticky_controls)
-    updateCheckboxInput(session, "toolbar_sticky_controls",    value = accessibility$sticky_controls)
-    updateCheckboxInput(session, "simplified_ui",              value = accessibility$simplified_ui)
-    updateCheckboxInput(session, "toolbar_simplified_ui",      value = accessibility$simplified_ui)
-    updateCheckboxInput(session, "show_descriptions",          value = accessibility$show_descriptions)
-    updateCheckboxInput(session, "toolbar_show_descriptions",  value = accessibility$show_descriptions)
-    updateCheckboxInput(session, "confirm_actions",            value = accessibility$confirm_actions)
-    updateCheckboxInput(session, "toolbar_confirm_actions",    value = accessibility$confirm_actions)
-  })
-
-  observeEvent(list(input$preset_vision, input$toolbar_preset_vision), {
-    req(input$preset_vision > 0 || input$toolbar_preset_vision > 0)
-    accessibility$high_contrast   <- TRUE
-    accessibility$large_text      <- TRUE
-    accessibility$colorblind_safe <- TRUE
-    accessibility$reduce_motion   <- TRUE
-    showNotification("Vision preset applied", type = "message", duration = 5)
+  observeEvent(input$toolbar_high_contrast, {
+    accessibility$high_contrast <- input$toolbar_high_contrast
+    updateCheckboxInput(session, "high_contrast", value = input$toolbar_high_contrast)
   }, ignoreInit = TRUE)
 
-  observeEvent(list(input$preset_motor, input$toolbar_preset_motor), {
-    req(input$preset_motor > 0 || input$toolbar_preset_motor > 0)
+  observeEvent(input$large_text,      { accessibility$large_text     <- input$large_text
+  updateCheckboxInput(session, "toolbar_large_text", value = input$large_text)}, ignoreInit = TRUE)
+
+  observeEvent(input$toolbar_large_text, {
+    accessibility$large_text <- input$toolbar_large_text
+    updateCheckboxInput(session, "large_text", value = input$toolbar_large_text)
+  }, ignoreInit = TRUE)
+
+  observeEvent(input$large_targets,      { accessibility$large_targets     <- input$large_targets
+  updateCheckboxInput(session, "toolbar_large_targets", value = input$large_targets)}, ignoreInit = TRUE)
+
+  observeEvent(input$toolbar_large_targets, {
+    accessibility$large_targets <- input$toolbar_large_targets
+    updateCheckboxInput(session, "large_targets", value = input$toolbar_large_targets)
+  }, ignoreInit = TRUE)
+
+  observeEvent(input$reduce_motion,      { accessibility$reduce_motion     <- input$reduce_motion
+  updateCheckboxInput(session, "toolbar_reduce_motion", value = input$reduce_motion)}, ignoreInit = TRUE)
+
+  observeEvent(input$toolbar_reduce_motion, {
+    accessibility$reduce_motion <- input$toolbar_reduce_motion
+    updateCheckboxInput(session, "reduce_motion", value = input$toolbar_reduce_motion)
+  }, ignoreInit = TRUE)
+
+  observeEvent(input$simplified_ui,      { accessibility$simplified_ui     <- input$simplified_ui
+  updateCheckboxInput(session, "toolbar_simplified_ui", value = input$simplified_ui)}, ignoreInit = TRUE)
+
+  observeEvent(input$toolbar_simplified_ui, {
+    accessibility$simplified_ui <- input$toolbar_simplified_ui
+    updateCheckboxInput(session, "simplified_ui", value = input$toolbar_simplified_ui)
+  }, ignoreInit = TRUE)
+
+  observeEvent(input$show_descriptions,      { accessibility$show_descriptions     <- input$show_descriptions
+  updateCheckboxInput(session, "toolbar_show_descriptions", value = input$show_descriptions)}, ignoreInit = TRUE)
+
+  observeEvent(input$toolbar_show_descriptions, {
+    accessibility$show_descriptions <- input$toolbar_show_descriptions
+    updateCheckboxInput(session, "show_descriptions", value = input$toolbar_show_descriptions)
+  }, ignoreInit = TRUE)
+
+  observeEvent(input$confirm_actions,      { accessibility$confirm_actions     <- input$confirm_actions
+  updateCheckboxInput(session, "toolbar_confirm_actions", value = input$confirm_actions)}, ignoreInit = TRUE)
+
+  observeEvent(input$toolbar_confirm_actions, {
+    accessibility$confirm_actions <- input$toolbar_confirm_actions
+    updateCheckboxInput(session, "confirm_actions", value = input$toolbar_confirm_actions)
+  }, ignoreInit = TRUE)
+
+  vision_preset_handler <- function () {
+    accessibility$high_contrast   <- TRUE
+    accessibility$large_text      <- TRUE
+    accessibility$reduce_motion   <- TRUE
+    showNotification("Vision preset applied", type = "message", duration = 5)
+  }
+
+  observeEvent(input$preset_vision,         handle_vision_preset(), ignoreInit = TRUE)
+  observeEvent(input$toolbar_preset_vision, handle_vision_preset(), ignoreInit = TRUE)
+
+  motor_preset_handler <- function () {
     accessibility$large_targets   <- TRUE
-    accessibility$sticky_controls <- TRUE
     accessibility$reduce_motion   <- TRUE
     accessibility$confirm_actions <- TRUE
     showNotification("Motor preset applied", type = "message", duration = 5)
-  }, ignoreInit = TRUE)
+  }
 
-  observeEvent(list(input$reset_accessibility, input$toolbar_reset_accessibility), {
-    req(input$reset_accessibility > 0 || input$toolbar_reset_accessibility > 0)
+  observeEvent(input$preset_motor,         handle_motor_preset(), ignoreInit = TRUE)
+  observeEvent(input$toolbar_preset_motor, handle_motor_preset(), ignoreInit = TRUE)
+
+  access_reset_handler <- function () {
     accessibility$high_contrast     <- FALSE
     accessibility$large_text        <- FALSE
-    accessibility$colorblind_safe   <- FALSE
     accessibility$large_targets     <- FALSE
     accessibility$reduce_motion     <- FALSE
-    accessibility$sticky_controls   <- FALSE
     accessibility$simplified_ui     <- FALSE
     accessibility$show_descriptions <- FALSE
     accessibility$confirm_actions   <- FALSE
     showNotification("All accessibility settings reset", type = "message", duration = 3)
-  }, ignoreInit = TRUE)
+  }
 
-  # Colorblind-safe palette generator
+  observeEvent(input$reset_accessibility, access_reset_handler(), ignoreInit = TRUE)
+  observeEvent(input$toolbar_reset_accessibility, access_reset_handler(), ignoreInit = TRUE)
+
+  # Colorblind-friendly palette generator
   get_accessible_palette <- function(n) {
     if (isTRUE(accessibility$colorblind_safe)) {
       colors <- c("#440154", "#31688e", "#35b779", "#fde725", "#ff6a00", "#c42503", "#a50026", "#762a83")
@@ -1321,14 +1350,6 @@ server <- function(input, output, session){
     updateTextInput(session,"sidebar_state",value="data")
   })
 
-
-
-
-  # observeEvent(input$file, {
-  #   data_converted(NULL)
-  #   conversion_done(FALSE)
-  #   updateCheckboxInput(session, "is_interval_data", value = FALSE)
-  # })
   observeEvent(input$demo_selected, {
     data_converted(NULL)
     conversion_done(FALSE)
@@ -1345,18 +1366,8 @@ server <- function(input, output, session){
     df <- data_reactive()
     req(!is.null(df) && nrow(df) > 0)
     detect_dataset(df)
-  }) #|> bindCache(data_reactive())
+  }) |> bindCache(data_reactive())
 
-  # output$diagnostics <- renderPrint({
-  #   d <- diagnostics()
-  #   cat(
-  #     "Rows:", d$n_rows, "\n",
-  #     "Columns:", d$n_cols, "\n\n",
-  #     "Numeric variables:\n", paste(d$numeric, collapse=", "), "\n\n",
-  #     "Binary/event variables:\n", paste(d$binary, collapse=", "), "\n\n",
-  #     "Candidate time variables:\n", paste(d$time, collapse=", ")
-  #   )
-  # })
   output$active_dataset_name <- renderText({
     if (last_data_source() == "file" && !is.null(input$file)) {
       paste("Currently using:", input$file$name)
@@ -1400,7 +1411,7 @@ server <- function(input, output, session){
       ),
 
       #hr(),
-      # Independent Participant control for this step
+      # Independent participant control for this step
       checkboxInput("conv_has_id", "Dataset contains multiple participants", FALSE),
 
       conditionalPanel(
@@ -1784,16 +1795,6 @@ server <- function(input, output, session){
       )
     }
 
-    # This function grabs the user input or falls back to the default
-    get_labels <- function(default_title, default_x, default_y, default_legend) {
-      list(
-        title = if(isTruthy(input$custom_title)) input$custom_title else default_title,
-        x = if(isTruthy(input$custom_xlab)) input$custom_xlab else default_x,
-        y = if(isTruthy(input$custom_ylab)) input$custom_ylab else default_y,
-        legend = if(isTruthy(input$custom_legend)) input$custom_legend else default_legend
-      )
-    }
-
     # Raw time series
     if (input$viz_mode == "Raw time series") {
       req(input$xvar, input$yvar)
@@ -1914,10 +1915,6 @@ server <- function(input, output, session){
         }
       }
 
-      hex_to_rgba <- function(hex, alpha = 0.2) {
-        rgb_vals <- col2rgb(hex)
-        paste0("rgba(", rgb_vals[1], ",", rgb_vals[2], ",", rgb_vals[3], ",", alpha, ")")
-      }
 
       shapes <- list()
       legend_traces <- list() # To store info for dummy legend entries
@@ -2127,8 +2124,6 @@ server <- function(input, output, session){
                          showlegend = FALSE)
         }
       }
-      fonts <- get_plot_fonts()
-      margins <- get_plot_margins()
       p <- p |> plotly::layout(
         title = list(text = labs$title, font = list(size = fonts$title_size)),
         xaxis = list(
@@ -2246,11 +2241,6 @@ server <- function(input, output, session){
       pal <- get_accessible_palette(n_targets)
 
       use_stacked <- isTRUE(input$barcode_layout == "stacked") && n_targets > 1
-
-      hex_to_rgba <- function(hex, alpha = 0.3) {
-        rgb_vals <- col2rgb(hex)
-        paste0("rgba(", rgb_vals[1], ",", rgb_vals[2], ",", rgb_vals[3], ",", alpha, ")")
-      }
 
       p <- plotly::plot_ly()
 
@@ -2436,7 +2426,9 @@ server <- function(input, output, session){
   })
 
   # Descriptive statistics
-  output$desc_stats <- renderPrint({
+
+  stats_text <- reactive ({
+
     req(input$viz_mode)
     df <- data_reactive()
     ids_to_process <- list()
@@ -2615,8 +2607,6 @@ server <- function(input, output, session){
 
     })
 
-    # Replace the bottom of desc_stats where lines/stats_store/cat are:
-
     lines <- character(0)
     lines <- c(lines, paste(rep("=", 60), collapse = ""))
     lines <- c(lines, "  DORA — Descriptive Statistics")
@@ -2633,8 +2623,13 @@ server <- function(input, output, session){
     # Combine header + stats body
     full_output <- c(lines, "", txt)
 
-    stats_store(paste(full_output, collapse = "\n"))
-    cat(full_output, sep = "\n")
+    paste(full_output, collapse = "\n")
+  })
+
+  observe({ stats_store(stats_text()) })
+
+  output$desc_stats <- renderPrint({
+    cat(stats_text())
   })
 
   output$plot2 <- plotly::renderPlotly({

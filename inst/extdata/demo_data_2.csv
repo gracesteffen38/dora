@@ -1,4 +1,4 @@
-SubjectNumber,dc_time,mom_IBI_Lego,child_IBI_Lego,mom_RSA_Lego,child_RSA_Lego,mom_HbO_dlpfc_l,mom_HbR_dlpfc_l,child_HbO_dlpfc_l,child_HbR_dlpfc_l,mom_HbO_dlpfc_r,mom_HbR_dlpfc_r,child_HbO_dlpfc_r,child_HbR_dlpfc_r,NA_child,NA_Parent,PA_child,PA_Parent
+DyadID,dc_time,mom_HR_Lego,child_HR_Lego,mom_RSA_Lego,child_RSA_Lego,mom_HbO_dlpfc_l,mom_HbR_dlpfc_l,child_HbO_dlpfc_l,child_HbR_dlpfc_l,mom_HbO_dlpfc_r,mom_HbR_dlpfc_r,child_HbO_dlpfc_r,child_HbR_dlpfc_r,NA_child,NA_Parent,PA_child,PA_Parent
 103,460.928,79.86688852,100.237563,6.101233728,6.125461224,3.24E-07,6.67E-07,1.22E-07,-9.72E-08,9.64E-07,8.18E-08,-3.20E-07,-2.61E-07,1,0,0,1
 103,461.952,79.87657428,92.32111247,6.082604036,6.022612148,-3.50E-08,4.45E-07,-2.74E-07,-1.25E-08,-3.38E-07,-3.34E-07,-4.70E-07,-1.72E-07,1,0,0,1
 103,462.976,80.42815541,106.1944692,6.25458542,5.949765291,-7.32E-07,-6.82E-08,-5.28E-07,6.04E-08,-1.03E-06,-4.68E-07,-6.47E-07,-1.10E-07,0,0,0,0
