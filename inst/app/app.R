@@ -669,7 +669,7 @@ $(document).ready(function() {
         conditionalPanel(
           condition = "input.use_id == true",
           h4("Participants"),
-          checkboxInput("step_through", "Step through participants", FALSE),
+          checkboxInput("step_through", "View one participant at a time", FALSE),
 
           conditionalPanel(
             condition = "input.step_through == false && input.viz_mode != 'Event-locked single event'",
@@ -799,7 +799,7 @@ server <- function(input, output, session){
     paste0("rgba(", rgb_vals[1], ",", rgb_vals[2], ",", rgb_vals[3], ",", alpha, ")")
   }
 
-  get_labels <- function(input, default_title, default_x, default_y, default_legend) {
+  get_labels <- function(default_title, default_x, default_y, default_legend) {
     list(
       title  = if (isTruthy(input$custom_title))  input$custom_title  else default_title,
       x      = if (isTruthy(input$custom_xlab))   input$custom_xlab   else default_x,
@@ -1327,6 +1327,8 @@ server <- function(input, output, session){
     }
 
     updateTextInput(session, "sidebar_state", value = "viz")
+    shinyjs::runjs("$('#accessibility-controls').collapse('hide');")
+
 
     # Determine which visualizations are allowed based on data structure
     allowed_choices <- switch(input$data_structure,
@@ -2063,18 +2065,46 @@ server <- function(input, output, session){
       )
     }
     # Event-locked average
+    # Event-locked average
     if (input$viz_mode == "Event-locked average") {
       req(input$event_var, input$signal_var)
-      windows <- extract_event_windows_idx(filtered_data()[[input$event_var]])
-      req(nrow(windows) > 0)
 
       win <- (-input$pre):input$post
-      extract_event <- function(i){
-        idx <- windows$start[i] + win
-        idx <- idx[idx > 0 & idx <= nrow(filtered_data())]
-        filtered_data()[[input$signal_var]][idx]
+      win_len <- length(win)
+
+      # Loop per participant to avoid epoch windows bleeding across participant boundaries
+      multi_participant <- isTRUE(input$use_id) && !isTRUE(input$step_through)
+
+      if (multi_participant) {
+        req(input$idvar, input$selected_ids)
+        all_rows <- list()
+        for (pid in input$selected_ids) {
+          pdf <- filtered_data()[filtered_data()[[input$idvar]] == pid, ]
+          if (nrow(pdf) == 0) next
+          pw <- extract_event_windows_idx(pdf[[input$event_var]])
+          if (nrow(pw) == 0) next
+          for (i in seq_len(nrow(pw))) {
+            valid_win <- pw$start[i] + win
+            in_bounds <- valid_win > 0 & valid_win <= nrow(pdf)
+            snippet <- rep(NA_real_, win_len)
+            snippet[in_bounds] <- pdf[[input$signal_var]][valid_win[in_bounds]]
+            all_rows[[length(all_rows) + 1]] <- snippet
+          }
+        }
+        validate(need(length(all_rows) > 0, "No events found across selected participants."))
+        mat <- do.call(rbind, all_rows)
+      } else {
+        windows <- extract_event_windows_idx(filtered_data()[[input$event_var]])
+        req(nrow(windows) > 0)
+        mat <- do.call(rbind, lapply(seq_len(nrow(windows)), function(i) {
+          valid_win <- windows$start[i] + win
+          in_bounds <- valid_win > 0 & valid_win <= nrow(filtered_data())
+          snippet <- rep(NA_real_, win_len)
+          snippet[in_bounds] <- filtered_data()[[input$signal_var]][valid_win[in_bounds]]
+          snippet
+        }))
       }
-      mat <- do.call(rbind, lapply(seq_len(nrow(windows)), extract_event))
+
       avg <- colMeans(mat, na.rm = TRUE)
 
       # Get Labels
