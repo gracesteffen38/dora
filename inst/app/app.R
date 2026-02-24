@@ -2570,15 +2570,19 @@ server <- function(input, output, session){
   # Descriptive statistics
   stats_text <- reactive({
 
-    req(input$viz_mode)
+    if (is.null(input$viz_mode) || input$viz_mode == "") return("Select a visualization to see statistics.")
+
     df <- data_reactive()
+    if (is.null(df) || nrow(df) == 0) return("No data loaded.")
+
     ids_to_process <- list()
 
     if (isTRUE(input$use_id)) {
-      req(input$idvar)
+      if (is.null(input$idvar) || input$idvar == "") return("Please select a participant ID variable.")
       if (isTRUE(input$step_through)) {
         ids_to_process <- all_ids()[id_index()]
       } else {
+        if (is.null(input$selected_ids) || length(input$selected_ids) == 0) return("No participants selected.")
         ids_to_process <- input$selected_ids
       }
     } else {
@@ -2588,7 +2592,7 @@ server <- function(input, output, session){
 
     id_col <- if (isTRUE(input$use_id)) input$idvar else "temp_id"
 
-    range <- visible_range()
+    range      <- visible_range()
     zoom_active <- !is.null(range)
     range_label <- NULL
 
@@ -2620,20 +2624,20 @@ server <- function(input, output, session){
     calc_type  <- NULL
 
     if (input$viz_mode == "Event + Continuous Overlay") {
-      req(input$signal_overlay, input$event_overlay)
+      if (is.null(input$signal_overlay) || is.null(input$event_overlay)) return("Select signal and event variables.")
       cont_vars  <- input$signal_overlay
       event_vars <- input$event_overlay
       calc_type  <- "both"
     } else if (input$viz_mode == "Raw time series") {
-      req(input$yvar)
+      if (is.null(input$yvar)) return("Select a signal variable.")
       cont_vars <- input$yvar
       calc_type <- "continuous"
     } else if (input$viz_mode == "Event durations (barcode)") {
-      req(input$barcode_var)
+      if (is.null(input$barcode_var)) return("Select an event variable.")
       event_vars <- input$barcode_var
       calc_type  <- "event"
     } else if (grepl("Event-locked", input$viz_mode)) {
-      req(input$signal_var)
+      if (is.null(input$signal_var)) return("Select a signal variable.")
       cont_vars <- input$signal_var
       calc_type <- "continuous"
     }
@@ -2647,14 +2651,14 @@ server <- function(input, output, session){
 
       if (calc_type == "both") {
         for (e_var in event_vars) {
-          e_vals  <- sub_df[[e_var]]
+          e_vals   <- sub_df[[e_var]]
           unique_e <- unique(na.omit(e_vals))
           is_binary <- all(unique_e %in% c(0, 1))
-          if (is_binary) {
+          b_str <- if (is_binary) {
             b <- get_burstiness(e_vals)
-            b_str <- if (is.na(b)) "NA" else sprintf("%.4f", b)
+            if (is.na(b)) "NA" else sprintf("%.4f", b)
           } else {
-            b_str <- paste("Categorical:", length(unique(na.omit(e_vals[e_vals != 0 & e_vals != "0"]))), "types")
+            paste("Categorical:", length(unique(na.omit(e_vals[e_vals != 0 & e_vals != "0"]))), "types")
           }
           for (c_var in cont_vars) {
             c_vals <- sub_df[[c_var]]
@@ -2717,14 +2721,14 @@ server <- function(input, output, session){
     }
 
     section_title <- switch(calc_type,
-                            "both"       = "  Continuous Signals vs Event Variables",
-                            "continuous" = "  Continuous Signal Statistics",
-                            "event"      = "  Event Statistics (Burstiness)"
+                            "both"       = "Continuous Signals vs Event Variables",
+                            "continuous" = "Continuous Signal Statistics",
+                            "event"      = "Event Statistics (Burstiness)"
     )
 
-    full_output <- paste(
+    paste(
       header,
-      paste0("  DORA — Descriptive Statistics"),
+      "  DORA — Descriptive Statistics",
       paste0("  ", section_title),
       subheader,
       header,
@@ -2732,8 +2736,6 @@ server <- function(input, output, session){
       paste(capture.output(print(result_df, row.names = FALSE)), collapse = "\n"),
       sep = "\n"
     )
-
-    full_output
   })
 
   observe({ stats_store(stats_text()) })
