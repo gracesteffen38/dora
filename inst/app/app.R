@@ -954,10 +954,8 @@ server <- function(input, output, session){
   accessibility <- reactiveValues(
     high_contrast   = FALSE,
     large_text      = FALSE,
-    #colorblind_safe = FALSE,
     large_targets   = FALSE,
     reduce_motion   = FALSE,
-    #sticky_controls = FALSE,
     simplified_ui   = FALSE,
     show_descriptions = FALSE,
     confirm_actions = FALSE
@@ -2569,12 +2567,13 @@ server <- function(input, output, session){
 
   # Descriptive statistics
 
-  stats_text <- reactive({
+  stats_text <- reactive ({
 
     req(input$viz_mode)
     df <- data_reactive()
     ids_to_process <- list()
 
+    # Determine which IDs to process
     if (isTRUE(input$use_id)) {
       req(input$idvar)
       if (isTRUE(input$step_through)) {
@@ -2589,24 +2588,29 @@ server <- function(input, output, session){
 
     id_col <- if (isTRUE(input$use_id)) input$idvar else "temp_id"
 
+    # Filter for current plot
     range <- visible_range()
     zoom_active <- !is.null(range)
     range_label <- NULL
 
     if (zoom_active) {
+      # Determine which time column to filter on
       time_col <- switch(input$viz_mode,
                          "Raw time series"            = input$xvar,
                          "Event + Continuous Overlay" = input$time_overlay,
                          "Event durations (barcode)"  = input$barcode_time,
-                         diagnostics()$time[1]
+                         diagnostics()$time[1]  # fallback for event-locked modes
       )
       if (!is.null(time_col) && time_col %in% names(df)) {
         time_vals <- df[[time_col]]
+
+        # Handle both datetime and numeric x values from plotly
         if (inherits(time_vals, c("POSIXct", "POSIXt"))) {
           x_min <- as.POSIXct(as.numeric(range$min) / 1000, origin = "1970-01-01", tz = "UTC")
           x_max <- as.POSIXct(as.numeric(range$max) / 1000, origin = "1970-01-01", tz = "UTC")
           df <- df[!is.na(time_vals) & time_vals >= x_min & time_vals <= x_max, ]
-          range_label <- paste("From", format(x_min, "%H:%M:%S"), "to", format(x_max, "%H:%M:%S"))
+          range_label <- paste("From", format(x_min, "%H:%M:%S"),
+                               "to", format(x_max, "%H:%M:%S"))
         } else {
           x_min <- as.numeric(range$min)
           x_max <- as.numeric(range$max)
@@ -2615,24 +2619,28 @@ server <- function(input, output, session){
         }
       }
     }
-
-    cont_vars  <- NULL
+    # Initialize variables to hold selection names
+    cont_vars <- NULL
     event_vars <- NULL
-    calc_type  <- NULL
+    calc_type <- NULL
 
+    # 1. Determine Calculation Type based on Viz Mode
     if (input$viz_mode == "Event + Continuous Overlay") {
       req(input$signal_overlay, input$event_overlay)
-      cont_vars  <- input$signal_overlay
+      cont_vars <- input$signal_overlay
       event_vars <- input$event_overlay
-      calc_type  <- "both"
+      calc_type <- "both"
+
     } else if (input$viz_mode == "Raw time series") {
       req(input$yvar)
       cont_vars <- input$yvar
       calc_type <- "continuous"
+
     } else if (input$viz_mode == "Event durations (barcode)") {
       req(input$barcode_var)
       event_vars <- input$barcode_var
-      calc_type  <- "event"
+      calc_type <- "event"
+
     } else if (grepl("Event-locked", input$viz_mode)) {
       req(input$signal_var)
       cont_vars <- input$signal_var
@@ -2643,88 +2651,119 @@ server <- function(input, output, session){
       cat("No statistics available for this view.")
       return()
     }
-
     txt <- capture.output({
+      # 2. Print General Header
+      cat(paste(rep("=", 60), collapse = ""), "\n")
+      if (calc_type == "both") {
+        cat("  Comparison: Continuous Signals vs Event Variables\n")
+      } else if (calc_type == "continuous") {
+        cat("  Continuous Signal Statistics\n")
+      } else if (calc_type == "event") {
+        cat("  Event Statistics (Burstiness)\n")
+      }
+      cat(paste(rep("=", 60), collapse = ""), "\n\n")
 
+      # 3. Loop through Participants
       for (id in ids_to_process) {
         sub_df <- df[df[[id_col]] == id, ]
-        rows <- list()
+
+        cat(paste("Participant:", id, "\n"))
+        cat(paste(rep("-", 40), collapse = ""), "\n")
 
         if (calc_type == "both") {
-          for (e_var in event_vars) {
-            e_vals    <- sub_df[[e_var]]
-            unique_e  <- unique(na.omit(e_vals))
+
+          # NESTED LOOPS: Loop through every selected Event AND every selected Signal
+          for(e_var in event_vars) {
+
+            # Calculate Event Stats for this specific event variable
+            e_vals <- sub_df[[e_var]]
+
+            # Check if strictly binary (0/1) or categorical
+            unique_e <- unique(na.omit(e_vals))
             is_binary <- all(unique_e %in% c(0, 1))
-            b_str <- if (is_binary) {
+
+            b_str <- "N/A"
+            note_str <- ""
+
+            if(is_binary) {
               b <- get_burstiness(e_vals)
-              if (is.na(b)) "NA" else sprintf("%.4f", b)
+              b_str <- if(is.na(b)) "NA" else sprintf("%.4f", b)
+              note_str <- ""
             } else {
-              paste("Categ.", length(unique(na.omit(e_vals[e_vals != 0 & e_vals != "0"]))), "types")
+              clean_vals <- e_vals[e_vals != 0 & e_vals != "0"]
+              n_types <- length(unique(na.omit(clean_vals)))
+              note_str <- paste("(Categorical:", n_types, "types)")
             }
-            for (c_var in cont_vars) {
+
+            # Pair with continuous variables
+            for(c_var in cont_vars) {
               c_vals <- sub_df[[c_var]]
-              rows[[length(rows) + 1]] <- data.frame(
-                Signal     = c_var,
-                Mean       = sprintf("%.4f", mean(c_vals, na.rm = TRUE)),
-                SD         = sprintf("%.4f", sd(c_vals, na.rm = TRUE)),
-                Event      = e_var,
-                Burstiness = b_str,
-                stringsAsFactors = FALSE
-              )
+              m <- mean(c_vals, na.rm = TRUE)
+              s <- sd(c_vals, na.rm = TRUE)
+
+              cat(sprintf("Signal: %-25s Event: %-20s\n", c_var, e_var))
+              cat(sprintf("  Mean: %-24.4f  Burstiness: %s\n", m, b_str))
+              cat(sprintf("  SD:   %-24.4f %s\n", s, note_str))
+              cat("\n")
             }
           }
 
         } else if (calc_type == "continuous") {
-          for (c_var in cont_vars) {
-            vals <- sub_df[[c_var]]
-            rows[[length(rows) + 1]] <- data.frame(
-              Variable = c_var,
-              Mean     = sprintf("%.4f", mean(vals, na.rm = TRUE)),
-              SD       = sprintf("%.4f", sd(vals, na.rm = TRUE)),
-              stringsAsFactors = FALSE
-            )
+
+          for (var_name in cont_vars) {
+            vals <- sub_df[[var_name]]
+            m <- mean(vals, na.rm = TRUE)
+            s <- sd(vals, na.rm = TRUE)
+
+            cat(paste("  Variable:", var_name, "\n"))
+            cat(sprintf("    Mean: %.4f,  SD: %.4f\n", m, s))
           }
+          cat("\n")
 
         } else if (calc_type == "event") {
-          for (e_var in event_vars) {
-            vals  <- sub_df[[e_var]]
-            b     <- get_burstiness(vals)
-            b_str <- if (is.na(b)) {
-              clean_vals <- na.omit(vals)
-              if (!all(unique(clean_vals) %in% c(0, 1))) "NA (Categorical)"
-              else if (sum(clean_vals == 1) < 2) "NA (<2 events)"
-              else "NA"
-            } else {
-              sprintf("%.4f", b)
-            }
-            rows[[length(rows) + 1]] <- data.frame(
-              Variable   = e_var,
-              Burstiness = b_str,
-              stringsAsFactors = FALSE
-            )
-          }
-        }
 
-        if (length(rows) > 0) {
-          result_df <- do.call(rbind, rows)
-          cat(paste("Participant:", id, "\n"))
-          cat(paste(rep("-", 40), collapse = ""), "\n")
-          print(result_df, row.names = FALSE)
+          for(e_var in event_vars){
+            vals <- sub_df[[e_var]]
+            b <- get_burstiness(vals)
+
+            cat(paste("  Variable:", e_var, "\n"))
+
+            if (is.na(b)) {
+              clean_vals <- na.omit(vals)
+              if (!all(unique(clean_vals) %in% c(0, 1))) {
+                cat("    Burstiness: NA (Categorical/Multiclass)\n")
+              } else if (sum(clean_vals == 1) < 2) {
+                cat("    Burstiness: NA (<2 events detected)\n")
+              } else {
+                cat("    Burstiness: NA\n")
+              }
+            } else {
+              cat(sprintf("    Burstiness: %.4f\n", b))
+            }
+          }
           cat("\n")
         }
       }
+
     })
 
-    lines <- c(
-      paste(rep("=", 60), collapse = ""),
-      "  DORA — Descriptive Statistics",
-      paste(rep("-", 60), collapse = ""),
-      if (zoom_active && !is.null(range_label)) paste("  Time window:", range_label) else "  Time window: Full dataset",
-      paste(rep("=", 60), collapse = ""),
-      ""
-    )
+    lines <- character(0)
+    lines <- c(lines, paste(rep("=", 60), collapse = ""))
+    lines <- c(lines, "  DORA — Descriptive Statistics")
 
-    paste(c(lines, txt), collapse = "\n")
+    if (zoom_active && !is.null(range_label)) {
+      lines <- c(lines, paste(rep("-", 60), collapse = ""))
+      lines <- c(lines, paste("  Time window:", range_label))
+    } else {
+      lines <- c(lines, paste(rep("-", 60), collapse = ""))
+      lines <- c(lines, "  Time window: Full dataset")
+    }
+    lines <- c(lines, paste(rep("=", 60), collapse = ""))
+
+    # Combine header + stats body
+    full_output <- c(lines, "", txt)
+
+    paste(full_output, collapse = "\n")
   })
 
   observe({ stats_store(stats_text()) })
