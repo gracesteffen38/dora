@@ -2653,117 +2653,99 @@ server <- function(input, output, session){
       cat("No statistics available for this view.")
       return()
     }
-    txt <- capture.output({
-      # 2. Print General Header
-      cat(paste(rep("=", 60), collapse = ""), "\n")
+    # Build a data frame instead of text output
+    rows <- list()
+
+    for (id in ids_to_process) {
+      sub_df <- df[df[[id_col]] == id, ]
+
       if (calc_type == "both") {
-        cat("  Comparison: Continuous Signals vs Event Variables\n")
+        for (e_var in event_vars) {
+          e_vals <- sub_df[[e_var]]
+          unique_e <- unique(na.omit(e_vals))
+          is_binary <- all(unique_e %in% c(0, 1))
+          if (is_binary) {
+            b <- get_burstiness(e_vals)
+            b_str <- if (is.na(b)) "NA" else sprintf("%.4f", b)
+          } else {
+            b_str <- paste("Categorical:", length(unique(na.omit(e_vals[e_vals != 0 & e_vals != "0"]))), "types")
+          }
+          for (c_var in cont_vars) {
+            c_vals <- sub_df[[c_var]]
+            rows[[length(rows) + 1]] <- data.frame(
+              Participant = as.character(id),
+              Signal      = c_var,
+              Mean        = sprintf("%.4f", mean(c_vals, na.rm = TRUE)),
+              SD          = sprintf("%.4f", sd(c_vals, na.rm = TRUE)),
+              Event       = e_var,
+              Burstiness  = b_str,
+              stringsAsFactors = FALSE
+            )
+          }
+        }
+
       } else if (calc_type == "continuous") {
-        cat("  Continuous Signal Statistics\n")
+        for (c_var in cont_vars) {
+          vals <- sub_df[[c_var]]
+          rows[[length(rows) + 1]] <- data.frame(
+            Participant = as.character(id),
+            Variable    = c_var,
+            Mean        = sprintf("%.4f", mean(vals, na.rm = TRUE)),
+            SD          = sprintf("%.4f", sd(vals, na.rm = TRUE)),
+            stringsAsFactors = FALSE
+          )
+        }
+
       } else if (calc_type == "event") {
-        cat("  Event Statistics (Burstiness)\n")
-      }
-      cat(paste(rep("=", 60), collapse = ""), "\n\n")
-
-      # 3. Loop through Participants
-      for (id in ids_to_process) {
-        sub_df <- df[df[[id_col]] == id, ]
-
-        cat(paste("Participant:", id, "\n"))
-        cat(paste(rep("-", 40), collapse = ""), "\n")
-
-        if (calc_type == "both") {
-
-          # NESTED LOOPS: Loop through every selected Event AND every selected Signal
-          for(e_var in event_vars) {
-
-            # Calculate Event Stats for this specific event variable
-            e_vals <- sub_df[[e_var]]
-
-            # Check if strictly binary (0/1) or categorical
-            unique_e <- unique(na.omit(e_vals))
-            is_binary <- all(unique_e %in% c(0, 1))
-
-            b_str <- "N/A"
-            note_str <- ""
-
-            if(is_binary) {
-              b <- get_burstiness(e_vals)
-              b_str <- if(is.na(b)) "NA" else sprintf("%.4f", b)
-              note_str <- ""
-            } else {
-              clean_vals <- e_vals[e_vals != 0 & e_vals != "0"]
-              n_types <- length(unique(na.omit(clean_vals)))
-              note_str <- paste("(Categorical:", n_types, "types)")
-            }
-
-            # Pair with continuous variables
-            for(c_var in cont_vars) {
-              c_vals <- sub_df[[c_var]]
-              m <- mean(c_vals, na.rm = TRUE)
-              s <- sd(c_vals, na.rm = TRUE)
-
-              cat(sprintf("Signal: %-25s Event: %-20s\n", c_var, e_var))
-              cat(sprintf("  Mean: %-24.4f  Burstiness: %s\n", m, b_str))
-              cat(sprintf("  SD:   %-24.4f %s\n", s, note_str))
-              cat("\n")
-            }
+        for (e_var in event_vars) {
+          vals <- sub_df[[e_var]]
+          b <- get_burstiness(vals)
+          b_str <- if (is.na(b)) {
+            clean_vals <- na.omit(vals)
+            if (!all(unique(clean_vals) %in% c(0, 1))) "NA (Categorical)"
+            else if (sum(clean_vals == 1) < 2) "NA (<2 events)"
+            else "NA"
+          } else {
+            sprintf("%.4f", b)
           }
-
-        } else if (calc_type == "continuous") {
-
-          for (var_name in cont_vars) {
-            vals <- sub_df[[var_name]]
-            m <- mean(vals, na.rm = TRUE)
-            s <- sd(vals, na.rm = TRUE)
-
-            cat(paste("  Variable:", var_name, "\n"))
-            cat(sprintf("    Mean: %.4f,  SD: %.4f\n", m, s))
-          }
-          cat("\n")
-
-        } else if (calc_type == "event") {
-
-          for(e_var in event_vars){
-            vals <- sub_df[[e_var]]
-            b <- get_burstiness(vals)
-
-            cat(paste("  Variable:", e_var, "\n"))
-
-            if (is.na(b)) {
-              clean_vals <- na.omit(vals)
-              if (!all(unique(clean_vals) %in% c(0, 1))) {
-                cat("    Burstiness: NA (Categorical/Multiclass)\n")
-              } else if (sum(clean_vals == 1) < 2) {
-                cat("    Burstiness: NA (<2 events detected)\n")
-              } else {
-                cat("    Burstiness: NA\n")
-              }
-            } else {
-              cat(sprintf("    Burstiness: %.4f\n", b))
-            }
-          }
-          cat("\n")
+          rows[[length(rows) + 1]] <- data.frame(
+            Participant = as.character(id),
+            Variable    = e_var,
+            Burstiness  = b_str,
+            stringsAsFactors = FALSE
+          )
         }
       }
-
-    })
-
-    lines <- character(0)
-    lines <- c(lines, paste(rep("=", 60), collapse = ""))
-    lines <- c(lines, "  DORA — Descriptive Statistics")
-
-    if (zoom_active && !is.null(range_label)) {
-      lines <- c(lines, paste(rep("-", 60), collapse = ""))
-      lines <- c(lines, paste("  Time window:", range_label))
-    } else {
-      lines <- c(lines, paste(rep("-", 60), collapse = ""))
-      lines <- c(lines, "  Time window: Full dataset")
     }
-    lines <- c(lines, paste(rep("=", 60), collapse = ""))
 
-    # Combine header + stats body
-    full_output <- c(lines, "", txt)
+    if (length(rows) == 0) return("No statistics available for this view.")
+
+    result_df <- do.call(rbind, rows)
+
+    header <- paste(rep("=", 60), collapse = "")
+    subheader <- if (zoom_active && !is.null(range_label)) {
+      paste0("  Time window: ", range_label)
+    } else {
+      "  Time window: Full dataset"
+    }
+
+    section_title <- switch(calc_type,
+                            "both"       = "  Continuous Signals vs Event Variables",
+                            "continuous" = "  Continuous Signal Statistics",
+                            "event"      = "  Event Statistics (Burstiness)"
+    )
+
+    full_output <- paste(
+      header,
+      paste0("  DORA — Descriptive Statistics — ", section_title),
+      subheader,
+      header,
+      "",
+      paste(capture.output(print(result_df, row.names = FALSE)), collapse = "\n"),
+      sep = "\n"
+    )
+
+    full_output
 
     paste(full_output, collapse = "\n")
   })
