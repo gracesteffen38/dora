@@ -546,14 +546,37 @@ $(document).ready(function() {
                                     icon("circle-question")),
                         tags$div(id = "help-dropdown-menu",
                                  style = "display: none; position: absolute; right: 0; top: 100%;
-                      min-width: 220px; background: white; border: 1px solid #ddd;
+                      min-width: 340px; background: white; border: 1px solid #ddd;
                       border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
                       z-index: 2000; padding: 8px 0;",
                                  tags$a(href = "https://forms.gle/G3MxUSmnZzFqC5Yj8",
                                         target = "_blank",
                                         style = "display: block; padding: 8px 16px; color: #333;
-                text-decoration: none; font-size: 14px;",
-                                        icon("bug"), " Report a bug...")
+                       text-decoration: none; font-size: 14px;",
+                                        icon("bug"), " Report a bug..."),
+                                 tags$hr(style = "margin: 4px 0;"),
+                                 tags$div(style = "padding: 8px 16px;",
+                                          tags$strong(style = "font-size: 13px; color: #555;", "Keyboard Shortcuts"),
+                                          tags$table(
+                                            style = "width: 100%; font-size: 12px; border-collapse: collapse; margin-top: 6px;",
+                                            tags$thead(tags$tr(
+                                              tags$th(style = "text-align:left; padding:3px 6px; border-bottom:1px solid #eee; color:#888;", "Shortcut"),
+                                              tags$th(style = "text-align:left; padding:3px 6px; border-bottom:1px solid #eee; color:#888;", "Action")
+                                            )),
+                                            tags$tbody(
+                                              tags$tr(                        tags$td(style="padding:3px 6px;", tags$kbd("Alt+V")),          tags$td(style="padding:3px 6px; color:#333;", "Go to Visualizations")),
+                                              tags$tr(style="background:#f9f9f9;", tags$td(style="padding:3px 6px;", tags$kbd("Alt+B")),    tags$td(style="padding:3px 6px; color:#333;", "Back to Data Options")),
+                                              tags$tr(                        tags$td(style="padding:3px 6px;", tags$kbd("Alt+P")),          tags$td(style="padding:3px 6px; color:#333;", "Peek at data")),
+                                              tags$tr(style="background:#f9f9f9;", tags$td(style="padding:3px 6px;", tags$kbd("Alt+C")),    tags$td(style="padding:3px 6px; color:#333;", "Convert data")),
+                                              tags$tr(                        tags$td(style="padding:3px 6px;", tags$kbd("Alt+S / Ctrl+S")), tags$td(style="padding:3px 6px; color:#333;", "Open Save menu")),
+                                              tags$tr(style="background:#f9f9f9;", tags$td(style="padding:3px 6px;", tags$kbd("Alt+A")),    tags$td(style="padding:3px 6px; color:#333;", "Open Accessibility menu")),
+                                              tags$tr(                        tags$td(style="padding:3px 6px;", tags$kbd("Alt+H")),          tags$td(style="padding:3px 6px; color:#333;", "Open Help menu")),
+                                              tags$tr(style="background:#f9f9f9;", tags$td(style="padding:3px 6px;", tags$kbd("← →")),      tags$td(style="padding:3px 6px; color:#333;", "Previous / Next participant")),
+                                              tags$tr(                        tags$td(style="padding:3px 6px;", tags$kbd("↑ ↓")),            tags$td(style="padding:3px 6px; color:#333;", "Previous / Next event")),
+                                              tags$tr(style="background:#f9f9f9;", tags$td(style="padding:3px 6px;", tags$kbd("Esc")),      tags$td(style="padding:3px 6px; color:#333;", "Close all menus"))
+                                            )
+                                          )
+                                 )
                         )
                )
              )
@@ -1635,14 +1658,33 @@ server <- function(input, output, session){
   })
 
   output$id_select_ui <- renderUI({
-    selectInput(
-      "selected_ids",
-      "Select participant(s)",
-      choices = all_ids(),
-      selected = all_ids(),
-      multiple = TRUE
+    ids <- all_ids()
+    default_sel <- ids[seq_len(min(5, length(ids)))]
+    tagList(
+      selectInput(
+        "selected_ids",
+        "Select participant(s)",
+        choices = ids,
+        selected = default_sel,
+        multiple = TRUE
+      ),
+      checkboxInput("select_all_ids", "Select all participants", FALSE)
     )
   })
+
+  observeEvent(input$select_all_ids, {
+    if (isTRUE(input$select_all_ids)) {
+      updateSelectInput(session, "selected_ids", selected = all_ids())
+    } else {
+      ids <- all_ids()
+      updateSelectInput(session, "selected_ids", selected = ids[seq_len(min(5, length(ids)))])
+    }
+  }, ignoreInit = TRUE)
+
+  observeEvent(input$selected_ids, {
+    all_selected <- length(input$selected_ids) == length(all_ids())
+    updateCheckboxInput(session, "select_all_ids", value = all_selected)
+  }, ignoreInit = TRUE, ignoreNULL = TRUE)
 
   # Variable selection
   output$var_ui <- renderUI({
@@ -1919,37 +1961,60 @@ server <- function(input, output, session){
 
 
       shapes <- list()
-      legend_traces <- list() # To store info for dummy legend entries
+      legend_traces <- list()
+      multi_participant <- isTRUE(input$use_id) && !isTRUE(input$step_through)
 
-      for(target in plot_targets) {
-        # Extract binary vector for this specific target
-        vec <- filtered_data()[[target$col]]
-        is_active <- vec == target$val
-        # Handle NAs as false
-        is_active[is.na(is_active)] <- FALSE
-        is_active <- as.numeric(is_active)
+      if (multi_participant) {
+        req(input$idvar, input$selected_ids)
+        combined_time <- c()
+        combined_signals <- setNames(vector("list", length(input$signal_overlay)), input$signal_overlay)
+        for (v in input$signal_overlay) combined_signals[[v]] <- c()
 
-        windows <- extract_event_windows_idx(is_active)
+        for (pid in input$selected_ids) {
+          pdf <- filtered_data()[filtered_data()[[input$idvar]] == pid, ]
+          if (nrow(pdf) == 0) next
+          pt <- pdf[[input$time_overlay]]
+          combined_time <- c(combined_time, pt, NA)
+          for (v in input$signal_overlay) combined_signals[[v]] <- c(combined_signals[[v]], pdf[[v]], NA)
 
-        if (nrow(windows) > 0) {
-          rgba_col <- hex_to_rgba(target$color, alpha = 0.2)
-
-          # Create rectangles
-          for (i in seq_len(nrow(windows))) {
-            shapes[[length(shapes) + 1]] <- list(
-              type = "rect",
-              x0 = time_vec[windows$start[i]],
-              x1 = time_vec[windows$end[i]],
-              y0 = y_min,
-              y1 = y_max,
-              fillcolor = rgba_col,
-              line = list(width = 0),
-              layer = "below"
-            )
+          for (target in plot_targets) {
+            vec <- pdf[[target$col]]
+            is_active <- as.numeric(!is.na(vec) & vec == target$val)
+            windows <- extract_event_windows_idx(is_active)
+            if (nrow(windows) > 0) {
+              rgba_col <- hex_to_rgba(target$color, alpha = 0.2)
+              for (i in seq_len(nrow(windows))) {
+                shapes[[length(shapes) + 1]] <- list(
+                  type = "rect",
+                  x0 = pt[windows$start[i]], x1 = pt[windows$end[i]],
+                  y0 = y_min, y1 = y_max,
+                  fillcolor = rgba_col, line = list(width = 0), layer = "below"
+                )
+              }
+              if (!target$label %in% sapply(legend_traces, function(lt) lt$label))
+                legend_traces[[length(legend_traces) + 1]] <- target
+            }
           }
+        }
+        time_vec <- combined_time
 
-          # Add to legend list (so we only add one legend entry per event type)
-          legend_traces[[length(legend_traces)+1]] <- target
+      } else {
+        for (target in plot_targets) {
+          vec <- filtered_data()[[target$col]]
+          is_active <- as.numeric(!is.na(vec) & vec == target$val)
+          windows <- extract_event_windows_idx(is_active)
+          if (nrow(windows) > 0) {
+            rgba_col <- hex_to_rgba(target$color, alpha = 0.2)
+            for (i in seq_len(nrow(windows))) {
+              shapes[[length(shapes) + 1]] <- list(
+                type = "rect",
+                x0 = time_vec[windows$start[i]], x1 = time_vec[windows$end[i]],
+                y0 = y_min, y1 = y_max,
+                fillcolor = rgba_col, line = list(width = 0), layer = "below"
+              )
+            }
+            legend_traces[[length(legend_traces) + 1]] <- target
+          }
         }
       }
 
@@ -1963,12 +2028,12 @@ server <- function(input, output, session){
 
       p <- plotly::plot_ly()
 
-      # 1. Add Continuous Lines
+      # Add continuous lines
       for (var in input$signal_overlay) {
-        p <- plotly::add_trace(p, x = time_vec, y = filtered_data()[[var]], name = var, type = "scatter", mode = "lines")
+        y_data <- if (multi_participant) combined_signals[[var]] else filtered_data()[[var]]
+        p <- plotly::add_trace(p, x = time_vec, y = y_data, name = var, type = "scatter", mode = "lines")
       }
 
-      # 2. Add Dummy Legend Entries
       for (tr in legend_traces) {
         p <- plotly::add_trace(p,
                                x = time_vec[1],
@@ -2149,7 +2214,7 @@ server <- function(input, output, session){
       # Overlay individual events
       if (isTRUE(input$overlay_events)) {
         for (i in seq_len(nrow(mat))) {
-          p <- add_lines(p, x = win, y = mat[i, ],
+          p <- plot_ly::add_lines(p, x = win, y = mat[i, ],
                          opacity = 0.3, line = list(color = "gray"),
                          showlegend = FALSE)
         }
@@ -2238,7 +2303,7 @@ server <- function(input, output, session){
 
         x_positions <- time_vec_plot
       } else {
-        x_positions <- seq_len(nrow(df_clean))
+        x_positions <- as.numeric(time_vec)
       }
 
       plot_targets <- list()
