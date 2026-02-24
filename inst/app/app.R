@@ -2568,14 +2568,12 @@ server <- function(input, output, session){
   })
 
   # Descriptive statistics
-
-  stats_text <- reactive ({
+  stats_text <- reactive({
 
     req(input$viz_mode)
     df <- data_reactive()
     ids_to_process <- list()
 
-    # Determine which IDs to process
     if (isTRUE(input$use_id)) {
       req(input$idvar)
       if (isTRUE(input$step_through)) {
@@ -2590,29 +2588,24 @@ server <- function(input, output, session){
 
     id_col <- if (isTRUE(input$use_id)) input$idvar else "temp_id"
 
-    # Filter for current plot
     range <- visible_range()
     zoom_active <- !is.null(range)
     range_label <- NULL
 
     if (zoom_active) {
-      # Determine which time column to filter on
       time_col <- switch(input$viz_mode,
                          "Raw time series"            = input$xvar,
                          "Event + Continuous Overlay" = input$time_overlay,
                          "Event durations (barcode)"  = input$barcode_time,
-                         diagnostics()$time[1]  # fallback for event-locked modes
+                         diagnostics()$time[1]
       )
       if (!is.null(time_col) && time_col %in% names(df)) {
         time_vals <- df[[time_col]]
-
-        # Handle both datetime and numeric x values from plotly
         if (inherits(time_vals, c("POSIXct", "POSIXt"))) {
           x_min <- as.POSIXct(as.numeric(range$min) / 1000, origin = "1970-01-01", tz = "UTC")
           x_max <- as.POSIXct(as.numeric(range$max) / 1000, origin = "1970-01-01", tz = "UTC")
           df <- df[!is.na(time_vals) & time_vals >= x_min & time_vals <= x_max, ]
-          range_label <- paste("From", format(x_min, "%H:%M:%S"),
-                               "to", format(x_max, "%H:%M:%S"))
+          range_label <- paste("From", format(x_min, "%H:%M:%S"), "to", format(x_max, "%H:%M:%S"))
         } else {
           x_min <- as.numeric(range$min)
           x_max <- as.numeric(range$max)
@@ -2621,39 +2614,32 @@ server <- function(input, output, session){
         }
       }
     }
-    # Initialize variables to hold selection names
-    cont_vars <- NULL
-    event_vars <- NULL
-    calc_type <- NULL
 
-    # 1. Determine Calculation Type based on Viz Mode
+    cont_vars  <- NULL
+    event_vars <- NULL
+    calc_type  <- NULL
+
     if (input$viz_mode == "Event + Continuous Overlay") {
       req(input$signal_overlay, input$event_overlay)
-      cont_vars <- input$signal_overlay
+      cont_vars  <- input$signal_overlay
       event_vars <- input$event_overlay
-      calc_type <- "both"
-
+      calc_type  <- "both"
     } else if (input$viz_mode == "Raw time series") {
       req(input$yvar)
       cont_vars <- input$yvar
       calc_type <- "continuous"
-
     } else if (input$viz_mode == "Event durations (barcode)") {
       req(input$barcode_var)
       event_vars <- input$barcode_var
-      calc_type <- "event"
-
+      calc_type  <- "event"
     } else if (grepl("Event-locked", input$viz_mode)) {
       req(input$signal_var)
       cont_vars <- input$signal_var
       calc_type <- "continuous"
     }
 
-    if (is.null(calc_type) || length(ids_to_process) == 0) {
-      cat("No statistics available for this view.")
-      return()
-    }
-    # Build a data frame instead of text output
+    if (is.null(calc_type) || length(ids_to_process) == 0) return("No statistics available for this view.")
+
     rows <- list()
 
     for (id in ids_to_process) {
@@ -2661,7 +2647,7 @@ server <- function(input, output, session){
 
       if (calc_type == "both") {
         for (e_var in event_vars) {
-          e_vals <- sub_df[[e_var]]
+          e_vals  <- sub_df[[e_var]]
           unique_e <- unique(na.omit(e_vals))
           is_binary <- all(unique_e %in% c(0, 1))
           if (is_binary) {
@@ -2698,8 +2684,8 @@ server <- function(input, output, session){
 
       } else if (calc_type == "event") {
         for (e_var in event_vars) {
-          vals <- sub_df[[e_var]]
-          b <- get_burstiness(vals)
+          vals  <- sub_df[[e_var]]
+          b     <- get_burstiness(vals)
           b_str <- if (is.na(b)) {
             clean_vals <- na.omit(vals)
             if (!all(unique(clean_vals) %in% c(0, 1))) "NA (Categorical)"
@@ -2723,6 +2709,7 @@ server <- function(input, output, session){
     result_df <- do.call(rbind, rows)
 
     header <- paste(rep("=", 60), collapse = "")
+
     subheader <- if (zoom_active && !is.null(range_label)) {
       paste0("  Time window: ", range_label)
     } else {
@@ -2737,7 +2724,8 @@ server <- function(input, output, session){
 
     full_output <- paste(
       header,
-      paste0("  DORA — Descriptive Statistics — ", section_title),
+      paste0("  DORA — Descriptive Statistics"),
+      paste0("  ", section_title),
       subheader,
       header,
       "",
@@ -2746,8 +2734,6 @@ server <- function(input, output, session){
     )
 
     full_output
-
-    paste(full_output, collapse = "\n")
   })
 
   observe({ stats_store(stats_text()) })
@@ -2755,6 +2741,7 @@ server <- function(input, output, session){
   output$desc_stats <- renderPrint({
     cat(stats_text())
   })
+
 
   output$plot2 <- plotly::renderPlotly({
     req(input$show_second_plot)
