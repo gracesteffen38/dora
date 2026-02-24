@@ -7,11 +7,9 @@
 #' @export
 detect_dataset <- function(df) {
   numeric_vars <- names(df)[sapply(df, is.numeric)]
-
   binary_vars <- numeric_vars[sapply(df[numeric_vars], function(x)
     all(na.omit(unique(x)) %in% c(0, 1))
   )]
-
   time_vars <- names(df)[
     sapply(seq_along(df), function(i) {
       inherits(df[[i]], c("POSIXct", "POSIXt", "Date", "POSIXlt", "hms", "difftime")) ||
@@ -22,10 +20,13 @@ detect_dataset <- function(df) {
     })
   ]
 
+  # All numeric vars for the time selector, but with detected time vars floated to the top
+  time_selector_vars <- c(time_vars, setdiff(numeric_vars, time_vars))
+
   list(
     numeric = numeric_vars,
     binary  = binary_vars,
-    time    = time_vars,
+    time    = time_selector_vars,
     n_rows  = nrow(df),
     n_cols  = ncol(df)
   )

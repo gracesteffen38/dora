@@ -752,6 +752,7 @@ $(document).ready(function() {
 
         conditionalPanel(
           condition = "input.viz_mode == 'Event-locked average'",
+          textOutput("n_events_averaged"),
           checkboxInput(
             "overlay_events",
             "Overlay individual events",
@@ -762,7 +763,7 @@ $(document).ready(function() {
             "Show SE ribbon",
             FALSE
           )
-        ),
+        ),,
         # Custom labels dropdown
         tags$div(class = "panel panel-default", style = "margin-bottom: 10px;",
                  tags$div(class = "panel-heading", style = "padding: 8px 12px; background-color: #f8f9fa;",
@@ -1379,8 +1380,12 @@ server <- function(input, output, session){
                       selected = allowed_choices[1])
   })
 
-  observeEvent(input$back_data,{
-    updateTextInput(session,"sidebar_state",value="data")
+  observeEvent(input$back_data, {
+    updateTextInput(session, "sidebar_state", value = "data")
+    updateCheckboxInput(session, "show_second_plot", value = FALSE)
+    plot_store(NULL)
+    plot2_store(NULL)
+    stats_store(NULL)
   })
 
   observeEvent(input$demo_selected, {
@@ -1646,6 +1651,29 @@ server <- function(input, output, session){
     paste("Event:", event_index())
   })
 
+  output$n_events_averaged <- renderText({
+    req(input$viz_mode == "Event-locked average", input$event_var)
+
+    multi_participant <- isTRUE(input$use_id) && !isTRUE(input$step_through)
+
+    n <- if (multi_participant) {
+      req(input$idvar, input$selected_ids)
+      total <- 0
+      for (pid in input$selected_ids) {
+        pdf <- filtered_data()[filtered_data()[[input$idvar]] == pid, ]
+        if (nrow(pdf) == 0) next
+        pw <- extract_event_windows_idx(pdf[[input$event_var]])
+        total <- total + nrow(pw)
+      }
+      total
+    } else {
+      windows <- extract_event_windows_idx(filtered_data()[[input$event_var]])
+      nrow(windows)
+    }
+
+    paste("Averaging", n, "event(s)")
+  })
+
   output$event_onset_time <- renderText({
     req(input$viz_mode == "Event-locked single event")
     df <- data_reactive()
@@ -1777,8 +1805,8 @@ server <- function(input, output, session){
     })]
 
     tagList(
-      selectInput("time_overlay", "Time variable", d$time, selected = selected_time()),
-      selectInput("signal_overlay", "Continuous signal(s)", d$numeric, selected = selected_signal(), multiple = TRUE),
+      selectInput("time_overlay", "Time (x) variable", d$time, selected = selected_time()),
+      selectInput("signal_overlay", "Continuous (y) variable(s)", d$numeric, selected = selected_signal(), multiple = TRUE),
 
       # CHANGE: Added multiple = TRUE so you can pick "Freezing" AND "Tremor"
       selectInput("event_overlay", "Event variable(s)", cat_vars,
@@ -1806,7 +1834,7 @@ server <- function(input, output, session){
     }
 
     tagList(
-      selectInput("barcode_time", "Time variable", d$time, selected = selected_time()),
+      selectInput("barcode_time", "Time (x) variable", d$time, selected = selected_time()),
       selectInput("barcode_var", "Event variable(s)", cat_vars,
                   selected = valid_sel, multiple = TRUE),
       radioButtons("barcode_layout", "Layout:",
