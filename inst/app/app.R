@@ -2547,6 +2547,7 @@ server <- function(input, output, session){
 
   # Dynamic stats section container
   output$stats_section <- renderUI({
+    req(input$sidebar_state == "viz")
     req(input$viz_mode)
     should_show <- FALSE
 
@@ -2560,11 +2561,16 @@ server <- function(input, output, session){
       if (isTruthy(input$signal_var)) should_show <- TRUE
     }
 
-    if (should_show) {
-      tagList(hr(), h4("Descriptive Statistics"), verbatimTextOutput("desc_stats"))
-    } else {
-      NULL
-    }
+    if (!should_show) return(NULL)
+
+    stats <- tryCatch(stats_text(), error = function(e) paste("Error computing statistics:", e$message))
+
+    tagList(
+      hr(),
+      h4("Descriptive Statistics"),
+      tags$pre(style = "font-size: 12px; background-color: #f8f9fa; padding: 10px; border-radius: 4px;",
+               stats)
+    )
   })
 
   # Descriptive statistics
@@ -2739,33 +2745,6 @@ server <- function(input, output, session){
   })
 
   observe({ stats_store(stats_text()) })
-
-  output$stats_section <- renderUI({
-    req(input$sidebar_state == "viz")
-    req(input$viz_mode)
-    should_show <- FALSE
-
-    if (input$viz_mode == "Raw time series") {
-      if (isTruthy(input$yvar)) should_show <- TRUE
-    } else if (input$viz_mode == "Event durations (barcode)") {
-      if (isTruthy(input$barcode_var)) should_show <- TRUE
-    } else if (input$viz_mode == "Event + Continuous Overlay") {
-      if (isTruthy(input$signal_overlay) && isTruthy(input$event_overlay)) should_show <- TRUE
-    } else if (grepl("Event-locked", input$viz_mode)) {
-      if (isTruthy(input$signal_var)) should_show <- TRUE
-    }
-
-    if (!should_show) return(NULL)
-
-    stats <- tryCatch(stats_text(), error = function(e) paste("Error computing statistics:", e$message))
-
-    tagList(
-      hr(),
-      h4("Descriptive Statistics"),
-      tags$pre(style = "font-size: 12px; background-color: #f8f9fa; padding: 10px; border-radius: 4px;",
-               stats)
-    )
-  })
 
 
   output$plot2 <- plotly::renderPlotly({
