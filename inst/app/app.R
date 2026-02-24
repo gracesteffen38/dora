@@ -763,7 +763,7 @@ $(document).ready(function() {
             "Show SE ribbon",
             FALSE
           )
-        ),,
+        ),
         # Custom labels dropdown
         tags$div(class = "panel panel-default", style = "margin-bottom: 10px;",
                  tags$div(class = "panel-heading", style = "padding: 8px 12px; background-color: #f8f9fa;",
