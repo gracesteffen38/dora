@@ -658,10 +658,12 @@ $(document).ready(function() {
           hr(),
           h4("Step 2: Describe Dataset"),
 
-          selectInput("data_structure", "Primary data type",
-                      c("Continuous time series", "Binary / event-coded", "Mixed (continuous + events)")),
+          tags$p(style = "margin-bottom: 4px; font-weight: 500;",
+                 "Select all types of data in your dataset:"),
+          checkboxInput("has_continuous", "Continuous variables (numeric signals)", FALSE),
+          checkboxInput("has_events",     "Event series or categorical variables", FALSE),
           tags$div(id = "data-structure-help", class = "help-text", style = "font-size: 0.9em; color: #666; display: none;",
-                   "Continuous: numeric measurements over time. Binary: 0/1 event data. Mixed: both types."),
+                   "Continuous: numeric measurements over time. Events/categorical: 0/1 coded or labelled episodes."),
 
           checkboxInput("use_id", "Multiple participants", FALSE),
 
@@ -1354,17 +1356,23 @@ server <- function(input, output, session){
 
 
     # Determine which visualizations are allowed based on data structure
-    allowed_choices <- switch(input$data_structure,
-                              "Continuous time series" = c("Raw time series"),
-                              "Binary / event-coded"   = c("Event durations (barcode)"),
-                              "Mixed (continuous + events)" = c(
-                                "Raw time series",
-                                "Event + Continuous Overlay",
-                                "Event-locked average",
-                                "Event-locked single event",
-                                "Event durations (barcode)"
-                              )
-    )
+    cont   <- isTRUE(input$has_continuous)
+    events <- isTRUE(input$has_events)
+
+    if (!cont && !events) {
+      showNotification("Please select at least one data type before proceeding.",
+                       type = "error", duration = 6)
+      return()
+    }
+
+    allowed_choices <- if (cont && events) {
+      c("Raw time series", "Event + Continuous Overlay", "Event-locked average",
+        "Event-locked single event", "Event durations (barcode)")
+    } else if (cont) {
+      c("Raw time series")
+    } else {
+      c("Event durations (barcode)")
+    }
 
     updateSelectInput(session, "viz_mode",
                       choices = allowed_choices,
@@ -1376,9 +1384,20 @@ server <- function(input, output, session){
   })
 
   observeEvent(input$demo_selected, {
+    active_demo(input$demo_selected)
+    last_data_source("demo")
     data_converted(NULL)
     conversion_done(FALSE)
-    updateCheckboxInput(session, "is_interval_data", value = FALSE)
+    removeModal()
+
+    demo_types <- switch(input$demo_selected,
+                         "demo1" = list(continuous = FALSE, events = TRUE, multiple = TRUE),
+                         "demo2" = list(continuous = TRUE,  events = TRUE, multiple = TRUE),
+                         "demo3" = list(continuous = FALSE, events = TRUE, multiple = TRUE)
+    )
+    updateCheckboxInput(session, "has_continuous", value = demo_types$continuous)
+    updateCheckboxInput(session, "has_events",     value = demo_types$events)
+    updateCheckboxInput(session, "use_id",     value = demo_types$multiple)
   }, ignoreInit = TRUE)
 
   observeEvent(input$file, {
