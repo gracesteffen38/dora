@@ -1410,7 +1410,7 @@ server <- function(input, output, session){
     plot2_store(NULL)
     stats_store(NULL)
     #refresh(TRUE)
-    should_show(FALSE)
+    should_show <- F
   })
 
   observeEvent(input$demo_selected, {
