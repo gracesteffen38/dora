@@ -796,7 +796,9 @@ $(document).ready(function() {
                           conditionalPanel(
                             condition = "input.viz_mode == 'Raw time series' || input.viz_mode == 'Event + Continuous Overlay'",
                             textInput("custom_legend", "Legend Title", placeholder = "Auto-generated")
-                          ) )),
+                          ),
+                          uiOutput("legend_labels_ui")
+                 ) )),
 
         hr(),
         h4("Second Plot (Optional)"),
@@ -849,6 +851,11 @@ server <- function(input, output, session){
       y      = if (isTruthy(input$custom_ylab))   input$custom_ylab   else default_y,
       legend = if (isTruthy(input$custom_legend)) input$custom_legend else default_legend
     )
+  }
+
+  get_var_label <- function(var) {
+    key <- paste0("legend_label_", gsub("[^a-zA-Z0-9]", "_", var))
+    if (isTruthy(input[[key]])) input[[key]] else var
   }
 
   # Store main plot, secondary plot, and stats for saving
@@ -1498,6 +1505,7 @@ server <- function(input, output, session){
 
   output$conversionDone <- reactive({ conversion_done() })
   outputOptions(output, "conversionDone", suspendWhenHidden = FALSE)
+  outputOptions(output, "interval_conversion_ui", suspendWhenHidden = FALSE)
   output$download_converted <- downloadHandler(
     filename = function() {
       paste0("converted_data_", Sys.Date(), ".csv")
@@ -1767,6 +1775,33 @@ server <- function(input, output, session){
     )
   })
 
+  # Label UI
+  output$legend_labels_ui <- renderUI({
+    req(input$viz_mode)
+
+    vars <- switch(input$viz_mode,
+                   "Raw time series"            = input$yvar,
+                   "Event + Continuous Overlay" = c(input$signal_overlay, input$event_overlay),
+                   "Event durations (barcode)"  = input$barcode_var,
+                   NULL
+    )
+
+    if (is.null(vars) || length(vars) <= 1) return(NULL)
+
+    tagList(
+      tags$hr(style = "margin: 8px 0;"),
+      tags$p(style = "font-weight: 500; margin-bottom: 4px; font-size: 0.9em;",
+             "Variable Labels in Legend"),
+      lapply(vars, function(v) {
+        textInput(
+          inputId     = paste0("legend_label_", gsub("[^a-zA-Z0-9]", "_", v)),
+          label       = tags$span(style = "font-size: 0.85em; color: #555;", v),
+          placeholder = v
+        )
+      })
+    )
+  })
+
   output$second_plot_ui <- renderUI({
     data_reactive()
     d <- diagnostics()
@@ -1918,13 +1953,13 @@ server <- function(input, output, session){
 
       if (is_single_view) {
         for (var in input$yvar) {
-          p <- plotly::add_trace(p, x = filtered_data()[[input$xvar]], y = filtered_data()[[var]], name = var,
+          p <- plotly::add_trace(p, x = filtered_data()[[input$xvar]], y = filtered_data()[[var]], name = get_var_label(var),
                                  type = "scatter", mode = ifelse(input$plot_type == "Line", "lines", "markers"))
         }
       } else {
         for (var in input$yvar) {
           p <- plotly::add_trace(p, x = filtered_data()[[input$xvar]], y = filtered_data()[[var]],
-                                 name = paste(filtered_data()[[input$idvar]], "-", var),
+                                 name = paste(filtered_data()[[input$idvar]], "-", get_var_label(var)),
                                  type = "scatter", mode = ifelse(input$plot_type == "Line", "lines", "markers"))
         }
       }
@@ -2093,7 +2128,12 @@ server <- function(input, output, session){
       # Add continuous lines
       for (var in input$signal_overlay) {
         y_data <- if (multi_participant) combined_signals[[var]] else filtered_data()[[var]]
-        p <- plotly::add_trace(p, x = time_vec, y = y_data, name = var, type = "scatter", mode = "lines")
+        p <- plotly::add_trace(p,
+                               x = time_vec[1], y = y_min,
+                               type = "scatter", mode = "markers",
+                               marker = list(color = tr$color, symbol = "square"),
+                               name = get_var_label(tr$label),
+                               visible = "legendonly")
       }
 
       for (tr in legend_traces) {
@@ -2191,7 +2231,6 @@ server <- function(input, output, session){
           )
       )
     }
-    # Event-locked average
     # Event-locked average
     if (input$viz_mode == "Event-locked average") {
       req(input$event_var, input$signal_var)
@@ -2436,7 +2475,7 @@ server <- function(input, output, session){
                                  x = x_vals, y = y_vals,
                                  type = "scatter", mode = "lines",
                                  line = list(color = pal[t_idx], width = 1),
-                                 name = target$label,
+                                 name = get_var_label(target$label),
                                  showlegend = TRUE,
                                  hoverinfo = "text",
                                  text = hover_text
@@ -2487,7 +2526,7 @@ server <- function(input, output, session){
                                  x = x_vals, y = y_vals,
                                  type = "scatter", mode = "lines",
                                  line = list(color = hex_to_rgba(pal[t_idx], 0.5), width = 1),
-                                 name = target$label,
+                                 name = get_var_label(target$label),
                                  showlegend = TRUE,
                                  hoverinfo = "text",
                                  text = hover_text
