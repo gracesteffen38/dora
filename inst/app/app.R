@@ -1407,7 +1407,6 @@ server <- function(input, output, session){
   observeEvent(input$back_data, {
     updateTextInput(session, "sidebar_state", value = "data")
     updateCheckboxInput(session, "show_second_plot", value = FALSE)
-    updateSelectInput(session, "viz_mode",  selected = NULL)
     plot_store(NULL)
     plot2_store(NULL)
     stats_store(NULL)
@@ -2607,9 +2606,7 @@ server <- function(input, output, session){
       if (isTruthy(input$signal_overlay) && isTruthy(input$event_overlay)) should_show(TRUE)
     } else if (grepl("Event-locked", input$viz_mode)) {
       if (isTruthy(input$signal_var)) should_show(TRUE)
-    } else  if (input$viz_mode == NULL){
-      should_show(FALSE)
-    }
+    } else if (input$sidebar_state == "data") should_show(FALSE)
 
     if (should_show()) {
       tagList(hr(), h4("Descriptive Statistics"), verbatimTextOutput("desc_stats"))
