@@ -799,7 +799,6 @@ $(document).ready(function() {
                           ),
                           uiOutput("legend_labels_ui")
                  ) ),
-
         hr(),
         h4("Second Plot (Optional)"),
         checkboxInput("show_second_plot", "Show second plot below main plot", FALSE),
@@ -808,10 +807,12 @@ $(document).ready(function() {
           condition = "input.show_second_plot == true",
           uiOutput("second_plot_ui")
         ),
+        ),
+
+
       ),
       shinyjs::hidden(textInput("sidebar_state", "", value = "data"))
-    )
-  ,
+    ),
 
     mainPanel(
       conditionalPanel(
@@ -835,7 +836,7 @@ $(document).ready(function() {
       uiOutput("stats_section")
     )
   )
-)
+
 
 server <- function(input, output, session){
 
