@@ -2596,6 +2596,7 @@ server <- function(input, output, session){
     }
   })
   # Dynamic stats section container
+  if (input$sidebar_state == "viz"){
   output$stats_section <- renderUI({
     #req(input$viz_mode)
     if (input$viz_mode == "Raw time series") {
@@ -2611,9 +2612,12 @@ server <- function(input, output, session){
     if (should_show()) {
       tagList(hr(), h4("Descriptive Statistics"), verbatimTextOutput("desc_stats"))
     } else {
-      tagList(hr(), h4(""))
+      NULL
     }
   })
+  } else {
+    NULL
+  }
 
   # Descriptive statistics
   stats_text <- reactive ({
