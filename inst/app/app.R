@@ -859,6 +859,7 @@ server <- function(input, output, session){
   }
 
   # Store main plot, secondary plot, and stats for saving
+  should_show <- reactiveVal(FALSE)
   plot_store  <- reactiveVal(NULL)
   plot2_store <- reactiveVal(NULL)
   stats_store <- reactiveVal(NULL)
@@ -1406,7 +1407,6 @@ server <- function(input, output, session){
   # Dynamic stats section container
   output$stats_section <- renderUI({
     req(input$viz_mode)
-    should_show <- reactiveVal(FALSE)
 
     if (input$viz_mode == "Raw time series") {
       if (isTruthy(input$yvar)) should_show(TRUE)
