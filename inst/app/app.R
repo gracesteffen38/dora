@@ -1352,6 +1352,7 @@ server <- function(input, output, session){
   }
   # Sidebar navigation
   observeEvent(input$go_viz,{
+    should_show(FALSE)
     # Check if we have data
     if (is.null(data_reactive()) || nrow(data_reactive()) == 0) {
       showNotification("Please upload a data file before creating visualizations.",
@@ -1410,7 +1411,7 @@ server <- function(input, output, session){
     plot_store(NULL)
     plot2_store(NULL)
     stats_store(NULL)
-    #should_show(FALSE)
+    should_show(FALSE)
   })
 
   observeEvent(input$demo_selected, {
@@ -2815,7 +2816,7 @@ server <- function(input, output, session){
     paste(full_output, collapse = "\n")
   })
 
-  #observe({ stats_store(stats_text()) })
+  observe({ stats_store(stats_text()) })
 
   output$desc_stats <- renderPrint({
       cat(stats_text())
