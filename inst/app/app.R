@@ -808,9 +808,7 @@ $(document).ready(function() {
           uiOutput("second_plot_ui")
         )
         ),
-
-
-      ),
+      #),
       shinyjs::hidden(textInput("sidebar_state", "", value = "data"))
     ),
 
@@ -835,6 +833,7 @@ $(document).ready(function() {
 
       uiOutput("stats_section")
     )
+)
   )
 
 
