@@ -1406,19 +1406,19 @@ server <- function(input, output, session){
   # Dynamic stats section container
   output$stats_section <- renderUI({
     req(input$viz_mode)
-    should_show <- FALSE
+    should_show <- reactiveVal(FALSE)
 
     if (input$viz_mode == "Raw time series") {
-      if (isTruthy(input$yvar)) should_show <- TRUE
+      if (isTruthy(input$yvar)) should_show(TRUE)
     } else if (input$viz_mode == "Event durations (barcode)") {
-      if (isTruthy(input$barcode_var)) should_show <- TRUE
+      if (isTruthy(input$barcode_var)) should_show(TRUE)
     } else if (input$viz_mode == "Event + Continuous Overlay") {
-      if (isTruthy(input$signal_overlay) && isTruthy(input$event_overlay)) should_show <- TRUE
+      if (isTruthy(input$signal_overlay) && isTruthy(input$event_overlay)) should_show(TRUE)
     } else if (grepl("Event-locked", input$viz_mode)) {
-      if (isTruthy(input$signal_var)) should_show <- TRUE
+      if (isTruthy(input$signal_var)) should_show(TRUE)
     }
 
-    if (should_show) {
+    if (should_show()) {
       tagList(hr(), h4("Descriptive Statistics"), verbatimTextOutput("desc_stats"))
     } else {
       NULL
@@ -1431,7 +1431,7 @@ server <- function(input, output, session){
     plot2_store(NULL)
     stats_store(NULL)
     #refresh(TRUE)
-    should_show <- FALSE
+    should_show(FALSE)
   })
 
   observeEvent(input$demo_selected, {
