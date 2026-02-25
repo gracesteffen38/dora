@@ -2597,7 +2597,7 @@ server <- function(input, output, session){
   })
   # Dynamic stats section container
   output$stats_section <- renderUI({
-    req(input$viz_mode)
+    #req(input$viz_mode)
     if (input$viz_mode == "Raw time series") {
       if (isTruthy(input$yvar)) should_show(TRUE)
     } else if (input$viz_mode == "Event durations (barcode)") {
