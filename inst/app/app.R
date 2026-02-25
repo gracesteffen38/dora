@@ -855,13 +855,14 @@ server <- function(input, output, session){
 
   get_var_label <- function(var) {
     key <- paste0("legend_label_", gsub("[^a-zA-Z0-9]", "_", var))
-    if (isTruthy(input[[key]])) input[[key]] else var
+    if (isTruthy(input[[key]])) input[[key]] else paste("-", var)
   }
 
   # Store main plot, secondary plot, and stats for saving
   plot_store  <- reactiveVal(NULL)
   plot2_store <- reactiveVal(NULL)
   stats_store <- reactiveVal(NULL)
+  refresh <- reactiveVal(FALSE) #anchor2
   data_converted <- reactiveVal(NULL)
   conversion_done <- reactiveVal(FALSE)
   last_data_source <- reactiveVal("demo")
@@ -1408,6 +1409,7 @@ server <- function(input, output, session){
     plot_store(NULL)
     plot2_store(NULL)
     stats_store(NULL)
+    refresh = T
   })
 
   observeEvent(input$demo_selected, {
@@ -1961,7 +1963,7 @@ server <- function(input, output, session){
       } else {
         for (var in input$yvar) {
           p <- plotly::add_trace(p, x = filtered_data()[[input$xvar]], y = filtered_data()[[var]],
-                                 name = paste(filtered_data()[[input$idvar]], "-", get_var_label(var)),
+                                 name = paste(filtered_data()[[input$idvar]], get_var_label(var)),
                                  type = "scatter", mode = ifelse(input$plot_type == "Line", "lines", "markers"))
         }
       }
@@ -1994,9 +1996,6 @@ server <- function(input, output, session){
       all_vals <- unlist(lapply(input$signal_overlay, function(v) filtered_data()[[v]]))
       y_min <- min(all_vals, na.rm = TRUE)
       y_max <- max(all_vals, na.rm = TRUE)
-
-      # We build a list of "targets" to plot.
-      # Each target has: Column Name, Value to match, Color, and Label.
 
       plot_targets <- list()
 
@@ -2175,7 +2174,6 @@ server <- function(input, output, session){
       i <- min(event_index(), nrow(windows))
       d <- diagnostics()
       time_vec <- filtered_data()[[input$xvar]]
-      # Logic to extract time/y (kept same as before)
       x_vals <- NULL
       y_vals <- NULL
 
@@ -2200,7 +2198,7 @@ server <- function(input, output, session){
         x_vals <- win[seq_along(y_vals)]
       }
 
-      # Get Labels
+      # Get labels
       labs <- get_labels(
         default_title = paste("Event", i, "Trajectory"),
         default_x = "Time relative to event (s)",
@@ -2823,7 +2821,11 @@ server <- function(input, output, session){
   observe({ stats_store(stats_text()) })
 
   output$desc_stats <- renderPrint({
-    cat(stats_text())
+
+    if (refresh == F) {
+      cat(stats_text())
+    }
+
   })
 
   output$plot2 <- plotly::renderPlotly({
