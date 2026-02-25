@@ -280,6 +280,13 @@ $(document).on('click', '#accessibility-dropdown-menu', function(e) {
   e.stopPropagation();
 });
 
+// Data conversion toggle
+$(document).on('click', '#conversion-toggle', function(e) {
+  e.preventDefault();
+  $('#conversion-dropdown').slideToggle(200);
+  $('#conversion-caret').toggleClass('caret-up');
+});
+
 // Custom labels toggle
 $(document).on('click', '#labels-toggle', function(e) {
   e.preventDefault();
@@ -635,21 +642,31 @@ $(document).ready(function() {
         conditionalPanel(
           condition = "output.hasData == 'true'",
           hr(),
-          h4("Data Format Conversion"),
-          checkboxInput("is_interval_data", "Data has start time and end time or duration columns", FALSE),
-          conditionalPanel(
-            condition = "input.is_interval_data",
-            uiOutput("interval_conversion_ui"),
-            actionButton("convert_data", "Convert to Continuous Format", class = "btn-success",
-                         accesskey = "c", title = "Convert Data (Alt+C)"),
-            br(), br(),
-            textOutput("conversion_status"),
-            conditionalPanel(
-              condition = "output.conversionDone",
-              downloadButton("download_converted", "Download Converted Data (.csv)",
-                             class = "btn-sm btn-outline-success",
-                             style = "margin-top: 8px;")
-            )
+          tags$div(class = "panel panel-default", style = "margin-bottom: 10px;",
+                   tags$div(class = "panel-heading", style = "padding: 8px 12px; background-color: #f8f9fa;",
+                            tags$a(id = "conversion-toggle", href = "#", style = "text-decoration: none; color: #333;",
+                                   icon("right-left"), " My data uses intervals or durations, not continuous rows ",
+                                   tags$span(id = "conversion-caret", class = "caret")
+                            )
+                   ),
+                   tags$div(id = "conversion-dropdown", style = "display: none; padding: 12px;",
+                            tags$p(style = "font-size: 0.88em; color: #666; margin-bottom: 10px;",
+                                   "Use this if your data has one row per event with start/end times or durations,
+                                    rather than one row per time point. This will expand it into a continuous format
+                                    the app can visualize."),
+                            uiOutput("interval_conversion_ui"),
+                            actionButton("convert_data", "Convert to Continuous Format",
+                                         class = "btn-success", accesskey = "c",
+                                         title = "Convert Data (Alt+C)"),
+                            br(), br(),
+                            textOutput("conversion_status"),
+                            conditionalPanel(
+                              condition = "output.conversionDone",
+                              downloadButton("download_converted", "Download Converted Data (.csv)",
+                                             class = "btn-sm btn-outline-success",
+                                             style = "margin-top: 8px;")
+                            )
+                   )
           )
         ),
 
@@ -1406,7 +1423,7 @@ server <- function(input, output, session){
   observeEvent(input$file, {
     data_converted(NULL)
     conversion_done(FALSE)
-    updateCheckboxInput(session, "is_interval_data", value = FALSE)
+    #updateCheckboxInput(session, "is_interval_data", value = FALSE)
   }, ignoreInit = TRUE)
 
   diagnostics <- reactive({
