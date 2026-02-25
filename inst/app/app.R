@@ -1351,7 +1351,6 @@ server <- function(input, output, session){
   }
   # Sidebar navigation
   observeEvent(input$go_viz,{
-    should_show(FALSE)
     # Check if we have data
     if (is.null(data_reactive()) || nrow(data_reactive()) == 0) {
       showNotification("Please upload a data file before creating visualizations.",
@@ -2598,16 +2597,16 @@ server <- function(input, output, session){
   output$stats_section <- renderUI({
     #req(input$viz_mode)
     if (input$viz_mode == "Raw time series") {
-      if (isTruthy(input$yvar)) should_show(TRUE)
+      if (isTruthy(input$yvar)) should_show <- TRUE
     } else if (input$viz_mode == "Event durations (barcode)") {
-      if (isTruthy(input$barcode_var)) should_show(TRUE)
+      if (isTruthy(input$barcode_var)) should_show <- TRUE
     } else if (input$viz_mode == "Event + Continuous Overlay") {
-      if (isTruthy(input$signal_overlay) && isTruthy(input$event_overlay)) should_show(TRUE)
+      if (isTruthy(input$signal_overlay) && isTruthy(input$event_overlay)) should_show <- TRUE
     } else if (grepl("Event-locked", input$viz_mode)) {
-      if (isTruthy(input$signal_var)) should_show(TRUE)
-    } else if (input$sidebar_state == "data") should_show(FALSE)
+      if (isTruthy(input$signal_var)) should_show <- TRUE
+    }
 
-    if (should_show()) {
+    if (should_show) {
       tagList(hr(), h4("Descriptive Statistics"), verbatimTextOutput("desc_stats"))
     } else {
       NULL
