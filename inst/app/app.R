@@ -2611,12 +2611,11 @@ server <- function(input, output, session){
     if (should_show()) {
       tagList(hr(), h4("Descriptive Statistics"), verbatimTextOutput("desc_stats"))
     } else {
-      NULL
+      tagList(hr(), h4(""))
     }
   })
 
   # Descriptive statistics
-
   stats_text <- reactive ({
 
     req(input$viz_mode)
