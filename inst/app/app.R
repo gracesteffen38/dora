@@ -1407,9 +1407,7 @@ server <- function(input, output, session){
   observeEvent(input$back_data, {
     updateTextInput(session, "sidebar_state", value = "data")
     updateCheckboxInput(session, "show_second_plot", value = FALSE)
-    updateSelectInput(session, "viz_mode", "Visualization type",
-                c("Raw time series", "Event + Continuous Overlay", "Event-locked average",
-                  "Event-locked single event", "Event durations (barcode)"), selected = NULL)
+    updateSelectInput(session, "viz_mode", choices = allowed_choices, selected = NULL)
     plot_store(NULL)
     plot2_store(NULL)
     stats_store(NULL)
