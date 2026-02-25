@@ -975,6 +975,8 @@ server <- function(input, output, session){
     if (has) "true" else "false"
   })
   outputOptions(output, "hasData", suspendWhenHidden = FALSE)
+  outputOptions(output, "legend_labels_ui", suspendWhenHidden = FALSE)
+
 
   accessibility <- reactiveValues(
     high_contrast   = FALSE,
@@ -1507,7 +1509,6 @@ server <- function(input, output, session){
   output$conversionDone <- reactive({ conversion_done() })
   outputOptions(output, "conversionDone", suspendWhenHidden = FALSE)
   outputOptions(output, "interval_conversion_ui", suspendWhenHidden = FALSE)
-  outputOptions(output, "legend_labels_ui", suspendWhenHidden = FALSE)
 
   output$download_converted <- downloadHandler(
     filename = function() {
