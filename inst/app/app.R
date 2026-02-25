@@ -798,7 +798,7 @@ $(document).ready(function() {
                             textInput("custom_legend", "Legend Title", placeholder = "Auto-generated")
                           ),
                           uiOutput("legend_labels_ui")
-                 ) )),
+                 ) ),
 
         hr(),
         h4("Second Plot (Optional)"),
@@ -810,6 +810,7 @@ $(document).ready(function() {
         ),
       ),
       shinyjs::hidden(textInput("sidebar_state", "", value = "data"))
+    )
     ),
 
     mainPanel(
@@ -1504,6 +1505,8 @@ server <- function(input, output, session){
   output$conversionDone <- reactive({ conversion_done() })
   outputOptions(output, "conversionDone", suspendWhenHidden = FALSE)
   outputOptions(output, "interval_conversion_ui", suspendWhenHidden = FALSE)
+  outputOptions(output, "legend_labels_ui", suspendWhenHidden = FALSE)
+
   output$download_converted <- downloadHandler(
     filename = function() {
       paste0("converted_data_", Sys.Date(), ".csv")
@@ -2126,12 +2129,8 @@ server <- function(input, output, session){
       # Add continuous lines
       for (var in input$signal_overlay) {
         y_data <- if (multi_participant) combined_signals[[var]] else filtered_data()[[var]]
-        p <- plotly::add_trace(p,
-                               x = time_vec[1], y = y_min,
-                               type = "scatter", mode = "markers",
-                               marker = list(color = tr$color, symbol = "square"),
-                               name = get_var_label(tr$label),
-                               visible = "legendonly")
+        p <- plotly::add_trace(p, x = time_vec, y = y_data,
+                               name = get_var_label(var), type = "scatter", mode = "lines")
       }
 
       for (tr in legend_traces) {
@@ -2141,7 +2140,7 @@ server <- function(input, output, session){
                                type = "scatter",
                                mode = "markers",
                                marker = list(color = tr$color, symbol = "square"),
-                               name = tr$label,
+                               name = get_var_label(tr$label),
                                visible = "legendonly"
         )
       }
