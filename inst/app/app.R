@@ -806,7 +806,7 @@ $(document).ready(function() {
         conditionalPanel(
           condition = "input.show_second_plot == true",
           uiOutput("second_plot_ui")
-        ),
+        )
         ),
 
 
@@ -975,8 +975,6 @@ server <- function(input, output, session){
     if (has) "true" else "false"
   })
   outputOptions(output, "hasData", suspendWhenHidden = FALSE)
-  outputOptions(output, "legend_labels_ui", suspendWhenHidden = FALSE)
-
 
   accessibility <- reactiveValues(
     high_contrast   = FALSE,
@@ -1805,6 +1803,7 @@ server <- function(input, output, session){
       })
     )
   })
+  outputOptions(output, "legend_labels_ui", suspendWhenHidden = FALSE)
 
   output$second_plot_ui <- renderUI({
     data_reactive()
