@@ -811,7 +811,7 @@ $(document).ready(function() {
       ),
       shinyjs::hidden(textInput("sidebar_state", "", value = "data"))
     )
-    ),
+  ,
 
     mainPanel(
       conditionalPanel(
@@ -835,6 +835,7 @@ $(document).ready(function() {
       uiOutput("stats_section")
     )
   )
+)
 
 server <- function(input, output, session){
 
