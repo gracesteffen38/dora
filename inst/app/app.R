@@ -818,8 +818,6 @@ $(document).ready(function() {
         tags$div(id = "plot-description", class = "help-text",
                  style = "margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #007bff; border-radius: 4px; display: none;",
                  textOutput("plot_description")),
-        uiOutput("stats_section")
-      ),
 
       plotly::plotlyOutput("plot", height = "550px"),
 
@@ -830,7 +828,9 @@ $(document).ready(function() {
                  textOutput("plot2_description")),
 
         plotly::plotlyOutput("plot2", height = "400px")
-      )
+      ),
+      uiOutput("stats_section")
+      ),
 
 
     )
@@ -860,11 +860,9 @@ server <- function(input, output, session){
   }
 
   # Store main plot, secondary plot, and stats for saving
-  should_show <- reactiveVal(FALSE)
   plot_store  <- reactiveVal(NULL)
   plot2_store <- reactiveVal(NULL)
   stats_store <- reactiveVal(NULL)
-  #refresh <- reactiveVal(FALSE) #anchor2
   data_converted <- reactiveVal(NULL)
   conversion_done <- reactiveVal(FALSE)
   last_data_source <- reactiveVal("demo")
@@ -1412,7 +1410,6 @@ server <- function(input, output, session){
     plot_store(NULL)
     plot2_store(NULL)
     stats_store(NULL)
-    should_show(FALSE)
   })
 
   observeEvent(input$demo_selected, {
