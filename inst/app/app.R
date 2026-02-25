@@ -2823,9 +2823,9 @@ server <- function(input, output, session){
 
   output$desc_stats <- renderPrint({
 
-    #if (refresh(FALSE)) {
+    if (should_show(TRUE)) {
       cat(stats_text())
-    #}
+    }
 
   })
 
