@@ -817,7 +817,8 @@ $(document).ready(function() {
         condition = "input.sidebar_state == 'viz'",
         tags$div(id = "plot-description", class = "help-text",
                  style = "margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #007bff; border-radius: 4px; display: none;",
-                 textOutput("plot_description"))
+                 textOutput("plot_description")),
+        uiOutput("stats_section")
       ),
 
       plotly::plotlyOutput("plot", height = "550px"),
@@ -829,9 +830,9 @@ $(document).ready(function() {
                  textOutput("plot2_description")),
 
         plotly::plotlyOutput("plot2", height = "400px")
-      ),
+      )
 
-      uiOutput("stats_section")
+
     )
 )
   )
