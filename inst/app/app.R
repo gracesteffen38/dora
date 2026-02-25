@@ -2608,10 +2608,10 @@ server <- function(input, output, session){
     } else if (grepl("Event-locked", input$viz_mode)) {
       if (isTruthy(input$signal_var)) should_show(TRUE)
     } else {
-      NULL
+      should_show(FALSE)
     }
 
-    if (should_show()) {
+    if (should_show(TRUE)) {
       tagList(hr(), h4("Descriptive Statistics"), verbatimTextOutput("desc_stats"))
     } else {
       NULL
@@ -2822,11 +2822,7 @@ server <- function(input, output, session){
   observe({ stats_store(stats_text()) })
 
   output$desc_stats <- renderPrint({
-
-    if (should_show(TRUE)) {
       cat(stats_text())
-    }
-
   })
 
   output$plot2 <- plotly::renderPlotly({
