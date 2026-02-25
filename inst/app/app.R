@@ -1409,7 +1409,7 @@ server <- function(input, output, session){
     plot_store(NULL)
     plot2_store(NULL)
     stats_store(NULL)
-    refresh = T
+    refresh(TRUE)
   })
 
   observeEvent(input$demo_selected, {
@@ -2822,7 +2822,7 @@ server <- function(input, output, session){
 
   output$desc_stats <- renderPrint({
 
-    if (refresh == F) {
+    if (refresh()) {
       cat(stats_text())
     }
 
