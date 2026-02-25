@@ -862,7 +862,7 @@ server <- function(input, output, session){
   plot_store  <- reactiveVal(NULL)
   plot2_store <- reactiveVal(NULL)
   stats_store <- reactiveVal(NULL)
-  refresh <- reactiveVal(FALSE) #anchor2
+  #refresh <- reactiveVal(FALSE) #anchor2
   data_converted <- reactiveVal(NULL)
   conversion_done <- reactiveVal(FALSE)
   last_data_source <- reactiveVal("demo")
@@ -1409,7 +1409,8 @@ server <- function(input, output, session){
     plot_store(NULL)
     plot2_store(NULL)
     stats_store(NULL)
-    refresh(TRUE)
+    #refresh(TRUE)
+    should_show(FALSE)
   })
 
   observeEvent(input$demo_selected, {
@@ -2822,9 +2823,9 @@ server <- function(input, output, session){
 
   output$desc_stats <- renderPrint({
 
-    if (refresh()) {
+    #if (refresh(FALSE)) {
       cat(stats_text())
-    }
+    #}
 
   })
 
