@@ -2607,11 +2607,11 @@ server <- function(input, output, session){
       if (isTruthy(input$signal_overlay) && isTruthy(input$event_overlay)) should_show(TRUE)
     } else if (grepl("Event-locked", input$viz_mode)) {
       if (isTruthy(input$signal_var)) should_show(TRUE)
-    } else {
+    } else  if (input$viz_mode == NULL){
       should_show(FALSE)
     }
 
-    if (should_show(TRUE)) {
+    if (should_show()) {
       tagList(hr(), h4("Descriptive Statistics"), verbatimTextOutput("desc_stats"))
     } else {
       NULL
