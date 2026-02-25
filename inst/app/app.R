@@ -1404,33 +1404,12 @@ server <- function(input, output, session){
                       selected = allowed_choices[1])
   })
 
-  # Dynamic stats section container
-  output$stats_section <- renderUI({
-    req(input$viz_mode)
-
-    if (input$viz_mode == "Raw time series") {
-      if (isTruthy(input$yvar)) should_show(TRUE)
-    } else if (input$viz_mode == "Event durations (barcode)") {
-      if (isTruthy(input$barcode_var)) should_show(TRUE)
-    } else if (input$viz_mode == "Event + Continuous Overlay") {
-      if (isTruthy(input$signal_overlay) && isTruthy(input$event_overlay)) should_show(TRUE)
-    } else if (grepl("Event-locked", input$viz_mode)) {
-      if (isTruthy(input$signal_var)) should_show(TRUE)
-    }
-
-    if (should_show()) {
-      tagList(hr(), h4("Descriptive Statistics"), verbatimTextOutput("desc_stats"))
-    } else {
-      NULL
-    }
-  })
   observeEvent(input$back_data, {
     updateTextInput(session, "sidebar_state", value = "data")
     updateCheckboxInput(session, "show_second_plot", value = FALSE)
     plot_store(NULL)
     plot2_store(NULL)
     stats_store(NULL)
-    #refresh(TRUE)
     should_show(FALSE)
   })
 
@@ -2616,8 +2595,25 @@ server <- function(input, output, session){
       return(p)
     }
   })
+  # Dynamic stats section container
+  output$stats_section <- renderUI({
+    req(input$viz_mode)
+    if (input$viz_mode == "Raw time series") {
+      if (isTruthy(input$yvar)) should_show(TRUE)
+    } else if (input$viz_mode == "Event durations (barcode)") {
+      if (isTruthy(input$barcode_var)) should_show(TRUE)
+    } else if (input$viz_mode == "Event + Continuous Overlay") {
+      if (isTruthy(input$signal_overlay) && isTruthy(input$event_overlay)) should_show(TRUE)
+    } else if (grepl("Event-locked", input$viz_mode)) {
+      if (isTruthy(input$signal_var)) should_show(TRUE)
+    }
 
-
+    if (should_show()) {
+      tagList(hr(), h4("Descriptive Statistics"), verbatimTextOutput("desc_stats"))
+    } else {
+      NULL
+    }
+  })
 
   # Descriptive statistics
 
