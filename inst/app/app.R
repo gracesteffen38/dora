@@ -246,15 +246,6 @@ $(document).on('click', '#save-dropdown-btn', function(e) {
   if (accMenu) accMenu.style.display = 'none';
 });
 
-// Show loading state on save buttons
-$(document).on('click', '.shiny-download-link', function() {
-  var btn = $(this);
-  var originalText = btn.text();
-  btn.prop('disabled', true).text('Saving...');
-  setTimeout(function() {
-    btn.prop('disabled', false).text(originalText);
-  }, 4000);
-});
 
 // Accessibility dropdown toggle
 $(document).on('click', '#accessibility-dropdown-btn', function(e) {
@@ -283,6 +274,16 @@ $(document).on('click', '#save-dropdown-menu', function(e) {
 
   // For non-download areas, prevent menu from closing
   e.stopPropagation();
+});
+
+// Show loading state on save buttons
+$(document).on('click', '.shiny-download-link', function() {
+  var btn = $(this);
+  var originalText = btn.text();
+  btn.prop('disabled', true).text('Saving...');
+  setTimeout(function() {
+    btn.prop('disabled', false).text(originalText);
+  }, 4000);
 });
 
 // Prevent accessibility menu from closing when clicking inside
@@ -2698,7 +2699,7 @@ server <- function(input, output, session){
     event_vars <- NULL
     calc_type <- NULL
 
-    # 1. Determine Calculation Type based on Viz Mode
+    # Determine calculation type for different plot options
     if (input$viz_mode == "Event + Continuous Overlay") {
       req(input$signal_overlay, input$event_overlay)
       cont_vars <- input$signal_overlay
@@ -2726,7 +2727,6 @@ server <- function(input, output, session){
       return()
     }
     txt <- capture.output({
-      # 2. Print General Header
       cat(paste(rep("=", 60), collapse = ""), "\n")
       if (calc_type == "both") {
         cat("  Comparison: Continuous Signals vs Event Variables\n")
@@ -2737,7 +2737,7 @@ server <- function(input, output, session){
       }
       cat(paste(rep("=", 60), collapse = ""), "\n\n")
 
-      # 3. Loop through Participants
+      # loop through participants
       for (id in ids_to_process) {
         sub_df <- df[df[[id_col]] == id, ]
 
@@ -2746,13 +2746,12 @@ server <- function(input, output, session){
 
         if (calc_type == "both") {
 
-          # NESTED LOOPS: Loop through every selected Event AND every selected Signal
           for(e_var in event_vars) {
 
-            # Calculate Event Stats for this specific event variable
+            # Calculate stats for this specific event variable
             e_vals <- sub_df[[e_var]]
 
-            # Check if strictly binary (0/1) or categorical
+            # Check if binary or categorical
             unique_e <- unique(na.omit(e_vals))
             is_binary <- all(unique_e %in% c(0, 1))
 
@@ -2833,10 +2832,7 @@ server <- function(input, output, session){
       lines <- c(lines, "  Time window: Full dataset")
     }
     lines <- c(lines, paste(rep("=", 60), collapse = ""))
-
-    # Combine header + stats body
     full_output <- c(lines, "", txt)
-
     paste(full_output, collapse = "\n")
   })
 
