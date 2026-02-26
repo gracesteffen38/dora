@@ -1467,6 +1467,20 @@ server <- function(input, output, session){
       "No dataset selected — browse for a file or select a demo above"
     }
   })
+
+  output$time_step_ui <- renderUI({
+    df <- data_reactive()
+    time_col <- input$start_time_col
+    is_datetime <- !is.null(time_col) && time_col %in% names(df) &&
+      inherits(df[[time_col]], c("POSIXct", "POSIXt", "Date"))
+    label <- if (is_datetime) {
+      "Output time step (seconds)"
+    } else {
+      "Output time step (in units of your time column — seconds only if time is datetime)"
+    }
+    numericInput("time_unit_val", label, 1, min = 0.001, step = 0.1)
+  })
+
   # Interval data conversion UI
   output$interval_conversion_ui <- renderUI({
     df <- data_reactive() #previously data_original() - does not update with new selection...
@@ -1504,8 +1518,8 @@ server <- function(input, output, session){
         selectInput("conv_id_col", "Participant ID Variable", all_vars)
       ),
 
-      selectInput("event_var_col", "Event/Activity variable", all_vars),
-      numericInput("time_unit_val", "Output Time Step (resolution in seconds)", 1, min = 0.001, step = 0.1)
+      selectInput("event_var_col", "Event/Activity variable(s)", all_vars, multiple = TRUE),
+      uiOutput("time_step_ui")
     )
   })
 
@@ -1565,6 +1579,18 @@ server <- function(input, output, session){
     tryCatch({
       df <- data_original()
 
+      # Parse datetime columns if character
+      for (col in c(input$start_time_col, input$end_time_col)) {
+        if (!is.null(col) && col %in% names(df) && is.character(df[[col]])) {
+          parsed <- suppressWarnings(
+            lubridate::parse_date_time(df[[col]],
+                                       orders = c("ymd HMS", "ymd HM", "HMS", "HM", "ymd", "dmy HMS", "mdy HMS"),
+                                       quiet = TRUE)
+          )
+          if (sum(!is.na(parsed)) > 0.5 * length(parsed)) df[[col]] <- parsed
+        }
+      }
+
       # PRE-PROCESSING FOR DURATION FORMAT
       target_end_col <- input$end_time_col
 
@@ -1595,14 +1621,23 @@ server <- function(input, output, session){
         updateCheckboxInput(session, "use_id", value = FALSE)
       }
 
-      converted <- expand_timeseries(
-        data = df_to_process,
-        id_var = chosen_id,
-        var_name = input$event_var_col,
-        start_time_var = input$start_time_col,
-        end_time_var = target_end_col,
-        time_unit = input$time_unit_val
-      )
+      req(length(input$event_var_col) > 0)
+
+      all_converted <- lapply(input$event_var_col, function(var) {
+        expand_timeseries(
+          data = df_to_process,
+          id_var = chosen_id,
+          var_name = var,
+          start_time_var = input$start_time_col,
+          end_time_var = target_end_col,
+          time_unit = input$time_unit_val
+        )
+      })
+
+      # Merge all expanded variables by time and ID
+      converted <- Reduce(function(a, b) {
+        merge(a, b, by = c(chosen_id, input$start_time_col), all = TRUE)
+      }, all_converted)
 
       data_converted(converted)
       conversion_done(TRUE)
