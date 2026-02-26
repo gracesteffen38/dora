@@ -276,15 +276,6 @@ $(document).on('click', '#save-dropdown-menu', function(e) {
   e.stopPropagation();
 });
 
-// Show loading state on save buttons
-$(document).on('click', '.shiny-download-link', function() {
-  var btn = $(this);
-  var originalText = btn.text();
-  btn.prop('disabled', true).text('Saving...');
-  setTimeout(function() {
-    btn.prop('disabled', false).text(originalText);
-  }, 4000);
-});
 
 // Prevent accessibility menu from closing when clicking inside
 $(document).on('click', '#accessibility-dropdown-menu', function(e) {
