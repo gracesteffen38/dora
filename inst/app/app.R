@@ -276,6 +276,15 @@ $(document).on('click', '#save-dropdown-menu', function(e) {
   e.stopPropagation();
 });
 
+// Show loading state on save buttons
+$(document).on('click', '.shiny-download-link', function() {
+  var btn = $(this);
+  var originalText = btn.html();
+  btn.html('Saving...').css('pointer-events', 'none').css('opacity', '0.6');
+  setTimeout(function() {
+    btn.html(originalText).css('pointer-events', '').css('opacity', '');
+  }, 4000);
+});
 
 // Prevent accessibility menu from closing when clicking inside
 $(document).on('click', '#accessibility-dropdown-menu', function(e) {
@@ -1817,16 +1826,18 @@ server <- function(input, output, session){
     data_reactive()
     d <- diagnostics()
     tagList(
-      if (isTRUE(input$use_id)) {
-        selectInput(
-          "second_plot_id",
-          "Participant (second plot)",
-          choices = all_ids(),
-          selected = all_ids()[1],
-          multiple = FALSE
-        )
+      if (isTRUE(input$use_id) && isTruthy(input$idvar)) {
+        ids <- tryCatch(all_ids(), error = function(e) NULL)
+        if (!is.null(ids) && length(ids) > 0) {
+          selectInput(
+            "second_plot_id",
+            "Participant (second plot)",
+            choices = ids,
+            selected = ids[1],
+            multiple = FALSE
+          )
+        }
       },
-
       selectInput("second_plot_type", "Second plot type",
                   c(
                     #"Raw Variable" = "raw",
