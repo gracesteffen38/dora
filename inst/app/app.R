@@ -1534,10 +1534,14 @@ server <- function(input, output, session){
   )
   do_convert <- function() {
     shinyjs::disable("convert_data")
-    shinyjs::html("convert_data", "Converting... please wait")
     on.exit({
       shinyjs::enable("convert_data")
-      shinyjs::html("convert_data", "Convert to Continuous Format")
+    })
+    shinyjs::disable("convert_data")
+    id <- showNotification("Converting data, please wait...", duration = NULL, type = "message")
+    on.exit({
+      shinyjs::enable("convert_data")
+      removeNotification(id)
     })
     req(input$start_time_col, input$event_var_col, input$time_unit_val)
 
