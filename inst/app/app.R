@@ -90,7 +90,7 @@ $(document).on('keydown', function(e) {
   var tag = $(e.target).prop('tagName');
   var inInput = $(e.target).is('input, textarea, select, .selectize-input');
 
-  // === ARROW KEYS — participant navigation (when not in text input) ===
+  // ARROW KEYS — participant navigation (when not in text input)
   if (!inInput) {
     if (e.which == 37) { $('#prev_id').click(); e.preventDefault(); }
     if (e.which == 39) { $('#next_id').click(); e.preventDefault(); }
@@ -99,7 +99,7 @@ $(document).on('keydown', function(e) {
     if (e.which == 40) { $('#next_event').click(); e.preventDefault(); }
   }
 
-  // === ALT SHORTCUTS ===
+  // ALT SHORTCUTS
   if (e.altKey) {
     switch(e.which) {
 
@@ -192,7 +192,7 @@ $(document).on('keydown', function(e) {
     }
   }
 
-  // === CTRL SHORTCUTS ===
+  // CTRL SHORTCUTS
   if (e.ctrlKey) {
     // Ctrl+S — Save menu (keep original)
     if (e.which == 83) {
@@ -209,7 +209,7 @@ $(document).on('keydown', function(e) {
     }
   }
 
-  // === ESCAPE — close all menus ===
+  // ESCAPE — close all menus
   if (e.which == 27) {
     document.getElementById('save-dropdown-menu').style.display = 'none';
     document.getElementById('accessibility-dropdown-menu').style.display = 'none';
@@ -217,7 +217,7 @@ $(document).on('keydown', function(e) {
     if (hm) hm.style.display = 'none';
   }
 
-  // === TAB — ensure focus visible (accessibility) ===
+  // TAB — ensure focus visible (accessibility)
   if (e.which == 9) {
     document.body.classList.add('keyboard-nav');
   }
@@ -244,6 +244,16 @@ $(document).on('click', '#save-dropdown-btn', function(e) {
   }
   var accMenu = document.getElementById('accessibility-dropdown-menu');
   if (accMenu) accMenu.style.display = 'none';
+});
+
+// Show loading state on save buttons
+$(document).on('click', '.shiny-download-link', function() {
+  var btn = $(this);
+  var originalText = btn.text();
+  btn.prop('disabled', true).text('Saving...');
+  setTimeout(function() {
+    btn.prop('disabled', false).text(originalText);
+  }, 4000);
 });
 
 // Accessibility dropdown toggle
@@ -332,10 +342,10 @@ $(document).on('click', function(e) {
 
 // Listen for plotly zoom/pan - bind when plot renders, not on page load
 $(document).on('shiny:value', function(e) {
-  if (e.name === 'plot') {
+  if (e.name 'plot') {
     setTimeout(function() {
       var plotEl = document.getElementById('plot');
-      if (plotEl && typeof plotEl.on === 'function') {
+      if (plotEl && typeof plotEl.on 'function') {
         // Remove previous listener to avoid duplicates
         plotEl.removeAllListeners('plotly_relayout');
         plotEl.on('plotly_relayout', function(eventData) {
@@ -1522,6 +1532,12 @@ server <- function(input, output, session){
     }
   )
   do_convert <- function() {
+    shinyjs::disable("convert_data")
+    shinyjs::html("convert_data", "Converting... please wait")
+    on.exit({
+      shinyjs::enable("convert_data")
+      shinyjs::html("convert_data", "Convert to Continuous Format")
+    })
     req(input$start_time_col, input$event_var_col, input$time_unit_val)
 
     if (input$interval_format == "start_end") req(input$end_time_col)
@@ -1808,18 +1824,28 @@ server <- function(input, output, session){
   output$second_plot_ui <- renderUI({
     data_reactive()
     d <- diagnostics()
-
     tagList(
+      if (isTRUE(input$use_id)) {
+        selectInput(
+          "second_plot_id",
+          "Participant (second plot)",
+          choices = all_ids(),
+          selected = all_ids()[1],
+          multiple = FALSE
+        )
+      },
+
       selectInput("second_plot_type", "Second plot type",
-                  c("Raw Variable" = "raw",
+                  c(
+                    #"Raw Variable" = "raw",
                     "Allan Factor (event data)" = "allan_factor",
                     "Allan Deviation (continuous)" = "allan_deviation")),
 
       # Raw variable selection
-      conditionalPanel(
-        condition = "input.second_plot_type == 'raw'",
-        selectInput("second_yvar", "Variable", d$numeric, multiple = FALSE)
-      ),
+      # conditionalPanel(
+      #   condition = "input.second_plot_type == 'raw'",
+      #   selectInput("second_yvar", "Variable", d$numeric, multiple = FALSE)
+      # ),
 
       # Allan Factor options
       conditionalPanel(
@@ -2826,49 +2852,50 @@ server <- function(input, output, session){
 
     df <- data_reactive()
 
-    # Apply ID filtering
+    # single ID filtering
     if (isTRUE(input$use_id)) {
       req(input$idvar)
-      if (isTRUE(input$step_through)) {
-        df <- df[df[[input$idvar]] == all_ids()[id_index()], ]
+      pid <- if (isTruthy(input$second_plot_id)) {
+        input$second_plot_id
       } else {
-        df <- df[df[[input$idvar]] %in% input$selected_ids, ]
+        all_ids()[1]
       }
+      df <- df[df[[input$idvar]] == pid, ]
     }
 
     fonts <- get_plot_fonts()
     margins <- get_plot_margins()
 
     # additional time series
-    if (input$second_plot_type == "raw") {
-      req(input$second_yvar)
-      labs <- get_labels(
-        default_title = paste("Raw Time Series"),
-        default_x = input$xvar,
-        default_y = "Value",
-        default_legend = if(is_single_view) "Variable" else "Participant"
-      )
-
-      time_var <- selected_time()
-      req(time_var)
-      time_vec <- df[[input$xvar]]
-      p2 <- plotly::plot_ly(df, x = df[[time_var]], y = df[[input$second_yvar]],
-                            type = "scatter", mode = "lines",
-                            name = input$second_yvar)
-
-      p2 <- p2 |> plotly::layout(
-        title = list(text = paste("Secondary Plot:", input$second_yvar), font = list(size = fonts$title_size)),
-        xaxis = get_datetime_axis(time_vec, labs$x, fonts),
-        yaxis = list(
-          title = list(text = input$second_yvar, font = list(size = fonts$axis_title_size)),
-          tickfont = list(size = fonts$axis_text_size)
-        ),
-        margin = margins
-      )
-
-      plot2_store(p2)
-      return(p2)
-    }
+    # if (input$second_plot_type == "raw") {
+    #   req(input$second_yvar)
+    #   labs <- get_labels(
+    #     default_title = paste("Raw Time Series"),
+    #     default_x = input$xvar,
+    #     default_y = "Value",
+    #     default_legend = if(is_single_view) "Variable" else "Participant"
+    #   )
+    #
+    #   time_var <- selected_time()
+    #   req(time_var)
+    #   time_vec <- df[[input$xvar]]
+    #   p2 <- plotly::plot_ly(df, x = df[[time_var]], y = df[[input$second_yvar]],
+    #                         type = "scatter", mode = "lines",
+    #                         name = input$second_yvar)
+    #
+    #   p2 <- p2 |> plotly::layout(
+    #     title = list(text = paste("Secondary Plot:", input$second_yvar), font = list(size = fonts$title_size)),
+    #     xaxis = get_datetime_axis(time_vec, labs$x, fonts),
+    #     yaxis = list(
+    #       title = list(text = input$second_yvar, font = list(size = fonts$axis_title_size)),
+    #       tickfont = list(size = fonts$axis_text_size)
+    #     ),
+    #     margin = margins
+    #   )
+    #
+    #   plot2_store(p2)
+    #   return(p2)
+    # }
 
     # Allan factor
     if (input$second_plot_type == "allan_factor") {
