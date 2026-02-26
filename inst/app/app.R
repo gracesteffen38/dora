@@ -1626,16 +1626,21 @@ server <- function(input, output, session){
       # so expand_timeseries can build a numeric sequence
       time_is_datetime <- inherits(df_to_process[[input$start_time_col]], c("POSIXct", "POSIXt"))
       origin_time <- NULL
+      time_step_secs <- input$time_unit_val
 
       if (time_is_datetime) {
         origin_time <- min(df_to_process[[input$start_time_col]], na.rm = TRUE)
-        df_to_process[[input$start_time_col]] <- as.numeric(
+
+        # Convert to integer row indices (multiples of the time step)
+        # so tidyr::complete() gets clean whole numbers to sequence over
+        df_to_process[[input$start_time_col]] <- round(as.numeric(
           difftime(df_to_process[[input$start_time_col]], origin_time, units = "secs")
-        )
+        ) / time_step_secs)
+
         if (target_end_col %in% names(df_to_process)) {
-          df_to_process[[target_end_col]] <- as.numeric(
+          df_to_process[[target_end_col]] <- round(as.numeric(
             difftime(df_to_process[[target_end_col]], origin_time, units = "secs")
-          )
+          ) / time_step_secs)
         }
       }
 
@@ -1662,11 +1667,11 @@ server <- function(input, output, session){
         }
       }
 
-      # Convert time back to datetime if needed
+      # Convert row indices back to datetime
       if (time_is_datetime) {
         time_out_col <- input$start_time_col
         if (time_out_col %in% names(converted) && is.numeric(converted[[time_out_col]])) {
-          converted[[time_out_col]] <- origin_time + converted[[time_out_col]]
+          converted[[time_out_col]] <- origin_time + (converted[[time_out_col]] * time_step_secs)
         }
       }
 
