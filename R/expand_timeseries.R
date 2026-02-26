@@ -59,6 +59,17 @@ expand_timeseries <- function(data, id_var, var_name, start_time_var, end_time_v
     dplyr::group_by(internal_id, time_seq) |>
     dplyr::summarise(internal_activity = max(internal_activity, na.rm = TRUE), .groups = "drop")
 
+  # Convert POSIXct to numeric for complete() — it can't handle datetime sequences
+  is_datetime <- inherits(unique_time_df$time_seq, c("POSIXct", "POSIXt"))
+  origin_time <- NULL
+
+  if (is_datetime) {
+    origin_time <- min(unique_time_df$time_seq, na.rm = TRUE)
+    unique_time_df$time_seq <- as.numeric(
+      difftime(unique_time_df$time_seq, origin_time, units = "secs")
+    )
+  }
+
   fill_val <- if (is.numeric(unique_time_df$internal_activity)) 0 else "0"
 
   final_df <- unique_time_df |>
@@ -70,6 +81,11 @@ expand_timeseries <- function(data, id_var, var_name, start_time_var, end_time_v
       fill = list(internal_activity = fill_val)
     ) |>
     dplyr::ungroup()
+
+  # Convert back to POSIXct
+  if (is_datetime) {
+    final_df$time_seq <- origin_time + final_df$time_seq
+  }
 
   final_df <- final_df |>
     dplyr::rename(
