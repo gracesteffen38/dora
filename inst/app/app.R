@@ -1476,7 +1476,7 @@ server <- function(input, output, session){
     label <- if (is_datetime) {
       "Output time step (seconds)"
     } else {
-      "Output time step (in units of your time column — seconds only if time is datetime)"
+      "Output time step (in units of your time column; seconds if time is in datetime format)"
     }
     numericInput("time_unit_val", label, 1, min = 0.001, step = 0.1)
   })
@@ -1565,7 +1565,6 @@ server <- function(input, output, session){
     if (input$interval_format == "start_dur") req(input$duration_col)
 
     # VALIDATION: Check ID variable if selected
-    # Performed OUTSIDE tryCatch to ensure it stops execution visibly
     if (input$conv_has_id) {
       req(input$conv_id_col)
       df <- data_original()
@@ -1623,6 +1622,24 @@ server <- function(input, output, session){
 
       req(length(input$event_var_col) > 0)
 
+      # If start time is datetime, convert to numeric seconds offset
+      # so expand_timeseries can build a numeric sequence
+      time_is_datetime <- inherits(df_to_process[[input$start_time_col]], c("POSIXct", "POSIXt"))
+      origin_time <- NULL
+
+      if (time_is_datetime) {
+        origin_time <- min(df_to_process[[input$start_time_col]], na.rm = TRUE)
+        df_to_process[[input$start_time_col]] <- as.numeric(
+          difftime(df_to_process[[input$start_time_col]], origin_time, units = "secs")
+        )
+        if (target_end_col %in% names(df_to_process)) {
+          df_to_process[[target_end_col]] <- as.numeric(
+            difftime(df_to_process[[target_end_col]], origin_time, units = "secs")
+          )
+        }
+      }
+
+      # Expand each variable separately
       all_converted <- lapply(input$event_var_col, function(var) {
         expand_timeseries(
           data = df_to_process,
@@ -1634,10 +1651,24 @@ server <- function(input, output, session){
         )
       })
 
-      # Merge all expanded variables by time and ID
-      converted <- Reduce(function(a, b) {
-        merge(a, b, by = c(chosen_id, input$start_time_col), all = TRUE)
-      }, all_converted)
+      # Use the first expansion as the base, then cbind unique columns from the rest
+      converted <- all_converted[[1]]
+      if (length(all_converted) > 1) {
+        for (i in 2:length(all_converted)) {
+          new_cols <- setdiff(names(all_converted[[i]]), names(converted))
+          if (length(new_cols) > 0) {
+            converted <- cbind(converted, all_converted[[i]][, new_cols, drop = FALSE])
+          }
+        }
+      }
+
+      # Convert time back to datetime if needed
+      if (time_is_datetime) {
+        time_out_col <- input$start_time_col
+        if (time_out_col %in% names(converted) && is.numeric(converted[[time_out_col]])) {
+          converted[[time_out_col]] <- origin_time + converted[[time_out_col]]
+        }
+      }
 
       data_converted(converted)
       conversion_done(TRUE)
