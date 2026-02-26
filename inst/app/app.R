@@ -2785,22 +2785,26 @@ server <- function(input, output, session){
       return()
     }
     txt <- capture.output({
-      cat(paste(rep("=", 60), collapse = ""), "\n")
-      if (calc_type == "both") {
-        cat("  Comparison: Continuous Signals vs Event Variables\n")
-      } else if (calc_type == "continuous") {
-        cat("  Continuous Signal Statistics\n")
-      } else if (calc_type == "event") {
-        cat("  Event Statistics (Burstiness)\n")
-      }
-      cat(paste(rep("=", 60), collapse = ""), "\n\n")
+      # cat(paste(rep("=", 60), collapse = ""), "\n")
+      # if (calc_type == "both") {
+      #   cat("  Comparison: Continuous Signals vs Event Variables\n")
+      # } else if (calc_type == "continuous") {
+      #   cat("  Continuous Signal Statistics\n")
+      # } else if (calc_type == "event") {
+      #   cat("  Event Statistics (Burstiness)\n")
+      # }
+      # cat(paste(rep("=", 60), collapse = ""), "\n\n")
 
       # loop through participants
       for (id in ids_to_process) {
         sub_df <- df[df[[id_col]] == id, ]
 
-        cat(paste("Participant:", id, "\n"))
-        cat(paste(rep("-", 40), collapse = ""), "\n")
+        if (id != "All Data"){
+          cat(paste("Participant:", id, "\n"))
+          cat(paste(rep("-", 40), collapse = ""), "\n")
+        } else{
+          NULL
+        }
 
         if (calc_type == "both") {
 
@@ -2879,11 +2883,9 @@ server <- function(input, output, session){
     })
 
     lines <- character(0)
-    lines <- c(lines, paste(rep("=", 60), collapse = ""))
-    lines <- c(lines, "  DORA — Descriptive Statistics")
 
     if (zoom_active && !is.null(range_label)) {
-      lines <- c(lines, paste(rep("-", 60), collapse = ""))
+      lines <- c(lines, paste(rep("=", 60), collapse = ""))
       lines <- c(lines, paste("  Time window:", range_label))
     } else {
       lines <- c(lines, paste(rep("-", 60), collapse = ""))
