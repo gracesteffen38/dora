@@ -1250,7 +1250,9 @@ server <- function(input, output, session){
 
   # Apply CSS to page
   observeEvent(accessibility_css(), {
-    shinyjs::runjs(sprintf("document.getElementById('accessibility-styles').innerHTML = `%s`;", accessibility_css()))
+    css <- gsub("`", "", accessibility_css())
+    css <- gsub("\n", " ", css)
+    shinyjs::runjs(sprintf("document.getElementById('accessibility-styles').innerHTML = `%s`;", css))
   }, ignoreInit = TRUE)
 
   sync_accessibility <- function(session, field, val) {
