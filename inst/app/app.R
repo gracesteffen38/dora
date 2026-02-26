@@ -343,10 +343,10 @@ $(document).on('click', function(e) {
 
 // Listen for plotly zoom/pan - bind when plot renders, not on page load
 $(document).on('shiny:value', function(e) {
-  if (e.name 'plot') {
+  if (e.name == 'plot') {
     setTimeout(function() {
       var plotEl = document.getElementById('plot');
-      if (plotEl && typeof plotEl.on 'function') {
+      if (plotEl && typeof plotEl.on =='function') {
         // Remove previous listener to avoid duplicates
         plotEl.removeAllListeners('plotly_relayout');
         plotEl.on('plotly_relayout', function(eventData) {
