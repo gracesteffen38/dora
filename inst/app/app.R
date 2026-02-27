@@ -1,5 +1,11 @@
 options(shiny.maxRequestSize = 100*1024^2)
 
+# Auto-install kaleido for plotly PNG export
+if (!reticulate::py_module_available("kaleido")) {
+  message("Installing kaleido for plot saving...")
+  reticulate::py_install("kaleido", pip = TRUE)
+}
+
 ui <- fluidPage(
   tags$head(
     tags$meta(name = "viewport", content = "width=device-width, initial-scale=1"),
@@ -653,10 +659,13 @@ $(document).ready(function() {
         conditionalPanel(
           condition = "output.hasData == 'true'",
           hr(),
+
+          tags$p(style = "margin-bottom: 4px; font-weight: 500;",
+                 "If your data uses intervals or durations, not continuous rows:"),
           tags$div(class = "panel panel-default", style = "margin-bottom: 10px;",
                    tags$div(class = "panel-heading", style = "padding: 8px 12px; background-color: #f8f9fa;",
                             tags$a(id = "conversion-toggle", href = "#", style = "text-decoration: none; color: #333;",
-                                   icon("right-left"), " My data uses intervals or durations, not continuous rows ",
+                                   icon("right-left"), " Convert Data Format ",
                                    tags$span(id = "conversion-caret", class = "caret")
                             )
                    ),
@@ -2885,7 +2894,7 @@ server <- function(input, output, session){
     lines <- character(0)
 
     if (zoom_active && !is.null(range_label)) {
-      lines <- c(lines, paste(rep("=", 60), collapse = ""))
+      #lines <- c(lines, paste(rep("-", 60), collapse = ""))
       lines <- c(lines, paste("  Time window:", range_label))
     } else {
       lines <- c(lines, paste(rep("-", 60), collapse = ""))
