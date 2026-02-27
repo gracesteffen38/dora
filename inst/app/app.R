@@ -1,11 +1,5 @@
 options(shiny.maxRequestSize = 100*1024^2)
 
-# Auto-install kaleido for plotly PNG export
-if (!reticulate::py_module_available("kaleido")) {
-  message("Installing kaleido for plot saving...")
-  reticulate::py_install("kaleido", pip = TRUE)
-}
-
 ui <- fluidPage(
   tags$head(
     tags$meta(name = "viewport", content = "width=device-width, initial-scale=1"),
