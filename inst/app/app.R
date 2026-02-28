@@ -357,6 +357,23 @@ $(document).on('shiny:value', function(e) {
   }
 });
 
+// Client-side plot export
+function doDownloadPlot(opts) {
+  var plotEl = document.getElementById(opts.elementId);
+  if (!plotEl) {
+    console.warn("DORA: plot element not found for export — is a plot visible?");
+    return;
+  }
+  Plotly.downloadImage(plotEl, {
+    format:   opts.format,
+    filename: opts.filename,
+    width:    opts.width,
+    height:   opts.height,
+    scale:    opts.scale
+  });
+}
+Shiny.addCustomMessageHandler("downloadPlot", doDownloadPlot);
+
 $(document).ready(function() {
   // ARIA connections
   $('#file').attr('aria-describedby', 'file-help');
@@ -375,7 +392,7 @@ $(document).ready(function() {
 ")),
   ),
   shinyjs::useShinyjs(),
-  # Accessibility Settings Panel page 1
+  # Accessibility settings page 1
   tags$div(id = "accessibility-panel", class = "panel panel-default",
            style = "margin-bottom: 15px; border-left: 4px solid #17a2b8;",
 
@@ -504,10 +521,15 @@ $(document).ready(function() {
                                                  download = "", target = "_blank", style = "width: 100%; display: block; text-align: center;",
                                                  "Interactive (HTML)")
                                  ),
+                                 tags$div(style = "margin-bottom: 5px;",
+                                          actionButton("download_plot_png", "Static Image (PNG)",
+                                                       class = "btn btn-outline-primary btn-sm",
+                                                       style = "width: 100%; display: block; text-align: center;")
+                                 ),
                                  tags$div(style = "margin-bottom: 10px;",
-                                          tags$a(id = "toolbar_download_plot_png", href = "", class = "btn btn-outline-primary btn-sm shiny-download-link",
-                                                 download = "", target = "_blank", style = "width: 100%; display: block; text-align: center;",
-                                                 "Static Image (PNG)")
+                                          actionButton("download_plot_svg", "Vector Image (SVG)",
+                                                       class = "btn btn-outline-secondary btn-sm",
+                                                       style = "width: 100%; display: block; text-align: center;")
                                  ),
 
                                  # Both Plots Section
@@ -3241,53 +3263,35 @@ server <- function(input, output, session){
     }
   )
 
-  output$toolbar_download_plot_png <- downloadHandler(
-    filename = function() {
-      paste0("plot_", Sys.Date(), ".png")
-    },
-    content = function(file) {
-      p <- isolate(plot_store())
-
-      if (is.null(p)) {
-        showNotification("No plot available to save.", type = "error")
-        # Create a blank placeholder
-        png(file, width = 800, height = 600)
-        plot.new()
-        text(0.5, 0.5, "No plot available", cex = 2)
-        dev.off()
-        return()
-      }
-
-      # Rebuild a clean plotly object from the stored data
-      p_clean <- plotly::plotly_build(p)
-
-      # Try saving as PNG
-      tryCatch({
-        save_plotly_png(p_clean, file)
-      }, error = function(e) {
-        message("PNG method failed, trying ggplot fallback: ", e$message)
-
-        # Last resort fallback: use plotly's built-in export
-        tryCatch({
-          tmphtml <- tempfile(fileext = ".html")
-          htmlwidgets::saveWidget(plotly::as_widget(p), tmphtml, selfcontained = TRUE)
-          webshot2::webshot(tmphtml, file, vwidth = 1200, vheight = 700, delay = 1)
-          unlink(tmphtml)
-        }, error = function(e2) {
-          showNotification(
-            paste("PNG export failed:", e2$message,
-                  "\nTry installing kaleido: reticulate::py_install('kaleido')"),
-            type = "error", duration = 10
-          )
-          # Create error image
-          png(file, width = 800, height = 600)
-          plot.new()
-          text(0.5, 0.5, "Export failed - see console", cex = 1.5)
-          dev.off()
-        })
-      })
+  observeEvent(input$download_plot_png, {
+    if (is.null(plot_store())) {
+      showNotification("No plot available to save.", type = "error")
+      return()
     }
-  )
+    session$sendCustomMessage("downloadPlot", list(
+      elementId = "plot",
+      format    = "png",
+      filename  = paste0("plot_", Sys.Date()),
+      width     = 1200,
+      height    = 700,
+      scale     = 2        # 2x for print quality
+    ))
+  })
+
+  observeEvent(input$download_plot_svg, {
+    if (is.null(plot_store())) {
+      showNotification("No plot available to save.", type = "error")
+      return()
+    }
+    session$sendCustomMessage("downloadPlot", list(
+      elementId = "plot",
+      format    = "svg",
+      filename  = paste0("plot_", Sys.Date()),
+      width     = 1200,
+      height    = 700,
+      scale     = 1        # scale ignored for SVG but required by API
+    ))
+  })
 
   # Stats - Text File
   output$toolbar_download_stats_txt <- downloadHandler(
