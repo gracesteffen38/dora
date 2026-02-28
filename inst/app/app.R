@@ -2579,7 +2579,7 @@ server <- function(input, output, session){
           p <- plotly::add_trace(p,
                                  x = x_vals, y = y_vals,
                                  type = "scatter", mode = "lines",
-                                 line = list(color = pal[t_idx], width = 1),
+                                 line = list(color = pal[t_idx], width = 1.5),
                                  name = get_var_label(target$label),
                                  showlegend = TRUE,
                                  hoverinfo = "text",
