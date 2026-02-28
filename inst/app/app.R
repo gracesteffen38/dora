@@ -2592,7 +2592,7 @@ server <- function(input, output, session){
           y_top <- 1 - ((i - 1) * row_height)
           (y_bottom + y_top) / 2
         })
-        tick_labels_y <- sapply(plot_targets, function(t) t$label)
+        tick_labels_y <- sapply(plot_targets, function(t) get_var_label(t$label))
 
         y_axis_config <- list(
           title = list(text = ""),
