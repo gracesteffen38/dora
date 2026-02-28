@@ -2428,7 +2428,7 @@ server <- function(input, output, session){
       p <- p |> plotly::layout(
         title = list(text = labs$title, font = list(size = fonts$title_size)),
         xaxis = list(
-          title = list(text = labs$x, font = list(size = fonts$axis_title_size)),
+          title = list(text = labs$x, font = list(size = fonts$axis_title_size), standoff = 5),
           tickfont = list(size = fonts$axis_text_size)
         ),
         yaxis = list(
@@ -2657,7 +2657,7 @@ server <- function(input, output, session){
 
 
       if (use_stacked) margins$l <- max(margins$l, 80)
-      margins$b <- max(margins$b, 80)
+      margins$b <- max(margins$b, 40)
 
       if (is_datetime) {
         time_range_secs <- as.numeric(difftime(
@@ -2675,7 +2675,7 @@ server <- function(input, output, session){
         }
 
         x_axis_config <- list(
-          title = list(text = labs$x, font = list(size = fonts$axis_title_size)),
+          title = list(text = labs$x, font = list(size = fonts$axis_title_size), standoff = 5),
           tickfont  = list(size = fonts$axis_text_size),
           type      = "date",
           tickformat = tick_fmt,
@@ -2684,7 +2684,7 @@ server <- function(input, output, session){
         )
       } else {
         x_axis_config <- list(
-          title = list(text = labs$x, font = list(size = fonts$axis_title_size)),
+          title = list(text = labs$x, font = list(size = fonts$axis_title_size), standoff = 5),
           tickfont = list(size = fonts$axis_text_size)
         )
       }
