@@ -361,7 +361,7 @@ $(document).on('shiny:value', function(e) {
 function doDownloadPlot(opts) {
   var plotEl = document.getElementById(opts.elementId);
   if (!plotEl) {
-    console.warn("DORA: plot element not found for export — is a plot visible?");
+    console.warn('DORA: plot element not found for export — is a plot visible?');
     return;
   }
   Plotly.downloadImage(plotEl, {
@@ -372,7 +372,7 @@ function doDownloadPlot(opts) {
     scale:    opts.scale
   });
 }
-Shiny.addCustomMessageHandler("downloadPlot", doDownloadPlot);
+Shiny.addCustomMessageHandler('downloadPlot', doDownloadPlot);
 
 $(document).ready(function() {
   // ARIA connections
