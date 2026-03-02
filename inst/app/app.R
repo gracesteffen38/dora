@@ -1489,7 +1489,7 @@ server <- function(input, output, session){
       )
       paste("Currently using:", label)
     } else {
-      "No dataset selected — browse for a file or select a demo above"
+      "No dataset selected - browse for a file or select a demo above"
     }
   })
 
@@ -3073,6 +3073,22 @@ server <- function(input, output, session){
         c(1, 3) * 10^p
       }))
       y_ticks <- y_ticks[y_ticks >= y_range[1] * 0.5 & y_ticks <= y_range[2] * 2]
+
+      x_range_ad <- range(ad_result$tau, na.rm = TRUE)
+      y_range_ad <- range(y_vals, na.rm = TRUE)
+
+      x_log_min_ad <- floor(log10(x_range_ad[1]))
+      x_log_max_ad <- ceiling(log10(x_range_ad[2]))
+      x_ticks_ad <- 10^(x_log_min_ad:x_log_max_ad)
+      x_ticks_ad <- x_ticks_ad[x_ticks_ad >= x_range_ad[1] * 0.5 &
+                                 x_ticks_ad <= x_range_ad[2] * 2]
+
+      y_log_min_ad <- floor(log10(max(y_range_ad[1], 1e-10)))
+      y_log_max_ad <- ceiling(log10(y_range_ad[2]))
+      y_ticks_ad <- 10^(y_log_min_ad:y_log_max_ad)
+      y_ticks_ad <- y_ticks_ad[y_ticks_ad >= y_range_ad[1] * 0.5 &
+                                 y_ticks_ad <= y_range_ad[2] * 2]
+
       if (!1 %in% y_ticks) y_ticks <- sort(c(y_ticks, 1))
 
       p2 <- p2 |> plotly::layout(
@@ -3082,8 +3098,8 @@ server <- function(input, output, session){
           tickfont = list(size = fonts$axis_text_size),
           type = "log",
           tickmode = "array",
-          tickvals = log10(x_ticks),
-          ticktext = as.character(x_ticks),
+          tickvals = x_ticks_ad,
+          ticktext = as.character(x_ticks_ad),
           showgrid = TRUE,
           gridcolor = "lightgray",
           gridwidth = 0.5,
@@ -3094,8 +3110,8 @@ server <- function(input, output, session){
           tickfont = list(size = fonts$axis_text_size),
           type = "log",
           tickmode = "array",
-          tickvals = log10(y_ticks),
-          ticktext = as.character(log10(y_ticks)),
+          tickvals = y_ticks_ad,
+          ticktext = as.character(log10(y_ticks_ad)),
           showgrid = TRUE,
           gridcolor = "lightgray",
           gridwidth = 0.5,
@@ -3147,7 +3163,6 @@ server <- function(input, output, session){
                               marker = list(color = "blue", symbol = "circle")
       )
 
-      # Build clean decade ticks for both axes
       x_range_ad <- range(ad_result$tau, na.rm = TRUE)
       y_range_ad <- range(y_vals, na.rm = TRUE)
 
@@ -3190,12 +3205,11 @@ server <- function(input, output, session){
     }
   })
 
-  # Generate accessible plot descriptions
+  # plot descriptions
   output$plot_description <- renderText({
     req(input$sidebar_state == "viz")
     req(input$viz_mode)
 
-    # Build description based on current plot
     desc <- switch(input$viz_mode,
 
                    "Raw time series" = {
