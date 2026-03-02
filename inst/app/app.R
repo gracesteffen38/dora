@@ -1130,17 +1130,49 @@ server <- function(input, output, session){
          accessibility$simplified_ui, accessibility$show_descriptions, accessibility$confirm_actions), {
            css_rules <- ""
 
-           # High Contrast Mode
            if (isTRUE(accessibility$high_contrast)) {
              css_rules <- paste0(css_rules, "
-      body { background-color: #000000 !important; color: #ffffff !important; }
-      .well { background-color: #1a1a1a !important; color: #ffffff !important; border: 2px solid #ffffff !important; }
-      .form-control { background-color: #2d2d2d !important; color: #ffffff !important; border: 2px solid #ffffff !important; }
-      .btn-primary { background-color: #ffff00 !important; color: #000000 !important; border: 2px solid #000000 !important; }
-      .btn-success { background-color: #00ff00 !important; color: #000000 !important; }
-      .panel { background-color: #1a1a1a !important; border: 2px solid #ffffff !important; }
-      .selectize-input { background-color: #2d2d2d !important; color: #ffffff !important; }
-    ")
+    body { background-color: #000000 !important; color: #ffffff !important; }
+    .well { background-color: #1a1a1a !important; color: #ffffff !important; border: 2px solid #ffffff !important; }
+    .form-control { background-color: #2d2d2d !important; color: #ffffff !important; border: 2px solid #ffffff !important; }
+    .btn-primary { background-color: #ffff00 !important; color: #000000 !important; border: 2px solid #000000 !important; }
+    .btn-success { background-color: #00ff00 !important; color: #000000 !important; }
+    .panel { background-color: #1a1a1a !important; border: 2px solid #ffffff !important; }
+    .selectize-input { background-color: #2d2d2d !important; color: #ffffff !important; }
+
+    /* Toolbar dropdowns (accessibility, save, help menus) */
+    #accessibility-dropdown-menu,
+    #save-dropdown-menu,
+    #help-dropdown-menu {
+      background-color: #1a1a1a !important;
+      color: #ffffff !important;
+      border: 2px solid #ffffff !important;
+    }
+    #accessibility-dropdown-menu label,
+    #accessibility-dropdown-menu h6,
+    #accessibility-dropdown-menu p,
+    #save-dropdown-menu label,
+    #save-dropdown-menu h6,
+    #help-dropdown-menu a,
+    #help-dropdown-menu td,
+    #help-dropdown-menu th,
+    #help-dropdown-menu strong {
+      color: #ffffff !important;
+    }
+    #accessibility-dropdown-menu .checkbox label,
+    #accessibility-dropdown-menu input[type='checkbox'] {
+      color: #ffffff !important;
+      accent-color: #ffff00;
+    }
+    #accessibility-dropdown-menu hr,
+    #save-dropdown-menu hr {
+      border-color: #555555 !important;
+    }
+    #sticky-toolbar {
+      background-color: #000000 !important;
+      border-bottom: 2px solid #ffffff !important;
+    }
+  ")
            }
 
            # Large Text
