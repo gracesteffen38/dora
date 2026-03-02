@@ -3144,14 +3144,14 @@ server <- function(input, output, session){
                               x = ad_result$tau, y = y_vals,
                               type = "scatter", mode = "lines+markers",
                               name = y_label,
-                              line = list(color = "blue"),
-                              marker = list(color = "blue", symbol = "circle")
+                              line = list(color = "red"),
+                              marker = list(color = "red", symbol = "circle")
       )
 
       p2 <- p2 |> plotly::layout(
         title = list(text = plot_title, font = list(size = fonts$title_size)),
         xaxis = list(
-          title = list(text = "Tau (s)", font = list(size = fonts$axis_title_size)),
+          title = list(text = expression(tau~"(window size, log scale)"), font = list(size = fonts$axis_title_size)),
           tickfont = list(size = fonts$axis_text_size),
           type = "log"
         ),
