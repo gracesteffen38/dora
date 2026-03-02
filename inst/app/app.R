@@ -3095,7 +3095,7 @@ server <- function(input, output, session){
           tickfont = list(size = fonts$axis_text_size),
           type = "log",
           tickmode = "array",
-          tickvals = y_ticks,
+          tickvals = log10(y_ticks),
           ticktext = as.character(y_ticks),
           showgrid = TRUE,
           gridcolor = "lightgray",
@@ -3151,7 +3151,7 @@ server <- function(input, output, session){
       p2 <- p2 |> plotly::layout(
         title = list(text = plot_title, font = list(size = fonts$title_size)),
         xaxis = list(
-          title = list(text = expression(tau~"(window size, log scale)"), font = list(size = fonts$axis_title_size)),
+          title = list(text = "Window Size (s)", font = list(size = fonts$axis_title_size)),
           tickfont = list(size = fonts$axis_text_size),
           type = "log"
         ),
