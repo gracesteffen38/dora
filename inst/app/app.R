@@ -3083,7 +3083,7 @@ server <- function(input, output, session){
           tickfont = list(size = fonts$axis_text_size),
           type = "log",
           tickmode = "array",
-          tickvals = x_ticks,
+          tickvals = log10(x_ticks),
           ticktext = as.character(x_ticks),
           showgrid = TRUE,
           gridcolor = "lightgray",
