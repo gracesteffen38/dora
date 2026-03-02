@@ -3075,39 +3075,31 @@ server <- function(input, output, session){
       y_ticks <- y_ticks[y_ticks >= y_range[1] * 0.5 & y_ticks <= y_range[2] * 2]
       if (!1 %in% y_ticks) y_ticks <- sort(c(y_ticks, 1))
 
-      # Build clean decade ticks for both axes
-      x_range_ad <- range(ad_result$tau, na.rm = TRUE)
-      y_range_ad <- range(y_vals, na.rm = TRUE)
-
-      x_log_min_ad <- floor(log10(x_range_ad[1]))
-      x_log_max_ad <- ceiling(log10(x_range_ad[2]))
-      x_ticks_ad <- 10^(x_log_min_ad:x_log_max_ad)
-      x_ticks_ad <- x_ticks_ad[x_ticks_ad >= x_range_ad[1] * 0.5 &
-                                 x_ticks_ad <= x_range_ad[2] * 2]
-
-      y_log_min_ad <- floor(log10(max(y_range_ad[1], 1e-10)))
-      y_log_max_ad <- ceiling(log10(y_range_ad[2]))
-      y_ticks_ad <- 10^(y_log_min_ad:y_log_max_ad)
-      y_ticks_ad <- y_ticks_ad[y_ticks_ad >= y_range_ad[1] * 0.5 &
-                                 y_ticks_ad <= y_range_ad[2] * 2]
-
       p2 <- p2 |> plotly::layout(
-        title = list(text = plot_title, font = list(size = fonts$title_size)),
+        title = list(text = slope_text, font = list(size = fonts$title_size)),
         xaxis = list(
-          title = list(text = "Tau (s)", font = list(size = fonts$axis_title_size)),
+          title = list(text = "Window Size T (sec)", font = list(size = fonts$axis_title_size)),
           tickfont = list(size = fonts$axis_text_size),
           type = "log",
           tickmode = "array",
-          tickvals = x_ticks_ad,
-          ticktext = as.character(x_ticks_ad)
+          tickvals = log10(x_ticks),
+          ticktext = as.character(x_ticks),
+          showgrid = TRUE,
+          gridcolor = "lightgray",
+          gridwidth = 0.5,
+          dtick = NULL
         ),
         yaxis = list(
-          title = list(text = y_label, font = list(size = fonts$axis_title_size)),
+          title = list(text = "Allan Factor A(T)", font = list(size = fonts$axis_title_size)),
           tickfont = list(size = fonts$axis_text_size),
           type = "log",
           tickmode = "array",
-          tickvals = y_ticks_ad,
-          ticktext = as.character(y_ticks_ad)
+          tickvals = log10(y_ticks),
+          ticktext = as.character(log10(y_ticks)),
+          showgrid = TRUE,
+          gridcolor = "lightgray",
+          gridwidth = 0.5,
+          dtick = NULL
         ),
         legend = list(font = list(size = fonts$legend_size)),
         margin = margins,
@@ -3155,17 +3147,39 @@ server <- function(input, output, session){
                               marker = list(color = "red", symbol = "circle")
       )
 
+      # Build clean decade ticks for both axes
+      x_range_ad <- range(ad_result$tau, na.rm = TRUE)
+      y_range_ad <- range(y_vals, na.rm = TRUE)
+
+      x_log_min_ad <- floor(log10(x_range_ad[1]))
+      x_log_max_ad <- ceiling(log10(x_range_ad[2]))
+      x_ticks_ad <- 10^(x_log_min_ad:x_log_max_ad)
+      x_ticks_ad <- x_ticks_ad[x_ticks_ad >= x_range_ad[1] * 0.5 &
+                                 x_ticks_ad <= x_range_ad[2] * 2]
+
+      y_log_min_ad <- floor(log10(max(y_range_ad[1], 1e-10)))
+      y_log_max_ad <- ceiling(log10(y_range_ad[2]))
+      y_ticks_ad <- 10^(y_log_min_ad:y_log_max_ad)
+      y_ticks_ad <- y_ticks_ad[y_ticks_ad >= y_range_ad[1] * 0.5 &
+                                 y_ticks_ad <= y_range_ad[2] * 2]
+
       p2 <- p2 |> plotly::layout(
         title = list(text = plot_title, font = list(size = fonts$title_size)),
         xaxis = list(
-          title = list(text = "Window Size (s)", font = list(size = fonts$axis_title_size)),
+          title = list(text = "Tau (s)", font = list(size = fonts$axis_title_size)),
           tickfont = list(size = fonts$axis_text_size),
-          type = "log"
+          type = "log",
+          tickmode = "array",
+          tickvals = x_ticks_ad,
+          ticktext = as.character(x_ticks_ad)
         ),
         yaxis = list(
           title = list(text = y_label, font = list(size = fonts$axis_title_size)),
           tickfont = list(size = fonts$axis_text_size),
-          type = "log"
+          type = "log",
+          tickmode = "array",
+          tickvals = y_ticks_ad,
+          ticktext = as.character(y_ticks_ad)
         ),
         legend = list(font = list(size = fonts$legend_size)),
         margin = margins
