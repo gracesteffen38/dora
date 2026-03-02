@@ -3050,6 +3050,31 @@ server <- function(input, output, session){
         "Allan Factor"
       }
 
+      # Generate clean tick values based on data range
+      x_range <- range(af_result$abcis, na.rm = TRUE)
+      y_all <- af_result$actual
+      if (isTRUE(input$af_show_shuffled) && !is.null(af_result$shuffled)) {
+        y_all <- c(y_all, af_result$shuffled)
+      }
+      y_range <- range(y_all, na.rm = TRUE)
+
+      # Generate log-spaced tick values for x-axis
+      x_log_min <- floor(log10(x_range[1]))
+      x_log_max <- ceiling(log10(x_range[2]))
+      x_ticks <- unlist(lapply(x_log_min:x_log_max, function(p) {
+        c(1, 3) * 10^p
+      }))
+      x_ticks <- x_ticks[x_ticks >= x_range[1] * 0.5 & x_ticks <= x_range[2] * 2]
+
+      # Generate log-spaced tick values for y-axis
+      y_log_min <- floor(log10(max(y_range[1], 0.1)))
+      y_log_max <- ceiling(log10(y_range[2]))
+      y_ticks <- unlist(lapply(y_log_min:y_log_max, function(p) {
+        c(1, 3) * 10^p
+      }))
+      y_ticks <- y_ticks[y_ticks >= y_range[1] * 0.5 & y_ticks <= y_range[2] * 2]
+      if (!1 %in% y_ticks) y_ticks <- sort(c(y_ticks, 1))
+
       # Build clean decade ticks for both axes
       x_range_ad <- range(ad_result$tau, na.rm = TRUE)
       y_range_ad <- range(y_vals, na.rm = TRUE)
