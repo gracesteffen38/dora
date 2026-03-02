@@ -3143,8 +3143,8 @@ server <- function(input, output, session){
                               x = ad_result$tau, y = y_vals,
                               type = "scatter", mode = "lines+markers",
                               name = y_label,
-                              line = list(color = "red"),
-                              marker = list(color = "red", symbol = "circle")
+                              line = list(color = "blue"),
+                              marker = list(color = "blue", symbol = "circle")
       )
 
       # Build clean decade ticks for both axes
