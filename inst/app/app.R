@@ -3096,7 +3096,7 @@ server <- function(input, output, session){
           type = "log",
           tickmode = "array",
           tickvals = log10(y_ticks),
-          ticktext = as.character(y_ticks),
+          ticktext = as.character(log10(y_ticks)),
           showgrid = TRUE,
           gridcolor = "lightgray",
           gridwidth = 0.5,
