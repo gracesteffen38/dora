@@ -808,7 +808,7 @@ $(document).ready(function() {
           textOutput("n_events_averaged"),
           checkboxInput(
             "overlay_events",
-            "Overlay individual events",
+            "Overlay individual trajectories",
             FALSE
           ),
           checkboxInput(
@@ -2452,7 +2452,7 @@ server <- function(input, output, session){
       # Overlay individual events
       if (isTRUE(input$overlay_events)) {
         for (i in seq_len(nrow(mat))) {
-          p <- plot_ly::add_lines(p, x = win, y = mat[i, ],
+          p <- plotly::add_lines(p, x = win, y = mat[i, ],
                          opacity = 0.3, line = list(color = "gray"),
                          showlegend = FALSE)
         }
