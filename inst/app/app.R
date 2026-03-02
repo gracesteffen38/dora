@@ -3050,57 +3050,39 @@ server <- function(input, output, session){
         "Allan Factor"
       }
 
-      # Generate clean tick values based on data range
-      x_range <- range(af_result$abcis, na.rm = TRUE)
-      y_all <- af_result$actual
-      if (isTRUE(input$af_show_shuffled) && !is.null(af_result$shuffled)) {
-        y_all <- c(y_all, af_result$shuffled)
-      }
-      y_range <- range(y_all, na.rm = TRUE)
+      # Build clean decade ticks for both axes
+      x_range_ad <- range(ad_result$tau, na.rm = TRUE)
+      y_range_ad <- range(y_vals, na.rm = TRUE)
 
-      # Generate log-spaced tick values for x-axis
-      x_log_min <- floor(log10(x_range[1]))
-      x_log_max <- ceiling(log10(x_range[2]))
-      x_ticks <- unlist(lapply(x_log_min:x_log_max, function(p) {
-        c(1, 3) * 10^p
-      }))
-      x_ticks <- x_ticks[x_ticks >= x_range[1] * 0.5 & x_ticks <= x_range[2] * 2]
+      x_log_min_ad <- floor(log10(x_range_ad[1]))
+      x_log_max_ad <- ceiling(log10(x_range_ad[2]))
+      x_ticks_ad <- 10^(x_log_min_ad:x_log_max_ad)
+      x_ticks_ad <- x_ticks_ad[x_ticks_ad >= x_range_ad[1] * 0.5 &
+                                 x_ticks_ad <= x_range_ad[2] * 2]
 
-      # Generate log-spaced tick values for y-axis
-      y_log_min <- floor(log10(max(y_range[1], 0.1)))
-      y_log_max <- ceiling(log10(y_range[2]))
-      y_ticks <- unlist(lapply(y_log_min:y_log_max, function(p) {
-        c(1, 3) * 10^p
-      }))
-      y_ticks <- y_ticks[y_ticks >= y_range[1] * 0.5 & y_ticks <= y_range[2] * 2]
-      # Always include 1 for reference
-      if (!1 %in% y_ticks) y_ticks <- sort(c(y_ticks, 1))
+      y_log_min_ad <- floor(log10(max(y_range_ad[1], 1e-10)))
+      y_log_max_ad <- ceiling(log10(y_range_ad[2]))
+      y_ticks_ad <- 10^(y_log_min_ad:y_log_max_ad)
+      y_ticks_ad <- y_ticks_ad[y_ticks_ad >= y_range_ad[1] * 0.5 &
+                                 y_ticks_ad <= y_range_ad[2] * 2]
 
       p2 <- p2 |> plotly::layout(
-        title = list(text = slope_text, font = list(size = fonts$title_size)),
+        title = list(text = plot_title, font = list(size = fonts$title_size)),
         xaxis = list(
-          title = list(text = "Window Size T (sec)", font = list(size = fonts$axis_title_size)),
+          title = list(text = "Tau (s)", font = list(size = fonts$axis_title_size)),
           tickfont = list(size = fonts$axis_text_size),
           type = "log",
           tickmode = "array",
-          tickvals = log10(x_ticks),
-          ticktext = as.character(x_ticks),
-          showgrid = TRUE,
-          gridcolor = "lightgray",
-          gridwidth = 0.5,
-          dtick = NULL
+          tickvals = x_ticks_ad,
+          ticktext = as.character(x_ticks_ad)
         ),
         yaxis = list(
-          title = list(text = "Allan Factor A(T)", font = list(size = fonts$axis_title_size)),
+          title = list(text = y_label, font = list(size = fonts$axis_title_size)),
           tickfont = list(size = fonts$axis_text_size),
           type = "log",
           tickmode = "array",
-          tickvals = log10(y_ticks),
-          ticktext = as.character(log10(y_ticks)),
-          showgrid = TRUE,
-          gridcolor = "lightgray",
-          gridwidth = 0.5,
-          dtick = NULL
+          tickvals = y_ticks_ad,
+          ticktext = as.character(y_ticks_ad)
         ),
         legend = list(font = list(size = fonts$legend_size)),
         margin = margins,
