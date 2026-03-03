@@ -2859,7 +2859,7 @@ server <- function(input, output, session){
             cat("  Continuous signals:\n")
             for (c_var in cont_vars) {
               c_vals <- sub_df[[c_var]]
-              cat(sprintf("    %-30s  Mean: %.4f,  SD: %.4f\n",
+              cat(sprintf("    %-20s  Mean: %.4f,  SD: %.4f\n",
                           c_var,
                           mean(c_vals, na.rm = TRUE),
                           sd(c_vals,   na.rm = TRUE)))
@@ -2880,7 +2880,7 @@ server <- function(input, output, session){
                 n_types <- length(unique(na.omit(e_vals[e_vals != 0 & e_vals != "0"])))
                 sprintf("  (Categorical: %d types)", n_types)
               } else ""
-              cat(sprintf("    %-30s  Count: %d, Total duration (rows): %d,  Burstiness: %s%s\n",
+              cat(sprintf("    %-20s  Count: %d, Total duration (rows): %d, Burstiness: %s%s\n",
                           e_var, counts$n_events, counts$total_duration, b_str, note_str))
             }
             cat("\n")
