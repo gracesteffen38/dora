@@ -896,17 +896,13 @@ server <- function(input, output, session){
   }
 
   get_event_counts <- function(vals) {
-    # Returns list(n_events, total_duration) for binary OR categorical vectors.
     clean_vals <- na.omit(vals)
     if (length(clean_vals) == 0) return(list(n_events = 0L, total_duration = 0L))
-
     is_binary <- all(unique(clean_vals) %in% c(0, 1))
-
     if (is_binary) {
-      # Use run-length encoding — robust and doesn't need extract_event_windows_idx
       r <- rle(as.integer(clean_vals))
-      n_events    <- sum(r$values == 1L)
-      total_dur   <- sum(clean_vals == 1L, na.rm = TRUE)
+      n_events  <- sum(r$values == 1L)
+      total_dur <- sum(clean_vals == 1L, na.rm = TRUE)
     } else {
       active_vals <- unique(clean_vals[clean_vals != 0 & clean_vals != "0"])
       is_active   <- as.integer(clean_vals %in% active_vals)
@@ -2168,7 +2164,7 @@ server <- function(input, output, session){
         else colorRampPalette(RColorBrewer::brewer.pal(8, "Set2"))(n)
       }
 
-      # 1. Analyze selected columns to determine total colors needed
+      # 1. get total colors needed
       total_items <- 0
       for(col in input$event_overlay){
         vals <- na.omit(unique(filtered_data()[[col]]))
@@ -2182,11 +2178,10 @@ server <- function(input, output, session){
         }
       }
 
-      # 2. Generate Palette
+      # 2. Generate palette
       master_pal <- get_accessible_palette(total_items)
       color_idx <- 1
 
-      # 3. Build Targets
       for(col in input$event_overlay){
         raw_vals <- filtered_data()[[col]]
         unique_vals <- unique(raw_vals[!is.na(raw_vals)])
@@ -2195,7 +2190,7 @@ server <- function(input, output, session){
         is_binary <- all(unique_vals %in% c(0,1))
 
         if(is_binary) {
-          # CASE: Binary Column (e.g. "Freezing") -> One color
+          # if binary column (e.g. "Freezing") -> One color
           plot_targets[[length(plot_targets)+1]] <- list(
             col = col,
             val = 1,
@@ -2204,7 +2199,7 @@ server <- function(input, output, session){
           )
           color_idx <- color_idx + 1
         } else {
-          # CASE: Categorical Column (e.g. "Activity") -> Multiple colors
+          # if categorical col (e.g. "Activity") -> Multiple colors
           unique_vals <- sort(unique_vals)
           unique_vals <- unique_vals[unique_vals != 0 & unique_vals != "0"]
 
@@ -2213,7 +2208,7 @@ server <- function(input, output, session){
               col = col,
               val = uv,
               color = master_pal[color_idx],
-              label = paste(col, "-", uv) # Label is "Col - Value"
+              label = paste(col, "-", uv) # Label is col - value
             )
             color_idx <- color_idx + 1
           }
@@ -2243,7 +2238,7 @@ server <- function(input, output, session){
             is_active <- as.numeric(!is.na(vec) & vec == target$val)
             windows <- extract_event_windows_idx(is_active)
             if (nrow(windows) > 0) {
-              rgba_col <- hex_to_rgba(target$color, alpha = 0.2)
+              rgba_col <- hex_to_rgba(target$color, alpha = 0.5)
               for (i in seq_len(nrow(windows))) {
                 shapes[[length(shapes) + 1]] <- list(
                   type = "rect",
@@ -2265,7 +2260,7 @@ server <- function(input, output, session){
           is_active <- as.numeric(!is.na(vec) & vec == target$val)
           windows <- extract_event_windows_idx(is_active)
           if (nrow(windows) > 0) {
-            rgba_col <- hex_to_rgba(target$color, alpha = 0.2)
+            rgba_col <- hex_to_rgba(target$color, alpha = 0.5)
             for (i in seq_len(nrow(windows))) {
               shapes[[length(shapes) + 1]] <- list(
                 type = "rect",
@@ -2633,7 +2628,7 @@ server <- function(input, output, session){
           p <- plotly::add_trace(p,
                                  x = x_vals, y = y_vals,
                                  type = "scatter", mode = "lines",
-                                 line = list(color = pal[t_idx], width = 1.5),
+                                 line = list(color = pal[t_idx], width = 2),
                                  name = get_var_label(target$label),
                                  showlegend = TRUE,
                                  hoverinfo = "text",
@@ -2684,7 +2679,7 @@ server <- function(input, output, session){
           p <- plotly::add_trace(p,
                                  x = x_vals, y = y_vals,
                                  type = "scatter", mode = "lines",
-                                 line = list(color = hex_to_rgba(pal[t_idx], 0.5), width = 1),
+                                 line = list(color = hex_to_rgba(pal[t_idx]), width = 2),
                                  name = get_var_label(target$label),
                                  showlegend = TRUE,
                                  hoverinfo = "text",
@@ -2782,15 +2777,10 @@ server <- function(input, output, session){
 
     req(input$viz_mode)
     df <- data_reactive()
-    ids_to_process <- list()
 
     if (isTRUE(input$use_id)) {
       req(input$idvar)
-      if (isTRUE(input$step_through)) {
-        ids_to_process <- all_ids()[id_index()]
-      } else {
-        ids_to_process <- input$selected_ids
-      }
+      ids_to_process <- if (isTRUE(input$step_through)) all_ids()[id_index()] else input$selected_ids
     } else {
       ids_to_process <- "All Data"
       df$temp_id <- "All Data"
@@ -2864,28 +2854,36 @@ server <- function(input, output, session){
 
         if (calc_type == "both") {
 
-          for (e_var in event_vars) {
-            e_vals   <- sub_df[[e_var]]
-            counts   <- get_event_counts(e_vals)
-            is_bin   <- all(unique(na.omit(e_vals)) %in% c(0, 1))
-            b        <- get_burstiness(e_vals)
-            b_str    <- if (is.na(b)) "NA" else sprintf("%.4f", b)
-            note_str <- if (!is_bin) {
-              n_types <- length(unique(na.omit(e_vals[e_vals != 0 & e_vals != "0"])))
-              paste("(Categorical:", n_types, "types)")
-            } else ""
-
+          # continuous
+          if (length(cont_vars) > 0) {
+            cat("  Continuous signals:\n")
             for (c_var in cont_vars) {
               c_vals <- sub_df[[c_var]]
-              m      <- mean(c_vals, na.rm = TRUE)
-              s      <- sd(c_vals, na.rm = TRUE)
-
-              cat(sprintf("Signal: %-25s Event: %-20s\n", c_var, e_var))
-              cat(sprintf("  Mean: %-24.4f  Event count:  %d\n", m, counts$n_events))
-              cat(sprintf("  SD:   %-24.4f  Burstiness:   %s\n", s, b_str))
-              if (note_str != "") cat(sprintf("  %s\n", note_str))
-              cat("\n")
+              cat(sprintf("    %-30s  Mean: %.4f,  SD: %.4f\n",
+                          c_var,
+                          mean(c_vals, na.rm = TRUE),
+                          sd(c_vals,   na.rm = TRUE)))
             }
+            cat("\n")
+          }
+
+          # event vars
+          if (length(event_vars) > 0) {
+            cat("  Event variables:\n")
+            for (e_var in event_vars) {
+              e_vals   <- sub_df[[e_var]]
+              counts   <- get_event_counts(e_vals)
+              is_bin   <- all(unique(na.omit(e_vals)) %in% c(0, 1))
+              b        <- get_burstiness(e_vals)
+              b_str    <- if (is.na(b)) "NA" else sprintf("%.4f", b)
+              note_str <- if (!is_bin) {
+                n_types <- length(unique(na.omit(e_vals[e_vals != 0 & e_vals != "0"])))
+                sprintf("  (Categorical: %d types)", n_types)
+              } else ""
+              cat(sprintf("    %-30s  Count: %d,  Burstiness: %s%s\n",
+                          e_var, counts$n_events, b_str, note_str))
+            }
+            cat("\n")
           }
 
         } else if (calc_type == "continuous") {
@@ -2909,7 +2907,6 @@ server <- function(input, output, session){
             cat(paste("  Variable:", e_var, "\n"))
             cat(sprintf("    Event count:           %d\n", counts$n_events))
             cat(sprintf("    Total duration (rows): %d\n", counts$total_duration))
-
             if (is.na(b)) {
               if (!is_bin) {
                 cat("    Burstiness: NA (Categorical/Multiclass)\n")
@@ -3285,7 +3282,7 @@ server <- function(input, output, session){
     desc
   })
 
-  # Main Plot - HTML
+  # Main Plot HTML
   output$toolbar_download_plot_html <- downloadHandler(
     filename = function() {
       paste0("plot_", Sys.Date(), ".html")
@@ -3331,7 +3328,7 @@ server <- function(input, output, session){
     ))
   })
 
-  # Stats - Text File
+  # Stats txt
   output$toolbar_download_stats_txt <- downloadHandler(
     filename = function() {
       paste0("stats_", Sys.Date(), ".txt")
@@ -3345,7 +3342,7 @@ server <- function(input, output, session){
     }
   )
 
-  # Stats - CSV File
+  # Stats csv
   output$toolbar_download_stats_csv <- downloadHandler(
     filename = function() {
       paste0("stats_", Sys.Date(), ".csv")
@@ -3354,16 +3351,33 @@ server <- function(input, output, session){
       df <- data_reactive()
 
       if (isTRUE(input$use_id)) {
-        id_col <- input$idvar
-        ids_to_process <- if (isTRUE(input$step_through)) {
-          all_ids()[id_index()]
-        } else {
-          input$selected_ids
-        }
+        id_col         <- input$idvar
+        ids_to_process <- if (isTRUE(input$step_through)) all_ids()[id_index()] else input$selected_ids
       } else {
         df$temp_id     <- "All Data"
         id_col         <- "temp_id"
         ids_to_process <- "All Data"
+      }
+
+      # All modes produce the same columns; NA where not applicable
+      make_row <- function(id, variable, type,
+                           event_count = NA_integer_, total_duration = NA_integer_,
+                           mean = NA_real_, sd = NA_real_,
+                           min = NA_real_, max = NA_real_,
+                           burstiness = NA_real_) {
+        data.frame(
+          Participant    = id,
+          Variable       = variable,
+          Type           = type,
+          Event_Count    = event_count,
+          Total_Duration = total_duration,
+          Mean           = mean,
+          SD             = sd,
+          Min            = min,
+          Max            = max,
+          Burstiness     = burstiness,
+          stringsAsFactors = FALSE
+        )
       }
 
       results <- lapply(ids_to_process, function(id) {
@@ -3371,81 +3385,62 @@ server <- function(input, output, session){
         rows   <- list()
 
         if (input$viz_mode == "Raw time series" && !is.null(input$yvar)) {
-          for (var_name in input$yvar) {
-            vals <- sub_df[[var_name]]
-            rows[[length(rows) + 1]] <- data.frame(
-              Participant    = id,
-              Variable       = var_name,
-              Type           = "Continuous",
-              Event_Count    = NA_integer_,
-              Total_Duration = NA_integer_,
-              Mean           = round(mean(vals, na.rm = TRUE), 4),
-              SD             = round(sd(vals,   na.rm = TRUE), 4),
-              Min            = round(min(vals,  na.rm = TRUE), 4),
-              Max            = round(max(vals,  na.rm = TRUE), 4),
-              Burstiness     = NA_real_,
-              stringsAsFactors = FALSE
+          for (v in input$yvar) {
+            vals <- sub_df[[v]]
+            rows[[length(rows) + 1]] <- make_row(
+              id, v, "Continuous",
+              mean = round(mean(vals, na.rm = TRUE), 4),
+              sd   = round(sd(vals,   na.rm = TRUE), 4),
+              min  = round(min(vals,  na.rm = TRUE), 4),
+              max  = round(max(vals,  na.rm = TRUE), 4)
             )
           }
 
         } else if (input$viz_mode == "Event + Continuous Overlay" &&
                    !is.null(input$signal_overlay) && !is.null(input$event_overlay)) {
-          for (c_var in input$signal_overlay) {
-            c_vals <- sub_df[[c_var]]
-            for (e_var in input$event_overlay) {
-              e_vals <- sub_df[[e_var]]
-              b      <- get_burstiness(e_vals)
-              counts <- get_event_counts(e_vals)
-              rows[[length(rows) + 1]] <- data.frame(
-                Participant    = id,
-                Variable       = paste(c_var, "+", e_var),
-                Type           = "Overlay",
-                Event_Count    = counts$n_events,
-                Total_Duration = counts$total_duration,
-                Mean           = round(mean(c_vals, na.rm = TRUE), 4),
-                SD             = round(sd(c_vals,   na.rm = TRUE), 4),
-                Min            = round(min(c_vals,  na.rm = TRUE), 4),
-                Max            = round(max(c_vals,  na.rm = TRUE), 4),
-                Burstiness     = if (!is.na(b)) round(b, 4) else NA_real_,
-                stringsAsFactors = FALSE
-              )
-            }
+          for (v in input$signal_overlay) {
+            vals <- sub_df[[v]]
+            rows[[length(rows) + 1]] <- make_row(
+              id, v, "Continuous",
+              mean = round(mean(vals, na.rm = TRUE), 4),
+              sd   = round(sd(vals,   na.rm = TRUE), 4),
+              min  = round(min(vals,  na.rm = TRUE), 4),
+              max  = round(max(vals,  na.rm = TRUE), 4)
+            )
+          }
+          for (v in input$event_overlay) {
+            vals   <- sub_df[[v]]
+            b      <- get_burstiness(vals)
+            counts <- get_event_counts(vals)
+            rows[[length(rows) + 1]] <- make_row(
+              id, v, "Event",
+              event_count    = counts$n_events,
+              total_duration = counts$total_duration,
+              burstiness     = if (!is.na(b)) round(b, 4) else NA_real_
+            )
           }
 
         } else if (input$viz_mode == "Event durations (barcode)" && !is.null(input$barcode_var)) {
-          for (e_var in input$barcode_var) {
-            vals   <- sub_df[[e_var]]
+          for (v in input$barcode_var) {
+            vals   <- sub_df[[v]]
             b      <- get_burstiness(vals)
             counts <- get_event_counts(vals)
-            rows[[length(rows) + 1]] <- data.frame(
-              Participant    = id,
-              Variable       = e_var,
-              Type           = "Event",
-              Event_Count    = counts$n_events,
-              Total_Duration = counts$total_duration,
-              Mean           = NA_real_,
-              SD             = NA_real_,
-              Min            = NA_real_,
-              Max            = NA_real_,
-              Burstiness     = if (!is.na(b)) round(b, 4) else NA_real_,
-              stringsAsFactors = FALSE
+            rows[[length(rows) + 1]] <- make_row(
+              id, v, "Event",
+              event_count    = counts$n_events,
+              total_duration = counts$total_duration,
+              burstiness     = if (!is.na(b)) round(b, 4) else NA_real_
             )
           }
 
         } else if (grepl("Event-locked", input$viz_mode) && !is.null(input$signal_var)) {
           vals <- sub_df[[input$signal_var]]
-          rows[[length(rows) + 1]] <- data.frame(
-            Participant    = id,
-            Variable       = input$signal_var,
-            Type           = "Continuous",
-            Event_Count    = NA_integer_,
-            Total_Duration = NA_integer_,
-            Mean           = round(mean(vals, na.rm = TRUE), 4),
-            SD             = round(sd(vals,   na.rm = TRUE), 4),
-            Min            = round(min(vals,  na.rm = TRUE), 4),
-            Max            = round(max(vals,  na.rm = TRUE), 4),
-            Burstiness     = NA_real_,
-            stringsAsFactors = FALSE
+          rows[[length(rows) + 1]] <- make_row(
+            id, input$signal_var, "Continuous",
+            mean = round(mean(vals, na.rm = TRUE), 4),
+            sd   = round(sd(vals,   na.rm = TRUE), 4),
+            min  = round(min(vals,  na.rm = TRUE), 4),
+            max  = round(max(vals,  na.rm = TRUE), 4)
           )
         }
 
@@ -3453,17 +3448,18 @@ server <- function(input, output, session){
         do.call(rbind, rows)
       })
 
-      # Remove NULLs and bind
       results <- Filter(Negate(is.null), results)
-      results <- do.call(rbind, results)
 
-      if (is.null(results) || nrow(results) == 0) {
-        results <- data.frame(Note = "No statistics available for this visualization mode.")
+      final <- if (length(results) > 0) {
+        do.call(rbind, results)
+      } else {
+        data.frame(Note = "No statistics available for this visualization mode.")
       }
 
-      write.csv(results, file, row.names = FALSE)
+      write.csv(final, file, row.names = FALSE)
     }
   )
+
 
   # Save Everything - ZIP
   output$toolbar_download_all <- downloadHandler(
