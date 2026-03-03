@@ -2628,7 +2628,7 @@ server <- function(input, output, session){
           p <- plotly::add_trace(p,
                                  x = x_vals, y = y_vals,
                                  type = "scatter", mode = "lines",
-                                 line = list(color = pal[t_idx], width = 2, alpha = .9),
+                                 line = list(color = pal[t_idx], width = 1.75, alpha = .8),
                                  name = get_var_label(target$label),
                                  showlegend = TRUE,
                                  hoverinfo = "text",
@@ -2679,7 +2679,7 @@ server <- function(input, output, session){
           p <- plotly::add_trace(p,
                                  x = x_vals, y = y_vals,
                                  type = "scatter", mode = "lines",
-                                 line = list(color = hex_to_rgba(pal[t_idx], alpha = .9), width = 2),
+                                 line = list(color = hex_to_rgba(pal[t_idx], alpha = .8), width = 1.75),
                                  name = get_var_label(target$label),
                                  showlegend = TRUE,
                                  hoverinfo = "text",
@@ -2880,8 +2880,8 @@ server <- function(input, output, session){
                 n_types <- length(unique(na.omit(e_vals[e_vals != 0 & e_vals != "0"])))
                 sprintf("  (Categorical: %d types)", n_types)
               } else ""
-              cat(sprintf("    %-30s  Count: %d,  Burstiness: %s%s\n",
-                          e_var, counts$n_events, b_str, note_str))
+              cat(sprintf("    %-30s  Count: %d, Total duration (rows): %d,  Burstiness: %s%s\n",
+                          e_var, counts$n_events, counts$total_duration, b_str, note_str))
             }
             cat("\n")
           }
