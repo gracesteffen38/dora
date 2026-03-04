@@ -1697,6 +1697,21 @@ server <- function(input, output, session){
 
       req(length(input$event_var_col) > 0)
 
+            time_is_datetime <- inherits(df_to_process[[input$start_time_col]], c("POSIXct", "POSIXt"))
+      origin_time <- NULL
+
+      if (time_is_datetime) {
+        origin_time <- min(df_to_process[[input$start_time_col]], na.rm = TRUE)
+        df_to_process[[input$start_time_col]] <- as.numeric(
+          difftime(df_to_process[[input$start_time_col]], origin_time, units = "secs")
+        )
+        if (target_end_col %in% names(df_to_process)) {
+          df_to_process[[target_end_col]] <- as.numeric(
+            difftime(df_to_process[[target_end_col]], origin_time, units = "secs")
+          )
+        }
+      }
+
 
       # Expand each variable separately
       all_converted <- lapply(input$event_var_col, function(var) {
