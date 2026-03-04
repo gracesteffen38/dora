@@ -1009,9 +1009,9 @@ server <- function(input, output, session){
             any(grepl("\\d{2}:\\d{2}:\\d{2}", df[[col]][1:min(10, nrow(df))]), na.rm = TRUE)) {
           parsed <- suppressWarnings(
             lubridate::parse_date_time(df[[col]],
-                                       orders = c("ymd HMS", "ymd HM", "HMS", "HM", "ymd",
-                                                  "dmy HMS", "mdy HMS", "mdy HM", "dmy HM",
-                                                  "I:M:S p", "I:M p", "IMSp", "IMp"),
+                                       orders = c("ymd HMS", "ymd HM", "dmy HMS", "dmy HM",
+                                                  "mdy HMS", "mdy HM", "HMS", "HM",
+                                                  "ymd", "dmy", "mdy"),
                                        quiet = TRUE)
           )
           if (sum(!is.na(parsed)) > 0.5 * length(parsed)) {
@@ -1551,7 +1551,7 @@ server <- function(input, output, session){
     label <- if (is_datetime) {
       "Output time step (seconds)"
     } else {
-      "Output time step (in units of your time column or selected unit if date or clock time)"
+      "Output time step (in units of your time column; seconds if time is in datetime format)"
     }
     numericInput("time_unit_val", label, 1, min = 0.001, step = 0.1)
   })
@@ -1658,9 +1658,7 @@ server <- function(input, output, session){
         if (!is.null(col) && col %in% names(df) && is.character(df[[col]])) {
           parsed <- suppressWarnings(
             lubridate::parse_date_time(df[[col]],
-                                       orders = c("ymd HMS", "ymd HM", "HMS", "HM", "ymd",
-                                                  "dmy HMS", "mdy HMS", "mdy HM", "dmy HM",
-                                                  "I:M:S p", "I:M p", "IMSp", "IMp"),
+                                       orders = c("ymd HMS", "ymd HM", "HMS", "HM", "ymd", "dmy HMS", "mdy HMS"),
                                        quiet = TRUE)
           )
           if (sum(!is.na(parsed)) > 0.5 * length(parsed)) df[[col]] <- parsed
@@ -1672,16 +1670,8 @@ server <- function(input, output, session){
 
       if (input$interval_format == "start_dur") {
         s_time <- df[[input$start_time_col]]
-        if (!inherits(s_time, c("POSIXct", "POSIXt", "Date"))) {
-          s_time <- suppressWarnings(
-            lubridate::parse_date_time(
-              as.character(s_time),
-              orders = c("ymd HMS", "ymd HM", "HMS", "HM", "ymd",
-                         "dmy HMS", "mdy HMS", "mdy HM", "dmy HM",
-                         "I:M:S p", "I:M p", "IMSp", "IMp"),
-              quiet = TRUE
-            )
-          )
+        if (is.character(s_time)) {
+          s_time <- parse_date_time(s_time, orders = c("ymd HMS", "ymd HM", "HMS", "HM", "ymd"), quiet = TRUE)
         }
 
         dur_val <- suppressWarnings(as.numeric(df[[input$duration_col]]))
@@ -1697,6 +1687,7 @@ server <- function(input, output, session){
       # Use the ID selection from THIS step (Step 1)
       if (input$conv_has_id && !is.null(input$conv_id_col)) {
         chosen_id <- input$conv_id_col
+        # Auto-update Step 2 UI settings
         updateCheckboxInput(session, "use_id", value = TRUE)
       } else {
         df_to_process$temp_id <- 1
@@ -1706,62 +1697,8 @@ server <- function(input, output, session){
 
       req(length(input$event_var_col) > 0)
 
-      # if expand_timeseries doesn't catch date time - maybe update expand_timeseries later...
-      start_col_vals <- df_to_process[[input$start_time_col]]
-      if (!inherits(start_col_vals, c("POSIXct", "POSIXt", "Date"))) {
-        parsed_start <- suppressWarnings(
-          lubridate::parse_date_time(
-            as.character(start_col_vals),
-            orders = c("ymd HMS", "ymd HM", "HMS", "HM", "ymd",
-                       "dmy HMS", "mdy HMS", "mdy HM", "dmy HM",
-                       "I:M:S p", "I:M p", "IMSp", "IMp"),
-            quiet = TRUE
-          )
-        )
-        if (sum(!is.na(parsed_start)) > 0.5 * length(parsed_start)) {
-          df_to_process[[input$start_time_col]] <- parsed_start
-          # Also fix end time column if start_end format
-          if (input$interval_format == "start_end" &&
-              !is.null(input$end_time_col) &&
-              input$end_time_col %in% names(df_to_process) &&
-              !inherits(df_to_process[[input$end_time_col]], c("POSIXct", "POSIXt"))) {
-            df_to_process[[input$end_time_col]] <- suppressWarnings(
-              lubridate::parse_date_time(
-                as.character(df_to_process[[input$end_time_col]]),
-                orders = c("ymd HMS", "ymd HM", "HMS", "HM", "ymd",
-                           "dmy HMS", "mdy HMS", "mdy HM", "dmy HM",
-                           "I:M:S p", "I:M p", "IMSp", "IMp"),
-                quiet = TRUE
-              )
-            )
-          }
-        }
-      }
 
-      time_is_datetime  <- inherits(df_to_process[[input$start_time_col]], c("POSIXct", "POSIXt", "Date"))
-      origin_time       <- NULL
-      time_step_secs    <- input$time_unit_val
-
-      if (time_is_datetime) {
-        origin_time <- min(df_to_process[[input$start_time_col]], na.rm = TRUE)
-
-        # Convert to integer row indices (multiples of the time step)
-        # so tidyr::complete() gets clean whole numbers to sequence over
-        df_to_process[[input$start_time_col]] <- round(as.numeric(
-          difftime(df_to_process[[input$start_time_col]], origin_time, units = "secs")
-        ) / time_step_secs)
-
-        if (target_end_col %in% names(df_to_process)) {
-          df_to_process[[target_end_col]] <- round(as.numeric(
-            difftime(df_to_process[[target_end_col]], origin_time, units = "secs")
-          ) / time_step_secs)
-        }
-      }
-
-      # Expanding each variable separately...
-      # First, when datetime columns have been converted to integer row indices, expand_timeseries should step by 1 (one row per index).
-      expand_time_unit <- if (time_is_datetime) 1 else input$time_unit_val
-
+      # Expand each variable separately
       all_converted <- lapply(input$event_var_col, function(var) {
         expand_timeseries(
           data = df_to_process,
@@ -1769,7 +1706,7 @@ server <- function(input, output, session){
           var_name = var,
           start_time_var = input$start_time_col,
           end_time_var = target_end_col,
-          time_unit = expand_time_unit
+          time_unit = input$time_unit_val
         )
       })
 
@@ -1789,22 +1726,6 @@ server <- function(input, output, session){
         time_out_col <- input$start_time_col
         if (time_out_col %in% names(converted) && is.numeric(converted[[time_out_col]])) {
           converted[[time_out_col]] <- origin_time + (converted[[time_out_col]] * time_step_secs)
-        }
-      }
-
-      # Drop temp_id if we added it (single-participant case)
-      if (!input$conv_has_id && "temp_id" %in% names(converted)) {
-        converted$temp_id <- NULL
-      }
-
-      # If ID was used, make sure the id column name in the output
-      # matches the original so it can be joined back to source data
-      if (input$conv_has_id && !is.null(input$conv_id_col)) {
-        if (input$conv_id_col %in% names(converted)) {
-          # Already correct — expand_timeseries preserved it
-        } else if ("temp_id" %in% names(converted)) {
-          # Shouldn't happen in the ID path, but guard anyway
-          names(converted)[names(converted) == "temp_id"] <- input$conv_id_col
         }
       }
 
