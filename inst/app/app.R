@@ -1684,11 +1684,23 @@ server <- function(input, output, session){
           )
         }
 
-        dur_val <- suppressWarnings(as.numeric(df[[input$duration_col]]))
+        dur_val    <- suppressWarnings(as.numeric(df[[input$duration_col]]))
         multiplier <- as.numeric(input$duration_unit_input)
-        df$calculated_end_time <- s_time + (dur_val * multiplier)
-        target_end_col <- "calculated_end_time"
-        df[[input$start_time_col]] <- s_time
+
+        # Compute end time and immediately convert both to numeric seconds
+        # since elapsed since origin — avoids POSIXct class being dropped
+        # when assigned back into a tibble column typed as numeric.
+        origin_for_calc <- min(s_time, na.rm = TRUE)
+        start_numeric   <- as.numeric(difftime(s_time,
+                                               origin_for_calc,
+                                               units = "secs"))
+        end_numeric     <- start_numeric + (dur_val * multiplier)
+
+        df$start_idx_temp <- start_numeric
+        df$end_idx_temp   <- end_numeric
+
+        target_end_col            <- "end_idx_temp"
+        df[[input$start_time_col]] <- s_time  # keep original for reference
       }
 
       # STANDARD EXPANSION
@@ -1743,18 +1755,31 @@ server <- function(input, output, session){
       time_step_secs    <- input$time_unit_val
 
       if (time_is_datetime) {
-        origin_time <- min(df_to_process[[input$start_time_col]], na.rm = TRUE)
+        if (input$interval_format == "start_dur" &&
+            "start_idx_temp" %in% names(df_to_process)) {
+          # Already in elapsed seconds from origin — just divide by time step
+          df_to_process[[input$start_time_col]] <- round(
+            df_to_process$start_idx_temp / time_step_secs
+          )
+          df_to_process[[target_end_col]] <- round(
+            df_to_process$end_idx_temp / time_step_secs
+          )
+          df_to_process$start_idx_temp <- NULL
+          df_to_process$end_idx_temp   <- NULL
 
-        # Convert to integer row indices (multiples of the time step)
-        # so tidyr::complete() gets clean whole numbers to sequence over
-        df_to_process[[input$start_time_col]] <- round(as.numeric(
-          difftime(df_to_process[[input$start_time_col]], origin_time, units = "secs")
-        ) / time_step_secs)
+        } else {
+          # start_end format — both columns are POSIXct, use difftime
+          origin_time <- min(df_to_process[[input$start_time_col]], na.rm = TRUE)
 
-        if (target_end_col %in% names(df_to_process)) {
-          df_to_process[[target_end_col]] <- round(as.numeric(
-            difftime(df_to_process[[target_end_col]], origin_time, units = "secs")
+          df_to_process[[input$start_time_col]] <- round(as.numeric(
+            difftime(df_to_process[[input$start_time_col]], origin_time, units = "secs")
           ) / time_step_secs)
+
+          if (target_end_col %in% names(df_to_process)) {
+            df_to_process[[target_end_col]] <- round(as.numeric(
+              difftime(df_to_process[[target_end_col]], origin_time, units = "secs")
+            ) / time_step_secs)
+          }
         }
       }
 
@@ -1800,10 +1825,16 @@ server <- function(input, output, session){
       }
 
       # Convert row indices back to datetime
+      # Convert row indices back to original time units
       if (time_is_datetime) {
         time_out_col <- input$start_time_col
         if (time_out_col %in% names(converted) && is.numeric(converted[[time_out_col]])) {
-          converted[[time_out_col]] <- origin_time + (converted[[time_out_col]] * time_step_secs)
+          if (input$interval_format == "start_dur") {
+            # Output is elapsed seconds from session origin — keep as numeric
+            converted[[time_out_col]] <- converted[[time_out_col]] * time_step_secs
+          } else {
+            converted[[time_out_col]] <- origin_time + (converted[[time_out_col]] * time_step_secs)
+          }
         }
       }
 
