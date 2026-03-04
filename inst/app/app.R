@@ -1672,10 +1672,16 @@ server <- function(input, output, session){
 
       if (input$interval_format == "start_dur") {
         s_time <- df[[input$start_time_col]]
-        if (is.character(s_time)) {
-          s_time <- parse_date_time(s_time, orders = c("ymd HMS", "ymd HM", "HMS", "HM", "ymd",
-                                                       "dmy HMS", "mdy HMS", "mdy HM", "dmy HM",
-                                                       "I:M:S p", "I:M p", "IMSp", "IMp"), quiet = TRUE)
+        if (!inherits(s_time, c("POSIXct", "POSIXt", "Date"))) {
+          s_time <- suppressWarnings(
+            lubridate::parse_date_time(
+              as.character(s_time),
+              orders = c("ymd HMS", "ymd HM", "HMS", "HM", "ymd",
+                         "dmy HMS", "mdy HMS", "mdy HM", "dmy HM",
+                         "I:M:S p", "I:M p", "IMSp", "IMp"),
+              quiet = TRUE
+            )
+          )
         }
 
         dur_val <- suppressWarnings(as.numeric(df[[input$duration_col]]))
