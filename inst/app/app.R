@@ -1667,46 +1667,77 @@ server <- function(input, output, session){
         }
       }
 
-      # PRE-PROCESSING FOR DURATION FORMAT
+      # PRE-PROCESSING: normalize time columns to integer row indices
+      # before expand_timeseries() is called. This handles both POSIXct
+      # and AM/PM character time columns, and both start_end and start_dur formats.
+
       target_end_col <- input$end_time_col
 
-      if (input$interval_format == "start_dur") {
-        s_time <- df[[input$start_time_col]]
-        if (!inherits(s_time, c("POSIXct", "POSIXt", "Date"))) {
-          s_time <- suppressWarnings(
-            lubridate::parse_date_time(
-              as.character(s_time),
-              orders = c("ymd HMS", "ymd HM", "HMS", "HM", "ymd",
-                         "dmy HMS", "mdy HMS", "mdy HM", "dmy HM",
-                         "I:M:S p", "I:M p", "IMSp", "IMp"),
-              quiet = TRUE
+      # Step 1: parse start time to POSIXct if needed
+      start_vals <- df[[input$start_time_col]]
+      if (!inherits(start_vals, c("POSIXct", "POSIXt", "Date"))) {
+        start_vals <- suppressWarnings(
+          lubridate::parse_date_time(
+            as.character(start_vals),
+            orders = c("ymd HMS", "ymd HM", "HMS", "HM", "ymd",
+                       "dmy HMS", "mdy HMS", "mdy HM", "dmy HM",
+                       "I:M:S p", "I:M p", "IMSp", "IMp"),
+            quiet = TRUE
+          )
+        )
+      }
+      time_is_datetime <- inherits(start_vals, c("POSIXct", "POSIXt", "Date"))
+      time_step_secs   <- input$time_unit_val
+      origin_time      <- NULL
+
+      if (time_is_datetime) {
+        # Convert start to elapsed seconds from origin, then to row indices
+        origin_time <- min(start_vals, na.rm = TRUE)
+        df[[".__start_idx"]] <- round(
+          as.numeric(difftime(start_vals, origin_time, units = "secs")) / time_step_secs
+        )
+
+        if (input$interval_format == "start_dur") {
+          # Step 2a: compute end from duration arithmetic (duration is already numeric seconds)
+          dur_val    <- suppressWarnings(as.numeric(df[[input$duration_col]]))
+          multiplier <- as.numeric(input$duration_unit_input)
+          df[[".__end_idx"]] <- df[[".__start_idx"]] + round((dur_val * multiplier) / time_step_secs)
+
+        } else {
+          # Step 2b: parse end time column and convert the same way
+          end_vals <- df[[input$end_time_col]]
+          if (!inherits(end_vals, c("POSIXct", "POSIXt", "Date"))) {
+            end_vals <- suppressWarnings(
+              lubridate::parse_date_time(
+                as.character(end_vals),
+                orders = c("ymd HMS", "ymd HM", "HMS", "HM", "ymd",
+                           "dmy HMS", "mdy HMS", "mdy HM", "dmy HM",
+                           "I:M:S p", "I:M p", "IMSp", "IMp"),
+                quiet = TRUE
+              )
             )
+          }
+          df[[".__end_idx"]] <- round(
+            as.numeric(difftime(end_vals, origin_time, units = "secs")) / time_step_secs
           )
         }
 
+        # Replace original time columns with integer indices for expand_timeseries
+        df[[input$start_time_col]] <- df[[".__start_idx"]]
+        target_end_col             <- ".__end_idx"
+        df[[".__start_idx"]]       <- NULL
+
+      } else if (input$interval_format == "start_dur") {
+        # Non-datetime start_dur: compute numeric end column as before
         dur_val    <- suppressWarnings(as.numeric(df[[input$duration_col]]))
         multiplier <- as.numeric(input$duration_unit_input)
-
-        # Compute end time and immediately convert both to numeric seconds
-        # since elapsed since origin — avoids POSIXct class being dropped
-        # when assigned back into a tibble column typed as numeric.
-        origin_for_calc <- min(s_time, na.rm = TRUE)
-        start_numeric   <- as.numeric(difftime(s_time,
-                                               origin_for_calc,
-                                               units = "secs"))
-        end_numeric     <- start_numeric + (dur_val * multiplier)
-
-        df$start_idx_temp <- start_numeric
-        df$end_idx_temp   <- end_numeric
-
-        target_end_col            <- "end_idx_temp"
-        df[[input$start_time_col]] <- s_time  # keep original for reference
+        df$calculated_end_time <- df[[input$start_time_col]] + (dur_val * multiplier)
+        target_end_col         <- "calculated_end_time"
       }
 
       # STANDARD EXPANSION
       df_to_process <- df
 
-      # Use the ID selection from THIS step (Step 1)
       if (input$conv_has_id && !is.null(input$conv_id_col)) {
         chosen_id <- input$conv_id_col
         updateCheckboxInput(session, "use_id", value = TRUE)
@@ -1718,74 +1749,9 @@ server <- function(input, output, session){
 
       req(length(input$event_var_col) > 0)
 
-      # if expand_timeseries doesn't catch date time - maybe update expand_timeseries later...
-      start_col_vals <- df_to_process[[input$start_time_col]]
-      if (!inherits(start_col_vals, c("POSIXct", "POSIXt", "Date"))) {
-        parsed_start <- suppressWarnings(
-          lubridate::parse_date_time(
-            as.character(start_col_vals),
-            orders = c("ymd HMS", "ymd HM", "HMS", "HM", "ymd",
-                       "dmy HMS", "mdy HMS", "mdy HM", "dmy HM",
-                       "I:M:S p", "I:M p", "IMSp", "IMp"),
-            quiet = TRUE
-          )
-        )
-        if (sum(!is.na(parsed_start)) > 0.5 * length(parsed_start)) {
-          df_to_process[[input$start_time_col]] <- parsed_start
-          # Also fix end time column if start_end format
-          if (input$interval_format == "start_end" &&
-              !is.null(input$end_time_col) &&
-              input$end_time_col %in% names(df_to_process) &&
-              !inherits(df_to_process[[input$end_time_col]], c("POSIXct", "POSIXt"))) {
-            df_to_process[[input$end_time_col]] <- suppressWarnings(
-              lubridate::parse_date_time(
-                as.character(df_to_process[[input$end_time_col]]),
-                orders = c("ymd HMS", "ymd HM", "HMS", "HM", "ymd",
-                           "dmy HMS", "mdy HMS", "mdy HM", "dmy HM",
-                           "I:M:S p", "I:M p", "IMSp", "IMp"),
-                quiet = TRUE
-              )
-            )
-          }
-        }
-      }
-
-      time_is_datetime  <- inherits(df_to_process[[input$start_time_col]], c("POSIXct", "POSIXt", "Date"))
-      origin_time       <- NULL
-      time_step_secs    <- input$time_unit_val
-
-      if (time_is_datetime) {
-        if (input$interval_format == "start_dur" &&
-            "start_idx_temp" %in% names(df_to_process)) {
-          # Already in elapsed seconds from origin — just divide by time step
-          df_to_process[[input$start_time_col]] <- round(
-            df_to_process$start_idx_temp / time_step_secs
-          )
-          df_to_process[[target_end_col]] <- round(
-            df_to_process$end_idx_temp / time_step_secs
-          )
-          df_to_process$start_idx_temp <- NULL
-          df_to_process$end_idx_temp   <- NULL
-
-        } else {
-          # start_end format — both columns are POSIXct, use difftime
-          origin_time <- min(df_to_process[[input$start_time_col]], na.rm = TRUE)
-
-          df_to_process[[input$start_time_col]] <- round(as.numeric(
-            difftime(df_to_process[[input$start_time_col]], origin_time, units = "secs")
-          ) / time_step_secs)
-
-          if (target_end_col %in% names(df_to_process)) {
-            df_to_process[[target_end_col]] <- round(as.numeric(
-              difftime(df_to_process[[target_end_col]], origin_time, units = "secs")
-            ) / time_step_secs)
-          }
-        }
-      }
-
       # Expanding each variable separately...
       # First, when datetime columns have been converted to integer row indices, expand_timeseries should step by 1 (one row per index).
-      expand_time_unit <- if (time_is_datetime) 1 else input$time_unit_val
+      expand_time_unit <- if (time_is_datetime) 1L else input$time_unit_val
 
       showNotification(
         paste0(
@@ -1824,17 +1790,11 @@ server <- function(input, output, session){
         }
       }
 
-      # Convert row indices back to datetime
-      # Convert row indices back to original time units
-      if (time_is_datetime) {
+      # Convert row indices back to original time scale
+      if (time_is_datetime && !is.null(origin_time)) {
         time_out_col <- input$start_time_col
         if (time_out_col %in% names(converted) && is.numeric(converted[[time_out_col]])) {
-          if (input$interval_format == "start_dur") {
-            # Output is elapsed seconds from session origin — keep as numeric
-            converted[[time_out_col]] <- converted[[time_out_col]] * time_step_secs
-          } else {
-            converted[[time_out_col]] <- origin_time + (converted[[time_out_col]] * time_step_secs)
-          }
+          converted[[time_out_col]] <- origin_time + (converted[[time_out_col]] * time_step_secs)
         }
       }
 
