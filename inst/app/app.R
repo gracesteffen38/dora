@@ -1697,6 +1697,25 @@ server <- function(input, output, session){
 
       req(length(input$event_var_col) > 0)
 
+      time_is_datetime <- inherits(df_to_process[[input$start_time_col]], c("POSIXct", "POSIXt"))
+      origin_time <- NULL
+      time_step_secs <- input$time_unit_val
+
+      if (time_is_datetime) {
+        origin_time <- min(df_to_process[[input$start_time_col]], na.rm = TRUE)
+
+        # Convert to integer row indices (multiples of the time step)
+        # so tidyr::complete() gets clean whole numbers to sequence over
+        df_to_process[[input$start_time_col]] <- round(as.numeric(
+          difftime(df_to_process[[input$start_time_col]], origin_time, units = "secs")
+        ) / time_step_secs)
+
+        if (target_end_col %in% names(df_to_process)) {
+          df_to_process[[target_end_col]] <- round(as.numeric(
+            difftime(df_to_process[[target_end_col]], origin_time, units = "secs")
+          ) / time_step_secs)
+        }
+      }
 
       # Expand each variable separately
       all_converted <- lapply(input$event_var_col, function(var) {
