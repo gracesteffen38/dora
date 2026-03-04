@@ -1762,6 +1762,21 @@ server <- function(input, output, session){
       # First, when datetime columns have been converted to integer row indices, expand_timeseries should step by 1 (one row per index).
       expand_time_unit <- if (time_is_datetime) 1 else input$time_unit_val
 
+      showNotification(
+        paste0(
+          "start col class: ", class(df_to_process[[input$start_time_col]]), " | ",
+          "end col class: ", class(df_to_process[[target_end_col]]), " | ",
+          "start range: ", min(df_to_process[[input$start_time_col]], na.rm=TRUE),
+          " to ", max(df_to_process[[input$start_time_col]], na.rm=TRUE), " | ",
+          "end range: ", min(df_to_process[[target_end_col]], na.rm=TRUE),
+          " to ", max(df_to_process[[target_end_col]], na.rm=TRUE), " | ",
+          "time_is_datetime: ", time_is_datetime, " | ",
+          "expand_time_unit: ", expand_time_unit
+        ),
+        duration = 30,
+        type = "message"
+      )
+
       all_converted <- lapply(input$event_var_col, function(var) {
         expand_timeseries(
           data = df_to_process,
