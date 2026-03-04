@@ -1551,7 +1551,7 @@ server <- function(input, output, session){
     label <- if (is_datetime) {
       "Output time step (seconds)"
     } else {
-      "Output time step (in units of your time column; seconds if time is in datetime format)"
+      "Output time step (in units of your time column or selected unit if date or clock time)"
     }
     numericInput("time_unit_val", label, 1, min = 0.001, step = 0.1)
   })
@@ -1717,7 +1717,10 @@ server <- function(input, output, session){
         }
       }
 
-      # Expand each variable separately
+      # Expanding each variable separately...
+      # First, when datetime columns have been converted to integer row indices, expand_timeseries should step by 1 (one row per index).
+      expand_time_unit <- if (time_is_datetime) 1 else input$time_unit_val
+
       all_converted <- lapply(input$event_var_col, function(var) {
         expand_timeseries(
           data = df_to_process,
@@ -1725,7 +1728,7 @@ server <- function(input, output, session){
           var_name = var,
           start_time_var = input$start_time_col,
           end_time_var = target_end_col,
-          time_unit = input$time_unit_val
+          time_unit = expand_time_unit
         )
       })
 
@@ -1745,6 +1748,22 @@ server <- function(input, output, session){
         time_out_col <- input$start_time_col
         if (time_out_col %in% names(converted) && is.numeric(converted[[time_out_col]])) {
           converted[[time_out_col]] <- origin_time + (converted[[time_out_col]] * time_step_secs)
+        }
+      }
+
+      # Drop temp_id if we added it (single-participant case)
+      if (!input$conv_has_id && "temp_id" %in% names(converted)) {
+        converted$temp_id <- NULL
+      }
+
+      # If ID was used, make sure the id column name in the output
+      # matches the original so it can be joined back to source data
+      if (input$conv_has_id && !is.null(input$conv_id_col)) {
+        if (input$conv_id_col %in% names(converted)) {
+          # Already correct — expand_timeseries preserved it
+        } else if ("temp_id" %in% names(converted)) {
+          # Shouldn't happen in the ID path, but guard anyway
+          names(converted)[names(converted) == "temp_id"] <- input$conv_id_col
         }
       }
 
