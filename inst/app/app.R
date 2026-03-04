@@ -1009,9 +1009,9 @@ server <- function(input, output, session){
             any(grepl("\\d{2}:\\d{2}:\\d{2}", df[[col]][1:min(10, nrow(df))]), na.rm = TRUE)) {
           parsed <- suppressWarnings(
             lubridate::parse_date_time(df[[col]],
-                                       orders = c("ymd HMS", "ymd HM", "dmy HMS", "dmy HM",
-                                                  "mdy HMS", "mdy HM", "HMS", "HM",
-                                                  "ymd", "dmy", "mdy"),
+                                       orders = c("ymd HMS", "ymd HM", "HMS", "HM", "ymd",
+                                                  "dmy HMS", "mdy HMS", "mdy HM", "dmy HM",
+                                                  "I:M:S p", "I:M p", "IMSp", "IMp"),
                                        quiet = TRUE)
           )
           if (sum(!is.na(parsed)) > 0.5 * length(parsed)) {
@@ -1658,7 +1658,9 @@ server <- function(input, output, session){
         if (!is.null(col) && col %in% names(df) && is.character(df[[col]])) {
           parsed <- suppressWarnings(
             lubridate::parse_date_time(df[[col]],
-                                       orders = c("ymd HMS", "ymd HM", "HMS", "HM", "ymd", "dmy HMS", "mdy HMS"),
+                                       orders = c("ymd HMS", "ymd HM", "HMS", "HM", "ymd",
+                                                  "dmy HMS", "mdy HMS", "mdy HM", "dmy HM",
+                                                  "I:M:S p", "I:M p", "IMSp", "IMp"),
                                        quiet = TRUE)
           )
           if (sum(!is.na(parsed)) > 0.5 * length(parsed)) df[[col]] <- parsed
@@ -1703,7 +1705,8 @@ server <- function(input, output, session){
           lubridate::parse_date_time(
             as.character(start_col_vals),
             orders = c("ymd HMS", "ymd HM", "HMS", "HM", "ymd",
-                       "dmy HMS", "mdy HMS", "mdy HM", "dmy HM"),
+                       "dmy HMS", "mdy HMS", "mdy HM", "dmy HM",
+                       "I:M:S p", "I:M p", "IMSp", "IMp"),
             quiet = TRUE
           )
         )
@@ -1718,7 +1721,8 @@ server <- function(input, output, session){
               lubridate::parse_date_time(
                 as.character(df_to_process[[input$end_time_col]]),
                 orders = c("ymd HMS", "ymd HM", "HMS", "HM", "ymd",
-                           "dmy HMS", "mdy HMS", "mdy HM", "dmy HM"),
+                           "dmy HMS", "mdy HMS", "mdy HM", "dmy HM",
+                           "I:M:S p", "I:M p", "IMSp", "IMp"),
                 quiet = TRUE
               )
             )
