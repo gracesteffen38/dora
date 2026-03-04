@@ -1687,7 +1687,6 @@ server <- function(input, output, session){
       # Use the ID selection from THIS step (Step 1)
       if (input$conv_has_id && !is.null(input$conv_id_col)) {
         chosen_id <- input$conv_id_col
-        # Auto-update Step 2 UI settings
         updateCheckboxInput(session, "use_id", value = TRUE)
       } else {
         df_to_process$temp_id <- 1
@@ -1697,9 +1696,39 @@ server <- function(input, output, session){
 
       req(length(input$event_var_col) > 0)
 
-      time_is_datetime <- inherits(df_to_process[[input$start_time_col]], c("POSIXct", "POSIXt"))
-      origin_time <- NULL
-      time_step_secs <- input$time_unit_val
+      # if expand_timeseries doesn't catch date time - maybe update expand_timeseries later...
+      start_col_vals <- df_to_process[[input$start_time_col]]
+      if (!inherits(start_col_vals, c("POSIXct", "POSIXt", "Date"))) {
+        parsed_start <- suppressWarnings(
+          lubridate::parse_date_time(
+            as.character(start_col_vals),
+            orders = c("ymd HMS", "ymd HM", "HMS", "HM", "ymd",
+                       "dmy HMS", "mdy HMS", "mdy HM", "dmy HM"),
+            quiet = TRUE
+          )
+        )
+        if (sum(!is.na(parsed_start)) > 0.5 * length(parsed_start)) {
+          df_to_process[[input$start_time_col]] <- parsed_start
+          # Also fix end time column if start_end format
+          if (input$interval_format == "start_end" &&
+              !is.null(input$end_time_col) &&
+              input$end_time_col %in% names(df_to_process) &&
+              !inherits(df_to_process[[input$end_time_col]], c("POSIXct", "POSIXt"))) {
+            df_to_process[[input$end_time_col]] <- suppressWarnings(
+              lubridate::parse_date_time(
+                as.character(df_to_process[[input$end_time_col]]),
+                orders = c("ymd HMS", "ymd HM", "HMS", "HM", "ymd",
+                           "dmy HMS", "mdy HMS", "mdy HM", "dmy HM"),
+                quiet = TRUE
+              )
+            )
+          }
+        }
+      }
+
+      time_is_datetime  <- inherits(df_to_process[[input$start_time_col]], c("POSIXct", "POSIXt", "Date"))
+      origin_time       <- NULL
+      time_step_secs    <- input$time_unit_val
 
       if (time_is_datetime) {
         origin_time <- min(df_to_process[[input$start_time_col]], na.rm = TRUE)
