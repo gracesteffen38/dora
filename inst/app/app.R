@@ -638,7 +638,7 @@ $(document).ready(function() {
 
         h4("Step 1: Upload Data"),
 
-        fileInput("file", "Upload your own CSV", accept = ".csv"),
+        fileInput("file", "Upload your own data (.csv, .xlsx, .sav files accepted)", accept = c(".csv", ".sav", ".xlsx")),
         div(style = "margin-top: -40px"),
 
         tags$div(style = "text-align: center; padding: 10px; color: #666; font-weight: bold;",
@@ -999,10 +999,18 @@ server <- function(input, output, session){
 
     } else {
       req(input$file)
+      if (grepl(".csv", input$file$datapath)) {
       readr::read_csv(input$file$datapath, show_col_types = FALSE)
+      }
+      else if(grepl(".sav", input$file$datapath)){
+        haven::read_sav(input$file$datapath, show_col_types = FALSE)
+      } else if(grepl(".xlsx", input$file$datapath)){
+        readxl::read_excel(input$file$datapath, show_col_types = FALSE)
+      } else {
+        return("File type not supported. Please upload a CSV, XLSX, or SAV file.")
+      }
     }
 
-    # Datetime parsing unchanged
     for (col in names(df)) {
       if (is.character(df[[col]])) {
         if (any(grepl("\\d{4}-\\d{2}-\\d{2}", df[[col]][1:min(10, nrow(df))]), na.rm = TRUE) ||
@@ -1052,7 +1060,6 @@ server <- function(input, output, session){
 
     if (isTRUE(success)) return(invisible(file))
 
-    # Method 2: Try webshot2
     success <- tryCatch({
       tmpdir <- tempfile()
       dir.create(tmpdir)
