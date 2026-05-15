@@ -1003,9 +1003,9 @@ server <- function(input, output, session){
       readr::read_csv(input$file$datapath, show_col_types = FALSE)
       }
       else if(grepl(".sav", input$file$datapath)){
-        haven::read_sav(input$file$datapath, show_col_types = FALSE)
+        haven::read_sav(input$file$datapath)
       } else if(grepl(".xlsx", input$file$datapath)){
-        readxl::read_excel(input$file$datapath, show_col_types = FALSE)
+        readxl::read_excel(input$file$datapath)
       } else {
         return("File type not supported. Please upload a CSV, XLSX, or SAV file.")
       }
