@@ -23,15 +23,13 @@ ui <- fluidPage(
   tags$div(id = "sticky-toolbar", class = "toolbar sticky-toolbar",
 
              # Left side - Back button
-             tags$div(conditionalPanel(
+             conditionalPanel(
                condition = "input.sidebar_state == 'viz'",
                actionButton("back_data", "← Back to Data Options",
                             class = "btn btn-outline-secondary", accesskey = "b",
                             title = "Back to Data Options (Alt+B)")
-             )
              ),
-
-             # Center - Accessibility Menu on page 2
+             # accessibility menu
              tags$div(id = "toolbar-accessibility", style = "flex: 1; text-align: center;",
                       tags$div(class = "btn-group",
                                tags$button(id = "accessibility-dropdown-btn", class = "btn btn-outline-info btn-sm accessibility-dropdown-btn",
@@ -75,10 +73,7 @@ ui <- fluidPage(
                                )
                       )
              ),
-
-             # Save menu
              # Right side - Save menu
-             tags$div(
                conditionalPanel(
                  condition = "input.sidebar_state == 'viz'",
                tags$div(class = "btn-group",
@@ -149,9 +144,8 @@ ui <- fluidPage(
                                  )
                         )
                )
-             )
              ),
-             # Help button
+             # Help button (right side)
              tags$div(
                tags$div(class = "btn-group",
                         tags$button(id = "help-dropdown-btn",
@@ -533,6 +527,14 @@ server <- function(input, output, session){
         tags$strong("Daily Music Bouts"),
         tags$p(style = "margin: 4px 0 0 0; color: #666; font-size: 0.9em;",
                "Event-coded music listening episodes across the day")
+      ),
+      tags$div(
+        style = "cursor: pointer; padding: 12px; border: 1px solid #ddd;
+               border-radius: 6px; margin-bottom: 10px; background: white;",
+        onclick = "Shiny.setInputValue('demo_selected', 'demo4', {priority: 'event'})",
+        tags$strong("Gahvora Cradling Diaries"),
+        tags$p(style = "margin: 4px 0 0 0; color: #666; font-size: 0.9em;",
+               "Gahvora cradle use across the day")
       )
     ))
   })
@@ -564,8 +566,8 @@ server <- function(input, output, session){
       demo_file <- switch(active_demo(),
                           "demo1" = system.file("extdata", "object_play.csv", package = "dora"),
                           "demo2" = system.file("extdata", "biobehavioral_interactions.csv", package = "dora"),
-                          "demo3" = system.file("extdata", "music_bouts.csv", package = "dora",
-                                                "extdata", "cradling_diaries.csv", package = "dora")
+                          "demo3" = system.file("extdata", "music_bouts.csv", package = "dora"),
+                          "demo4" = system.file("extdata", "cradling_diaries.csv", package = "dora")
       )
       if (demo_file == "") stop("Demo file not found. Try reinstalling the package.")
       readr::read_csv(demo_file, show_col_types = FALSE)

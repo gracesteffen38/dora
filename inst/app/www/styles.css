@@ -68,6 +68,34 @@
   align-items: center;
 }
 
+/* Ensure the flex layout treats the conditional panels as flexible elements */
+.sticky-toolbar > .shiny-conditional-panel {
+  flex: 1;
+  display: flex !important; /* Forces layout calculation even when shiny alters states */
+}
+
+/* Ensure the hidden panels shrink to nothing so the center item stays centered */
+.sticky-toolbar > .shiny-conditional-panel[style*="display: none"] {
+  display: none !important;
+  flex: 0 0 0px !important;
+}
+
+/* Align contents of the child wrapper panels */
+.sticky-toolbar > .shiny-conditional-panel:first-child {
+  justify-content: flex-start;
+}
+
+.sticky-toolbar > .shiny-conditional-panel:last-child {
+  justify-content: flex-end;
+}
+
+/* Keep the middle element perfectly in the center column */
+#toolbar-accessibility {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
 
 body{
   padding-top: 40px;
