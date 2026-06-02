@@ -25,6 +25,7 @@ ui <- fluidPage(
              # Left side - Back button
              conditionalPanel(
                condition = "input.sidebar_state == 'viz'",
+               style = "flex: 1; text-align: left;",
                actionButton("back_data", "← Back to Data Options",
                             class = "btn btn-outline-secondary", accesskey = "b",
                             title = "Back to Data Options (Alt+B)")
@@ -76,6 +77,7 @@ ui <- fluidPage(
              # Right side - Save menu
                conditionalPanel(
                  condition = "input.sidebar_state == 'viz'",
+                 style = "flex: 1; text-align: right;",
                tags$div(class = "btn-group",
                         tags$button(id = "save-dropdown-btn", class = "btn btn-success dropdown-toggle",
                                     type = "button",
@@ -146,7 +148,7 @@ ui <- fluidPage(
                )
              ),
              # Help button (right side)
-             tags$div(
+             tags$div(style = "flex: 1; text-align: right;",
                tags$div(class = "btn-group",
                         tags$button(id = "help-dropdown-btn",
                                     class = "btn btn-sm",
