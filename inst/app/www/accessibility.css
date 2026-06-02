@@ -1,0 +1,375 @@
+/*   HIGH CONTRAST   */
+
+body.high-contrast {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+
+/* General containers */
+
+body.high-contrast .well,
+body.high-contrast .panel,
+body.high-contrast .panel-default,
+body.high-contrast .modal-content,
+body.high-contrast .tab-content,
+body.high-contrast .navbar,
+body.high-contrast .toolbar,
+body.high-contrast #sticky-toolbar {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+}
+
+
+/* Headers */
+
+body.high-contrast .panel-heading,
+body.high-contrast .navbar,
+body.high-contrast .tabbable > .nav > li > a {
+  background-color: #111111 !important;
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+}
+
+
+/* Text */
+
+body.high-contrast h1,
+body.high-contrast h2,
+body.high-contrast h3,
+body.high-contrast h4,
+body.high-contrast h5,
+body.high-contrast h6,
+body.high-contrast p,
+body.high-contrast span,
+body.high-contrast div,
+body.high-contrast label,
+body.high-contrast strong,
+body.high-contrast td,
+body.high-contrast th,
+body.high-contrast li {
+  color: #ffffff !important;
+}
+
+
+/* Inputs */
+
+body.high-contrast input,
+body.high-contrast textarea,
+body.high-contrast select,
+body.high-contrast .form-control,
+body.high-contrast .selectize-input,
+body.high-contrast .selectize-control.single .selectize-input {
+  background-color: #2d2d2d !important;
+  color: #ffffff !important;
+  border: 2px solid #ffffff !important;
+}
+
+
+/* Selectize dropdown */
+
+body.high-contrast .selectize-dropdown,
+body.high-contrast .selectize-dropdown-content {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+body.high-contrast .selectize-dropdown .option {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+body.high-contrast .selectize-dropdown .active {
+  background-color: #444444 !important;
+}
+
+
+/* Buttons */
+
+body.high-contrast .btn {
+  border: 2px solid #ffffff !important;
+}
+
+body.high-contrast .btn-primary {
+  background-color: #ffff00 !important;
+  color: #000000 !important;
+  border-color: #000000 !important;
+}
+
+body.high-contrast .btn-success {
+  background-color: #00ff00 !important;
+  color: #000000 !important;
+}
+
+body.high-contrast .btn-default,
+body.high-contrast .btn-outline-secondary,
+body.high-contrast .btn-outline-primary,
+body.high-contrast .btn-outline-info {
+  background-color: #222222 !important;
+  color: #ffffff !important;
+  border-color: #ffffff !important;
+}
+
+
+/* Dropdown menus */
+
+body.high-contrast .dropdown-menu,
+body.high-contrast #accessibility-dropdown-menu,
+body.high-contrast #save-dropdown-menu,
+body.high-contrast #help-dropdown-menu {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+  border: 2px solid #ffffff !important;
+}
+
+
+/* Dropdown text */
+
+body.high-contrast .dropdown-menu label,
+body.high-contrast .dropdown-menu h6,
+body.high-contrast .dropdown-menu p,
+body.high-contrast .dropdown-menu a,
+body.high-contrast .dropdown-menu td,
+body.high-contrast .dropdown-menu th,
+body.high-contrast .dropdown-menu strong {
+  color: #ffffff !important;
+}
+
+
+/* Links */
+
+body.high-contrast a {
+  color: #00ffff !important;
+}
+
+body.high-contrast a:hover {
+  color: #ffff00 !important;
+}
+
+
+/* Checkboxes and radios */
+
+body.high-contrast .checkbox label,
+body.high-contrast .radio label {
+  color: #ffffff !important;
+}
+
+body.high-contrast input[type='checkbox'],
+body.high-contrast input[type='radio'] {
+  accent-color: #ffff00;
+}
+
+
+/* HR */
+
+body.high-contrast hr {
+  border-color: #666666 !important;
+}
+
+
+/* Tables */
+
+body.high-contrast table {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+body.high-contrast table tr {
+  background-color: #000000 !important;
+}
+
+body.high-contrast table tr:nth-child(even) {
+  background-color: #111111 !important;
+}
+
+
+/* Plotly */
+
+body.high-contrast .plotly .modebar {
+  background-color: #000000 !important;
+}
+
+
+/*
+   LARGE TEXT
+   */
+
+body.large-text {
+  font-size: 18px !important;
+}
+
+
+/* General text */
+
+body.large-text p,
+body.large-text span,
+body.large-text div,
+body.large-text label,
+body.large-text li,
+body.large-text td,
+body.large-text th {
+  font-size: 18px !important;
+}
+
+
+/* Headings */
+
+body.large-text h1 {
+  font-size: 3rem !important;
+}
+
+body.large-text h2 {
+  font-size: 2.5rem !important;
+}
+
+body.large-text h3 {
+  font-size: 2.2rem !important;
+}
+
+body.large-text h4 {
+  font-size: 1.8rem !important;
+}
+
+body.large-text h5 {
+  font-size: 1.5rem !important;
+}
+
+body.large-text h6 {
+  font-size: 1.3rem !important;
+}
+
+
+/* Buttons */
+
+body.large-text .btn {
+  font-size: 18px !important;
+}
+
+
+/* Inputs */
+
+body.large-text .form-control,
+body.large-text .selectize-input,
+body.large-text .dropdown-menu {
+  font-size: 18px !important;
+}
+
+
+/* Plot descriptions */
+
+body.large-text #plot-description {
+  margin-bottom: 25px !important;
+  padding: 12px !important;
+  line-height: 1.6 !important;
+  font-size: 18px !important;
+}
+
+
+/* Plotly text */
+
+body.large-text .plotly .gtitle {
+  font-size: 24px !important;
+}
+
+body.large-text .plotly .xtitle,
+body.large-text .plotly .ytitle {
+  font-size: 20px !important;
+}
+
+body.large-text .plotly .legend,
+body.large-text .plotly .tick text {
+  font-size: 16px !important;
+}
+
+
+/* LARGE TARGETS   */
+
+body.large-targets .btn {
+  min-height: 50px !important;
+  min-width: 50px !important;
+  padding: 12px 20px !important;
+  margin: 5px 2px !important;
+}
+
+
+body.large-targets .form-control,
+body.large-targets .selectize-input {
+  min-height: 50px !important;
+  margin: 5px 0 !important;
+}
+
+
+body.large-targets .checkbox,
+body.large-targets .radio {
+  margin: 15px 0 !important;
+  padding-left: 30px !important;
+}
+
+
+/* Checkbox scaling */
+
+body.large-targets .checkbox input[type='checkbox'],
+body.large-targets .radio input[type='radio'] {
+  transform: scale(1.5) !important;
+  margin-right: 15px !important;
+  margin-left: -30px !important;
+  position: relative !important;
+}
+
+
+/* Labels */
+
+body.large-targets .checkbox label,
+body.large-targets .radio label {
+  margin-left: 10px !important;
+  line-height: 24px !important;
+}
+
+
+/*REDUCE MOTION   */
+
+body.reduce-motion *,
+body.reduce-motion *::before,
+body.reduce-motion *::after {
+  transition: none !important;
+  animation: none !important;
+  scroll-behavior: auto !important;
+}
+
+
+/* SIMPLIFIED UI */
+
+body.simplified-ui .well,
+body.simplified-ui .panel {
+  border: 3px solid #007bff !important;
+}
+
+
+/* Optional: remove extra clutter */
+
+body.simplified-ui .plotly .modebar {
+  opacity: 0.5;
+}
+
+
+.help-text {
+  display: none;
+}
+
+
+body.show-descriptions .help-text {
+  display: block !important;
+  font-weight: bold !important;
+  background-color: #e7f3ff !important;
+  color: #000000 !important;
+  padding: 8px !important;
+  border-radius: 4px !important;
+  margin-top: 5px !important;
+  border-left: 3px solid #007bff !important;
+}
+
+
+.accessibility-dropdown-btn{
+  font-size: 14px; padding-right: 10px; border: 2px solid #17a2b8;
+}
