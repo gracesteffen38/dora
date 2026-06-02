@@ -3,7 +3,7 @@
 \docType{data}
 \name{object_play}
 \alias{object_play}
-\title{Demo time series dataset 1}
+\title{Infant Object Play}
 \format{
 A data frame with 16032 rows and 58 columns:
 \describe{

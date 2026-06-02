@@ -3,7 +3,7 @@
 \docType{data}
 \name{cradling_diaries}
 \alias{cradling_diaries}
-\title{Demo time series dataset 4}
+\title{Gahvora Cradling Diaries}
 \format{
 A data frame with 6073 rows and 105 columns:
 \describe{

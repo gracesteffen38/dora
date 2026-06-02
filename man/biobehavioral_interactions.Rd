@@ -3,7 +3,7 @@
 \docType{data}
 \name{biobehavioral_interactions}
 \alias{biobehavioral_interactions}
-\title{Demo time series dataset 2}
+\title{Mother-Child Biobehavioral Interactions}
 \format{
 A data frame with 16705 rows and 18 columns:
 \describe{
@@ -28,7 +28,7 @@ A data frame with 16705 rows and 18 columns:
 }
 }
 \source{
-Real example data 2
+Steffen, G., & Abney, D. (2025, October 24). Coupling of rhythms in prefrontal cortex and autonomic nervous system in school-age children. Retrieved from osf.io/mqfbp
 }
 \usage{
 biobehavioral_interactions

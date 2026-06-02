@@ -3,7 +3,7 @@
 \docType{data}
 \name{music_bouts}
 \alias{music_bouts}
-\title{Demo time series dataset 3}
+\title{Daily Music Bouts}
 \format{
 A data frame with 4,798 rows and 28 columns:
 \describe{

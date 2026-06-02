@@ -1,4 +1,4 @@
-#' Demo time series dataset 1
+#' Infant Object Play
 #'
 #' A sample dataset for exploring the DORA app,
 #' containing object interaction bouts across an hour for 50 infants.
@@ -17,7 +17,7 @@
 #' }
 #' @source Tamis-LeMonda, C., Adolph, K. & Herzberg, O. (2020). Infant exuberant object play at home: Immense amounts of time-distributed, variable practice. Databrary. Retrieved May 14, 2026 from https://databrary.org/volume/1118.
 "object_play"
-#' Demo time series dataset 2
+#' Mother-Child Biobehavioral Interactions
 #'
 #' A sample dataset for exploring the DORA app,
 #' containing physiology and behavior of mothers
@@ -44,9 +44,9 @@
 #'   \item{NA_Parent}{Mothers' negative affect; coded as 1 when present and 0 when not present}
 #'   \item{PA_Parent}{Mothers' positive affect; coded as 1 when present and 0 when not present}
 #' }
-#' @source Real example data 2
+#' @source Steffen, G., & Abney, D. (2025, October 24). Coupling of rhythms in prefrontal cortex and autonomic nervous system in school-age children. Retrieved from osf.io/mqfbp
 "biobehavioral_interactions"
-#' Demo time series dataset 3
+#' Daily Music Bouts
 #'
 #' A sample dataset for exploring the DORA app,
 #' containing music listening bouts from daylong recordings
@@ -86,7 +86,7 @@
 #' }
 #' @source Mendoza, J. K., & Fausey, C. M. (2022, January 14). Everyday Music in Infancy. https://doi.org/10.17605/OSF.IO/EB9PW
 "music_bouts"
-#' Demo time series dataset 4
+#' Gahvora Cradling Diaries
 #'
 #' A sample dataset for exploring the DORA app,
 #' containing detailed coding of gahvora cradle use,
