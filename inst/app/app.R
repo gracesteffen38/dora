@@ -2,497 +2,73 @@ options(shiny.maxRequestSize = 100*1024^2)
 
 ui <- fluidPage(
   tags$head(
-    tags$meta(name = "viewport", content = "width=device-width, initial-scale=1"),
+    tags$meta(
+      name = "viewport",
+      content = "width=device-width, initial-scale=1"
+    ),
     tags$title("Time Series Explorer - Accessible Data Visualization"),
-    tags$style(id = "accessibility-styles", HTML("")),
-
-    tags$style(HTML("
-    .toolbar {
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      font-size: 14px;
-    }
-
-    .download-link {
-      display: block;
-      padding: 8px 20px;
-      text-decoration: none;
-      color: #333;
-      font-size: 14px;
-    }
-
-    .download-link:hover {
-      background-color: #f8f9fa;
-      text-decoration: none;
-      color: #333;
-    }
-
-    .dropdown-menu {
-      border-radius: 6px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    }
-
-    .btn-group .dropdown-menu li {
-      list-style: none;
-    }
-
-    /* Accessibility menu wider dropdown */
-    #toolbar-accessibility .dropdown-menu {
-      left: 50%;
-      transform: translateX(-50%);
-    }
-
-    /* Make toolbar responsive */
-    @media (max-width: 768px) {
-      .toolbar {
-        flex-direction: column;
-        padding: 5px;
-      }
-      #toolbar-accessibility {
-        order: 3;
-        margin-top: 10px;
-      }
-    }
-
-    /* Custom labels dropdown */
-      .caret-up {
-    display: inline-block;
-    width: 0;
-    height: 0;
-    vertical-align: middle;
-    border-bottom: 4px dashed;
-    border-right: 4px solid transparent;
-    border-left: 4px solid transparent;
-    border-top: 0;
-  }
-
-  #labels-dropdown .form-group {
-    margin-bottom: 8px;
-  }
-
-  #labels-toggle:hover {
-    color: #007bff !important;
-  }
-
-  body.keyboard-nav *:focus {
-    outline: 3px solid #17a2b8 !important;
-    outline-offset: 2px !important;
-  }
-  ")),
-
-    # Bootstrap collapse JavaScript
-    tags$script(src = "https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"),
-    tags$script(HTML("
-// Track if save menu has been bound
-var saveMenuBound = false;
-
-// Keyboard shortcuts
-$(document).on('keydown', function(e) {
-  var tag = $(e.target).prop('tagName');
-  var inInput = $(e.target).is('input, textarea, select, .selectize-input');
-
-  // ARROW KEYS — participant navigation (when not in text input)
-  if (!inInput) {
-    if (e.which == 37) { $('#prev_id').click(); e.preventDefault(); }
-    if (e.which == 39) { $('#next_id').click(); e.preventDefault(); }
-    // Up/Down for event navigation
-    if (e.which == 38) { $('#prev_event').click(); e.preventDefault(); }
-    if (e.which == 40) { $('#next_event').click(); e.preventDefault(); }
-  }
-
-  // ALT SHORTCUTS
-  if (e.altKey) {
-    switch(e.which) {
-
-      // Alt+H — Help menu
-      case 72:
-        e.preventDefault();
-        var helpMenu = document.getElementById('help-dropdown-menu');
-        if (helpMenu) {
-          var isVisible = helpMenu.style.display !== 'none';
-          helpMenu.style.display = isVisible ? 'none' : 'block';
-          document.getElementById('save-dropdown-menu').style.display = 'none';
-          document.getElementById('accessibility-dropdown-menu').style.display = 'none';
-        }
-        break;
-
-      // Alt+A — Accessibility menu
-      case 65:
-        e.preventDefault();
-        var accMenu = document.getElementById('accessibility-dropdown-menu');
-        if (accMenu) {
-          var isVisible = accMenu.style.display !== 'none';
-          accMenu.style.display = isVisible ? 'none' : 'block';
-          document.getElementById('save-dropdown-menu').style.display = 'none';
-          var hm = document.getElementById('help-dropdown-menu');
-          if (hm) hm.style.display = 'none';
-        }
-        break;
-
-      // Alt+B — Back to data
-      case 66:
-        e.preventDefault();
-        $('#back_data').click();
-        break;
-
-      // Alt+V — Go to visualizations
-      case 86:
-        e.preventDefault();
-        $('#go_viz').click();
-        break;
-
-      // Alt+C — Convert data
-      case 67:
-        e.preventDefault();
-        $('#convert_data').click();
-        break;
-
-      // Alt+P — Peek at data
-      case 80:
-        e.preventDefault();
-        $('#peek_data').click();
-        break;
-
-      // Alt+S — Save menu
-      case 83:
-        e.preventDefault();
-        var saveMenu = document.getElementById('save-dropdown-menu');
-        if (saveMenu) {
-          var isVisible = saveMenu.style.display !== 'none';
-          saveMenu.style.display = isVisible ? 'none' : 'block';
-          if (!isVisible && !saveMenuBound) {
-            try { Shiny.bindAll(saveMenu); } catch(err) {}
-            saveMenuBound = true;
-          }
-          document.getElementById('accessibility-dropdown-menu').style.display = 'none';
-          var hm = document.getElementById('help-dropdown-menu');
-          if (hm) hm.style.display = 'none';
-        }
-        break;
-
-      // Alt+D — Toggle second plot
-      case 68:
-        e.preventDefault();
-        var cb = document.getElementById('show_second_plot');
-        if (cb) { cb.click(); }
-        break;
-
-      // Alt+I — Toggle step through participants
-      case 73:
-        e.preventDefault();
-        var st = document.getElementById('step_through');
-        if (st) { st.click(); }
-        break;
-
-      // Alt+M — Toggle multiple participants checkbox
-      case 77:
-        e.preventDefault();
-        var uid = document.getElementById('use_id');
-        if (uid) { uid.click(); }
-        break;
-    }
-  }
-
-  // CTRL SHORTCUTS
-  if (e.ctrlKey) {
-    // Ctrl+S — Save menu (keep original)
-    if (e.which == 83) {
-      e.preventDefault();
-      var saveMenu = document.getElementById('save-dropdown-menu');
-      if (saveMenu) {
-        var isVisible = saveMenu.style.display !== 'none';
-        saveMenu.style.display = isVisible ? 'none' : 'block';
-        if (!isVisible && !saveMenuBound) {
-          try { Shiny.bindAll(saveMenu); } catch(err) {}
-          saveMenuBound = true;
-        }
-      }
-    }
-  }
-
-  // ESCAPE — close all menus
-  if (e.which == 27) {
-    document.getElementById('save-dropdown-menu').style.display = 'none';
-    document.getElementById('accessibility-dropdown-menu').style.display = 'none';
-    var hm = document.getElementById('help-dropdown-menu');
-    if (hm) hm.style.display = 'none';
-  }
-
-  // TAB — ensure focus visible (accessibility)
-  if (e.which == 9) {
-    document.body.classList.add('keyboard-nav');
-  }
-});
-
-// Remove keyboard-nav class on mouse use
-$(document).on('mousedown', function() {
-  document.body.classList.remove('keyboard-nav');
-});
-
-
-// Save dropdown toggle
-$(document).on('click', '#save-dropdown-btn', function(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  var saveMenu = document.getElementById('save-dropdown-menu');
-  if (saveMenu) {
-    var isVisible = saveMenu.style.display !== 'none';
-    saveMenu.style.display = isVisible ? 'none' : 'block';
-    if (!isVisible && !saveMenuBound) {
-      try { Shiny.bindAll(saveMenu); } catch(err) {}
-      saveMenuBound = true;
-    }
-  }
-  var accMenu = document.getElementById('accessibility-dropdown-menu');
-  if (accMenu) accMenu.style.display = 'none';
-});
-
-
-// Accessibility dropdown toggle
-$(document).on('click', '#accessibility-dropdown-btn', function(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  var accMenu = document.getElementById('accessibility-dropdown-menu');
-  if (accMenu) {
-    var isVisible = accMenu.style.display !== 'none';
-    accMenu.style.display = isVisible ? 'none' : 'block';
-  }
-  var saveMenu = document.getElementById('save-dropdown-menu');
-  if (saveMenu) saveMenu.style.display = 'none';
-});
-
-// Handle clicks inside save menu
-$(document).on('click', '#save-dropdown-menu', function(e) {
-  var target = $(e.target);
-
-  // If clicking a download button or its child, let Shiny handle it
-  if (target.hasClass('shiny-download-link') || target.closest('.shiny-download-link').length) {
-    setTimeout(function() {
-      document.getElementById('save-dropdown-menu').style.display = 'none';
-    }, 500);
-    return;
-  }
-
-  // For non-download areas, prevent menu from closing
-  e.stopPropagation();
-});
-
-// Show loading state on save buttons
-$(document).on('click', '.shiny-download-link', function() {
-  var btn = $(this);
-  var originalText = btn.html();
-  btn.html('Saving...').css('pointer-events', 'none').css('opacity', '0.6');
-  setTimeout(function() {
-    btn.html(originalText).css('pointer-events', '').css('opacity', '');
-  }, 4000);
-});
-
-// Prevent accessibility menu from closing when clicking inside
-$(document).on('click', '#accessibility-dropdown-menu', function(e) {
-  e.stopPropagation();
-});
-
-// Data conversion toggle
-$(document).on('click', '#conversion-toggle', function(e) {
-  e.preventDefault();
-  $('#conversion-dropdown').slideToggle(200);
-  $('#conversion-caret').toggleClass('caret-up');
-});
-
-// Custom labels toggle
-$(document).on('click', '#labels-toggle', function(e) {
-  e.preventDefault();
-  $('#labels-dropdown').slideToggle(200);
-  $('#labels-caret').toggleClass('caret-up');
-});
-
-// Close dropdowns when clicking outside
-$(document).on('click', function(e) {
-  if (!$(e.target).closest('#save-dropdown-btn, #save-dropdown-menu').length) {
-    var saveMenu = document.getElementById('save-dropdown-menu');
-    if (saveMenu) saveMenu.style.display = 'none';
-  }
-  if (!$(e.target).closest('#accessibility-dropdown-btn, #accessibility-dropdown-menu').length) {
-    var accMenu = document.getElementById('accessibility-dropdown-menu');
-    if (accMenu) accMenu.style.display = 'none';
-  }
-});
-
-// Help dropdown toggle
-$(document).on('click', '#help-dropdown-btn', function(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  var helpMenu = document.getElementById('help-dropdown-menu');
-  if (helpMenu) {
-    var isVisible = helpMenu.style.display !== 'none';
-    helpMenu.style.display = isVisible ? 'none' : 'block';
-  }
-  // Close other menus
-  var saveMenu = document.getElementById('save-dropdown-menu');
-  var accMenu = document.getElementById('accessibility-dropdown-menu');
-  if (saveMenu) saveMenu.style.display = 'none';
-  if (accMenu) accMenu.style.display = 'none';
-});
-
-// Close help menu when clicking outside
-$(document).on('click', function(e) {
-  if (!$(e.target).closest('#help-dropdown-btn, #help-dropdown-menu').length) {
-    var helpMenu = document.getElementById('help-dropdown-menu');
-    if (helpMenu) helpMenu.style.display = 'none';
-  }
-});
-
-// Listen for plotly zoom/pan - bind when plot renders, not on page load
-$(document).on('shiny:value', function(e) {
-  if (e.name == 'plot') {
-    setTimeout(function() {
-      var plotEl = document.getElementById('plot');
-      if (plotEl && typeof plotEl.on =='function') {
-        // Remove previous listener to avoid duplicates
-        plotEl.removeAllListeners('plotly_relayout');
-        plotEl.on('plotly_relayout', function(eventData) {
-          Shiny.setInputValue('plot_relayout', eventData, {priority: 'event'});
-        });
-      }
-    }, 200);
-  }
-});
-
-// Client-side plot export
-function doDownloadPlot(opts) {
-  var plotEl = document.getElementById(opts.elementId);
-  if (!plotEl) {
-    console.warn('DORA: plot element not found for export — is a plot visible?');
-    return;
-  }
-  Plotly.downloadImage(plotEl, {
-    format:   opts.format,
-    filename: opts.filename,
-    width:    opts.width,
-    height:   opts.height,
-    scale:    opts.scale
-  });
-}
-Shiny.addCustomMessageHandler('downloadPlot', doDownloadPlot);
-
-$(document).ready(function() {
-  // ARIA connections
-  $('#file').attr('aria-describedby', 'file-help');
-  $('#data_structure').attr('aria-describedby', 'data-structure-help');
-  $('#viz_mode').attr('aria-describedby', 'viz-mode-help');
-
-  // Extra descriptions toggle
-  $(document).on('change', '#show_descriptions, #toolbar_show_descriptions', function() {
-    if ($(this).is(':checked')) {
-      $('.help-text').show();
-    } else {
-      $('.help-text').hide();
-    }
-  });
-});
-")),
+    includeCSS("www/styles.css"),
+    includeCSS("www/accessibility.css"),
+    includeScript("www/accessibility.js"),
+    includeScript("www/app.js"),
+    tags$script(
+      src = "https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"
+    )
   ),
   shinyjs::useShinyjs(),
-  # Accessibility settings page 1
-  tags$div(id = "accessibility-panel", class = "panel panel-default",
-           style = "margin-bottom: 15px; border-left: 4px solid #17a2b8;",
 
-           tags$div(class = "panel-heading", style = "background-color: #f8f9fa;",
-                    tags$h5(class = "panel-title",
-                            tags$a(href = "#accessibility-controls", `data-toggle` = "collapse",
-                                   `aria-expanded` = "false", `aria-controls` = "accessibility-controls",
-                                   style = "text-decoration: none;",
-                                   icon("universal-access"), " Accessibility Settings "
-                            )
-                    )
-           ),
-
-           tags$div(id = "accessibility-controls", class = "panel-collapse collapse",
-                    tags$div(class = "panel-body",
-                             fluidRow(
-                               column(3,
-                                      h6("Visual"),
-                                      checkboxInput("high_contrast", "High Contrast", FALSE),
-                                      checkboxInput("large_text", "Large Text", FALSE)
-                               ),
-                               column(3,
-                                      h6("Motor"),
-                                      checkboxInput("large_targets", "Large Targets", FALSE),
-                                      checkboxInput("reduce_motion", "Reduce Motion", FALSE)
-                               ),
-                               column(3,
-                                      h6("Cognitive"),
-                                      checkboxInput("simplified_ui", "Simplified UI", FALSE),
-                                      checkboxInput("show_descriptions", "Extra Help", FALSE),
-                                      checkboxInput("confirm_actions", "Confirm Actions", FALSE)
-                               ),
-                               column(3,
-                                      h6("Presets"),
-                                      actionButton("preset_vision", "Vision Preset", class = "btn-sm btn-outline-primary"),
-                                      br(), br(),
-                                      actionButton("preset_motor", "Motor Preset", class = "btn-sm btn-outline-primary"),
-                                      br(), br(),
-                                      actionButton("reset_accessibility", "Reset All", class = "btn-sm btn-outline-secondary")
-                               )
-                             )
-                    )
-           )
-  ),
   titlePanel("Data Organization and Rhythm Analysis"),
 
-  # Sticky Toolbar
-  conditionalPanel(
-    condition = "input.sidebar_state == 'viz'",
-    tags$div(id = "sticky-toolbar", class = "toolbar",
-             style = "position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
-           background-color: rgba(248, 249, 250, 0.95); backdrop-filter: blur(5px);
-           border-bottom: 1px solid #dee2e6; padding: 5px 20px;
-           display: flex; justify-content: space-between; align-items: center;",
+  # Sticky Toolbar (Top Toolbar)
+  tags$div(id = "sticky-toolbar", class = "toolbar sticky-toolbar",
 
              # Left side - Back button
-             tags$div(
+             tags$div(conditionalPanel(
+               condition = "input.sidebar_state == 'viz'",
                actionButton("back_data", "← Back to Data Options",
                             class = "btn btn-outline-secondary", accesskey = "b",
                             title = "Back to Data Options (Alt+B)")
+             )
              ),
 
              # Center - Accessibility Menu on page 2
              tags$div(id = "toolbar-accessibility", style = "flex: 1; text-align: center;",
                       tags$div(class = "btn-group",
-                               tags$button(id = "accessibility-dropdown-btn", class = "btn btn-outline-info btn-sm",
-                                           style = "font-size: 14px; padding-right: 10px; border: 2px solid #17a2b8",  type = "button",
+                               tags$button(id = "accessibility-dropdown-btn", class = "btn btn-outline-info btn-sm accessibility-dropdown-btn",
+                                           type = "button",
                                            `data-toggle` = "dropdown", `aria-haspopup` = "true", `aria-expanded` = "false",
                                            title = "Accessibility Settings (Alt+A)",
                                            icon("universal-access"), " Accessibility Settings ", tags$span(class = "caret")),
                                tags$ul(id = "accessibility-dropdown-menu", class = "dropdown-menu",
-                                       style = "display: none; padding: 15px; min-width: 600px;",
+                                       style = "display: none; padding: 15px; min-width: 600px;position: absolute; right: 50px;",
                                        tags$li(
                                          fluidRow(
                                            column(4,
                                                   tags$h6("Visual", style = "font-weight: bold; margin-bottom: 10px;"),
-                                                  checkboxInput("toolbar_high_contrast", "High Contrast", FALSE),
-                                                  checkboxInput("toolbar_large_text", "Large Text", FALSE)
+                                                  checkboxInput("high_contrast", "High Contrast", FALSE),
+                                                  checkboxInput("large_text", "Large Text", FALSE)
                                            ),
                                            column(4,
                                                   tags$h6("Motor", style = "font-weight: bold; margin-bottom: 10px;"),
-                                                  checkboxInput("toolbar_large_targets", "Large Targets", FALSE),
-                                                  checkboxInput("toolbar_reduce_motion", "Reduce Motion", FALSE)
+                                                  checkboxInput("large_targets", "Large Targets", FALSE),
+                                                  checkboxInput("reduce_motion", "Reduce Motion", FALSE)
                                            ),
                                            column(4,
                                                   tags$h6("Cognitive", style = "font-weight: bold; margin-bottom: 10px;"),
-                                                  checkboxInput("toolbar_simplified_ui", "Simplified UI", FALSE),
-                                                  checkboxInput("toolbar_show_descriptions", "Extra Help", FALSE),
-                                                  checkboxInput("toolbar_confirm_actions", "Confirm Actions", FALSE)
+                                                  checkboxInput("simplified_ui", "Simplified UI", FALSE),
+                                                  checkboxInput("show_descriptions", "Extra Help", FALSE),
+                                                  checkboxInput("confirm_actions", "Confirm Actions", FALSE)
                                            )
                                          ),
                                          tags$hr(),
                                          fluidRow(
                                            column(6,
-                                                  actionButton("toolbar_preset_vision", "Vision Preset", class = "btn-sm btn-outline-primary", style = "width: 100%;"),
+                                                  actionButton("preset_vision", "Vision Preset", class = "btn-sm btn-outline-primary", style = "width: 100%;"),
                                                   br(), br(),
-                                                  actionButton("toolbar_preset_motor", "Motor Preset", class = "btn-sm btn-outline-primary", style = "width: 100%;")
+                                                  actionButton("preset_motor", "Motor Preset", class = "btn-sm btn-outline-primary", style = "width: 100%;")
                                            ),
                                            column(6,
-                                                  actionButton("toolbar_reset_accessibility", "Reset All", class = "btn-sm btn-outline-secondary", style = "width: 100%;")
+                                                  actionButton("reset_accessibility", "Reset All", class = "btn-sm btn-outline-secondary", style = "width: 100%;")
                                            )
                                          )
                                        )
@@ -503,13 +79,14 @@ $(document).ready(function() {
              # Save menu
              # Right side - Save menu
              tags$div(
+               conditionalPanel(
+                 condition = "input.sidebar_state == 'viz'",
                tags$div(class = "btn-group",
                         tags$button(id = "save-dropdown-btn", class = "btn btn-success dropdown-toggle",
                                     type = "button",
                                     title = "Save plots (Ctrl+S)",
                                     icon("download"), " Save ", tags$span(class = "caret")),
-                        tags$div(id = "save-dropdown-menu",
-                                 style = "display: none; position: absolute; right: 0; top: 100%;
+                        tags$div(id = "save-dropdown-menu", style = "display: none; position: absolute; right: 0; top: 100%;
                   min-width: 270px; background: white; border: 1px solid #ddd;
                   border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
                   z-index: 2000; padding: 10px;",
@@ -572,6 +149,7 @@ $(document).ready(function() {
                                  )
                         )
                )
+             )
              ),
              # Help button
              tags$div(
@@ -620,13 +198,6 @@ $(document).ready(function() {
                         )
                )
              )
-    )
-  ),
-
-  # Add spacing so content doesn't hide under toolbar
-  conditionalPanel(
-    condition = "input.sidebar_state == 'viz'",
-    tags$div(style = "height: 5px;")  # Spacer
   ),
 
   sidebarLayout(
@@ -913,14 +484,14 @@ server <- function(input, output, session){
     list(n_events = n_events, total_duration = total_dur)
   }
 
-  # Store main plot, secondary plot, and stats for saving
+  # Store main plot second plot and stats for saving
   plot_store  <- reactiveVal(NULL)
   plot2_store <- reactiveVal(NULL)
   stats_store <- reactiveVal(NULL)
   data_converted <- reactiveVal(NULL)
   conversion_done <- reactiveVal(FALSE)
   last_data_source <- reactiveVal("demo")
-  # Track active demo choice separately from the input
+  # Track demo choice separately from the input
   active_demo <- reactiveVal(NULL)
 
   data_reactive <- reactive({
@@ -966,7 +537,7 @@ server <- function(input, output, session){
     ))
   })
 
-  # When a demo is clicked in the modal
+  # when a demo is clicked in the modal
   observeEvent(input$demo_selected, {
     active_demo(input$demo_selected)
     last_data_source("demo")
@@ -975,7 +546,7 @@ server <- function(input, output, session){
     removeModal()
   }, ignoreInit = TRUE)
 
-  # When a file is uploaded
+  # when a file is uploaded
   observeEvent(input$file, {
     active_demo(NULL)
     last_data_source("file")
@@ -985,14 +556,16 @@ server <- function(input, output, session){
 
 
   # Store both original and converted data
+  # cradling_diaries
   data_original <- reactive({
 
     df <- if (last_data_source() == "demo") {
       req(!is.null(active_demo()))
       demo_file <- switch(active_demo(),
-                          "demo1" = system.file("extdata", "demo_data_1.csv", package = "dora"),
-                          "demo2" = system.file("extdata", "demo_data_2.csv", package = "dora"),
-                          "demo3" = system.file("extdata", "demo_data_3.csv", package = "dora")
+                          "demo1" = system.file("extdata", "object_play.csv", package = "dora"),
+                          "demo2" = system.file("extdata", "biobehavioral_interactions.csv", package = "dora"),
+                          "demo3" = system.file("extdata", "music_bouts.csv", package = "dora",
+                                                "extdata", "cradling_diaries.csv", package = "dora")
       )
       if (demo_file == "") stop("Demo file not found. Try reinstalling the package.")
       readr::read_csv(demo_file, show_col_types = FALSE)
@@ -1150,246 +723,37 @@ server <- function(input, output, session){
   })
 
   # Update CSS based on accessibility settings
-  observeEvent(
-    list(accessibility$high_contrast, accessibility$large_text, accessibility$large_targets, accessibility$reduce_motion,
-         accessibility$simplified_ui, accessibility$show_descriptions, accessibility$confirm_actions), {
-           css_rules <- ""
+  observe({
+    shinyjs::runjs(sprintf(
+      "$('body').toggleClass('high-contrast', %s);",
+      tolower(accessibility$high_contrast)
+    ))
 
-           if (isTRUE(accessibility$high_contrast)) {
-             css_rules <- paste0(css_rules, "
-    body { background-color: #000000 !important; color: #ffffff !important; }
-    .well { background-color: #1a1a1a !important; color: #ffffff !important; border: 2px solid #ffffff !important; }
-    .form-control { background-color: #2d2d2d !important; color: #ffffff !important; border: 2px solid #ffffff !important; }
-    .btn-primary { background-color: #ffff00 !important; color: #000000 !important; border: 2px solid #000000 !important; }
-    .btn-success { background-color: #00ff00 !important; color: #000000 !important; }
-    .panel { background-color: #1a1a1a !important; border: 2px solid #ffffff !important; }
-    .selectize-input { background-color: #2d2d2d !important; color: #ffffff !important; }
+    shinyjs::runjs(sprintf(
+      "$('body').toggleClass('large-text', %s);",
+      tolower(accessibility$large_text)
+    ))
 
-    /* Toolbar dropdowns (accessibility, save, help menus) */
-    #accessibility-dropdown-menu,
-    #save-dropdown-menu,
-    #help-dropdown-menu {
-      background-color: #1a1a1a !important;
-      color: #ffffff !important;
-      border: 2px solid #ffffff !important;
-    }
-    #accessibility-dropdown-menu label,
-    #accessibility-dropdown-menu h6,
-    #accessibility-dropdown-menu p,
-    #save-dropdown-menu label,
-    #save-dropdown-menu h6,
-    #help-dropdown-menu a,
-    #help-dropdown-menu td,
-    #help-dropdown-menu th,
-    #help-dropdown-menu strong {
-      color: #ffffff !important;
-    }
-    #accessibility-dropdown-menu .checkbox label,
-    #accessibility-dropdown-menu input[type='checkbox'] {
-      color: #ffffff !important;
-      accent-color: #ffff00;
-    }
-    #accessibility-dropdown-menu hr,
-    #save-dropdown-menu hr {
-      border-color: #555555 !important;
-    }
-    #sticky-toolbar {
-      background-color: #000000 !important;
-      border-bottom: 2px solid #ffffff !important;
-    }
-  ")
-           }
+    shinyjs::runjs(sprintf(
+      "$('body').toggleClass('large-targets', %s);",
+      tolower(accessibility$large_targets)
+    ))
 
-           # Large Text
-           if (isTRUE(accessibility$large_text)) {
-             css_rules <- paste0(css_rules, "
-    body { font-size: 18px !important; }
-    .form-control { font-size: 16px !important; }
-    h1 { font-size: 3rem !important; }
-    h4 { font-size: 1.8rem !important; }
-    h5 { font-size: 1.5rem !important; }
-    h6 { font-size: 1.3rem !important; }
-    .plotly .gtitle { font-size: 24px !important; }
-    .plotly .xtitle { font-size: 20px !important; }
-    .plotly .ytitle { font-size: 20px !important; }
-    .plotly .legend { font-size: 16px !important; }
-    .plotly .tick text { font-size: 14px !important; }
+    shinyjs::runjs(sprintf(
+      "$('body').toggleClass('reduce-motion', %s);",
+      tolower(accessibility$reduce_motion)
+    ))
 
-    /* Fix button and accessibility text */
-    .btn { font-size: 16px !important; }
-    .toolbar { font-size: 16px !important; }
-    .toolbar .btn { font-size: 16px !important; }
-    .dropdown-menu { font-size: 16px !important; }
-    .checkbox label { font-size: 16px !important; }
-    #current_participant { font-size: 18px !important; }
-    #current_event { font-size: 18px !important; }
+    shinyjs::runjs(sprintf(
+      "$('body').toggleClass('simplified-ui', %s);",
+      tolower(accessibility$simplified_ui)
+    ))
 
-    #plot-description {
-      margin-bottom: 25px !important;
-      padding: 12px !important;
-      line-height: 1.6 !important;
-      font-size: 18px !important;
-    }
-    .plotly {
-      margin-top: 15px !important;
-    }
-  ")
-           }
-
-           # Large Click Targets
-           if (isTRUE(accessibility$large_targets)) {
-             css_rules <- paste0(css_rules, "
-    .btn {
-      min-height: 50px !important;
-      min-width: 50px !important;
-      font-size: 16px !important;
-      padding: 12px 20px !important;
-      margin: 5px 2px !important;
-    }
-    .form-control {
-      min-height: 50px !important;
-      font-size: 16px !important;
-      margin: 5px 0 !important;
-    }
-    .selectize-input {
-      min-height: 50px !important;
-      margin: 5px 0 !important;
-    }
-    .checkbox {
-      margin: 15px 0 !important;
-      padding-left: 30px !important;
-    }
-    .checkbox input[type='checkbox'] {
-      transform: scale(1.5) !important;
-      margin-right: 15px !important;
-      margin-left: -30px !important;
-      position: relative !important;
-    }
-    .checkbox label {
-      margin-left: 10px !important;
-      line-height: 24px !important;
-    }
-    .radio {
-      margin: 15px 0 !important;
-      padding-left: 30px !important;
-    }
-    .radio input[type='radio'] {
-      transform: scale(1.5) !important;
-      margin-right: 15px !important;
-      margin-left: -30px !important;
-      position: relative !important;
-    }
-    .radio label {
-      margin-left: 10px !important;
-      line-height: 24px !important;
-    }
-  ")
-           }
-
-           # Reduce Motion
-           if (isTRUE(accessibility$reduce_motion)) {
-             css_rules <- paste0(css_rules, "
-      * { transition: none !important; animation: none !important; }
-      .plotly .traces { transition: none !important; }
-    ")
-           }
-
-           # Sticky Navigation
-    #        if (isTRUE(accessibility$sticky_controls)) {
-    #          css_rules <- paste0(css_rules, "
-    #   .col-sm-4 { position: sticky !important; top: 20px !important; }
-    # ")
-    #        }
-
-           # Simplified UI - work in progress
-           if (isTRUE(accessibility$simplified_ui)) {
-             css_rules <- paste0(css_rules, "
-    .well { border: 3px solid #007bff !important; }
-  ")
-           }
-
-           # Extra Descriptions
-           if (isTRUE(accessibility$show_descriptions)) {
-             css_rules <- paste0(css_rules, "
-    .help-text {
-      display: block !important;
-      font-weight: bold !important;
-      background-color: #e7f3ff !important;
-      padding: 8px !important;
-      border-radius: 4px !important;
-      margin-top: 5px !important;
-      border-left: 3px solid #007bff !important;
-    }
-  ")
-           } else {
-             css_rules <- paste0(css_rules, "
-    .help-text { display: none !important; }
-  ")
-           }
-
-           accessibility_css(css_rules)
-         })
-
-  # Apply CSS to page
-  observeEvent(accessibility_css(), {
-    css <- gsub("`", "", accessibility_css())
-    css <- gsub("\n", " ", css)
-    shinyjs::runjs(sprintf("document.getElementById('accessibility-styles').innerHTML = `%s`;", css))
-  }, ignoreInit = TRUE)
-
-  sync_accessibility <- function(session, field, val) {
-    updateCheckboxInput(session, field, value = val)
-    updateCheckboxInput(session, paste0("toolbar_", field), value = val)
-  }
-
-  # Sync toolbar accessibility controls with main controls
-  observeEvent(input$high_contrast,      { accessibility$high_contrast     <- input$high_contrast
-  updateCheckboxInput(session, "toolbar_high_contrast", value = input$high_contrast)}, ignoreInit = TRUE)
-
-  observeEvent(input$toolbar_high_contrast, {
-    accessibility$high_contrast <- input$toolbar_high_contrast
-    updateCheckboxInput(session, "high_contrast", value = input$toolbar_high_contrast)
-  }, ignoreInit = TRUE)
-
-  observeEvent(input$large_text,      { accessibility$large_text     <- input$large_text
-  updateCheckboxInput(session, "toolbar_large_text", value = input$large_text)}, ignoreInit = TRUE)
-
-  observeEvent(input$toolbar_large_text, {
-    accessibility$large_text <- input$toolbar_large_text
-    updateCheckboxInput(session, "large_text", value = input$toolbar_large_text)
-  }, ignoreInit = TRUE)
-
-  observeEvent(input$large_targets,      { accessibility$large_targets     <- input$large_targets
-  updateCheckboxInput(session, "toolbar_large_targets", value = input$large_targets)}, ignoreInit = TRUE)
-
-  observeEvent(input$toolbar_large_targets, {
-    accessibility$large_targets <- input$toolbar_large_targets
-    updateCheckboxInput(session, "large_targets", value = input$toolbar_large_targets)
-  }, ignoreInit = TRUE)
-
-  observeEvent(input$reduce_motion,      { accessibility$reduce_motion     <- input$reduce_motion
-  updateCheckboxInput(session, "toolbar_reduce_motion", value = input$reduce_motion)}, ignoreInit = TRUE)
-
-  observeEvent(input$toolbar_reduce_motion, {
-    accessibility$reduce_motion <- input$toolbar_reduce_motion
-    updateCheckboxInput(session, "reduce_motion", value = input$toolbar_reduce_motion)
-  }, ignoreInit = TRUE)
-
-  observeEvent(input$simplified_ui,      { accessibility$simplified_ui     <- input$simplified_ui
-  updateCheckboxInput(session, "toolbar_simplified_ui", value = input$simplified_ui)}, ignoreInit = TRUE)
-
-  observeEvent(input$toolbar_simplified_ui, {
-    accessibility$simplified_ui <- input$toolbar_simplified_ui
-    updateCheckboxInput(session, "simplified_ui", value = input$toolbar_simplified_ui)
-  }, ignoreInit = TRUE)
-
-  observeEvent(input$show_descriptions,      { accessibility$show_descriptions     <- input$show_descriptions
-  updateCheckboxInput(session, "toolbar_show_descriptions", value = input$show_descriptions)}, ignoreInit = TRUE)
-
-  observeEvent(input$toolbar_show_descriptions, {
-    accessibility$show_descriptions <- input$toolbar_show_descriptions
-    updateCheckboxInput(session, "show_descriptions", value = input$toolbar_show_descriptions)
-  }, ignoreInit = TRUE)
+    shinyjs::runjs(sprintf(
+      "$('body').toggleClass('show-descriptions', %s);",
+      tolower(accessibility$show_descriptions)
+    ))
+  })
 
   observeEvent(input$confirm_actions,      { accessibility$confirm_actions     <- input$confirm_actions
   updateCheckboxInput(session, "toolbar_confirm_actions", value = input$confirm_actions)}, ignoreInit = TRUE)
@@ -1407,7 +771,6 @@ server <- function(input, output, session){
   }
 
   observeEvent(input$preset_vision,         handle_vision_preset(), ignoreInit = TRUE)
-  observeEvent(input$toolbar_preset_vision, handle_vision_preset(), ignoreInit = TRUE)
 
   motor_preset_handler <- function () {
     accessibility$large_targets   <- TRUE
@@ -1417,7 +780,6 @@ server <- function(input, output, session){
   }
 
   observeEvent(input$preset_motor,         handle_motor_preset(), ignoreInit = TRUE)
-  observeEvent(input$toolbar_preset_motor, handle_motor_preset(), ignoreInit = TRUE)
 
   access_reset_handler <- function () {
     accessibility$high_contrast     <- FALSE
@@ -1498,6 +860,7 @@ server <- function(input, output, session){
                       selected = allowed_choices[1])
   })
 
+  #check here
   observeEvent(input$back_data, {
     updateTextInput(session, "sidebar_state", value = "data")
     updateCheckboxInput(session, "show_second_plot", value = FALSE)
@@ -1516,7 +879,8 @@ server <- function(input, output, session){
     demo_types <- switch(input$demo_selected,
                          "demo1" = list(continuous = FALSE, events = TRUE, multiple = TRUE),
                          "demo2" = list(continuous = TRUE,  events = TRUE, multiple = TRUE),
-                         "demo3" = list(continuous = FALSE, events = TRUE, multiple = TRUE)
+                         "demo3" = list(continuous = FALSE, events = TRUE, multiple = TRUE),
+                         "demo4" = list(continuous = FALSE, events = TRUE, multiple = TRUE)
     )
     updateCheckboxInput(session, "has_continuous", value = demo_types$continuous)
     updateCheckboxInput(session, "has_events",     value = demo_types$events)
@@ -1542,7 +906,8 @@ server <- function(input, output, session){
       label <- switch(active_demo(),
                       "demo1" = "Infant Object Play",
                       "demo2" = "Mother-Child Interactions",
-                      "demo3" = "Daily Music Bouts"
+                      "demo3" = "Daily Music Bouts",
+                      "demo4" = "Gahvora Cradling Diaries"
       )
       paste("Currently using:", label)
     } else {
