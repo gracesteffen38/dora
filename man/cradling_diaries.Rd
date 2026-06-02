@@ -5,22 +5,32 @@
 \alias{cradling_diaries}
 \title{Demo time series dataset 4}
 \format{
-A data frame with X rows and Y columns:
+A data frame with 6073 rows and 105 columns:
 \describe{
   \item{id}{Participant identifier}
-  \item{agegrp}{he age group that the subject is in. Format should be digits only (0, 4, 8, 12, 16, 20, 24).}
+  \item{agegrp}{The age group that the subject is in. Format should be digits only (0, 4, 8, 12, 16, 20, 24).}
   \item{sex}{Sex of participant; m = male, f = female}
-  \item{marital}{The marital status of the subject’s mother. s = single, m = married, w = widowed, d, = divorced, p = separated }
+  \item{marital}{The marital status of the subject’s mother. s = single, m = married, w = widowed, d = divorced, p = separated}
+  \item{region}{The region where data collection occurred (e.g., k = Khatlon, r = Rasht, d = Dushanbe)}
+  \item{numkids}{The number of children the mother has}
+  \item{mworktyp}{Mother's work type outside the home}
+  \item{fworktyp}{Father's work type outside the home}
+  \item{tempout}{The temperature outdoors (in degrees Celsius)}
+  \item{tempin}{The temperature indoors (in degrees Celsius)}
 }
 }
 \source{
-Real example data 4
+Karasik, L., Tamis-LeMonda, C. & Adolph, K. (2014). The Ties That Bind: Cradling in Tajikistan. Databrary. Retrieved May 14, 2026 from https://www.databrary.org/volume/11.
 }
 \usage{
 cradling_diaries
 }
 \description{
 A sample dataset for exploring the DORA app,
-containing object interaction bouts across an hour for 50 infants.
+containing detailed coding of gahvora cradle use,
+daily routines, including location and feeding,
+and structured tasks, including behaviorally-coded
+object interactions, and AIMS skills for
+118 infants (aged 12, 16, 20 months).
 }
 \keyword{datasets}

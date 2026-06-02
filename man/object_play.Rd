@@ -5,19 +5,21 @@
 \alias{object_play}
 \title{Demo time series dataset 1}
 \format{
-A data frame with 16032 rows and 12 columns:
+A data frame with 16032 rows and 58 columns:
 \describe{
+  \item{id}{Participant identifier}
   \item{id_onset}{Start onset for each participant in milliseconds}
   \item{id_offset}{End offset for each participant in milliseconds}
-  \item{id}{Participant identifier}
-  \item{agomo}{Participant age in months}
+  \item{agemo}{Participant age in months}
   \item{sex}{Participant sex, m = male; f = female}
   \item{onset}{The onset or start of every object interaction bout in milliseconds}
-  \item{onset}{The offset or end of every object interaction bout in milliseconds}
+  \item{offset}{The offset or end of every object interaction bout in milliseconds}
+  \item{bobj}{The object engagement status: 'o' = object, '.' = out of view}
+  \item{objcat}{Category of object interaction (e.g., toy)}
 }
 }
 \source{
-Real example data 1
+Tamis-LeMonda, C., Adolph, K. & Herzberg, O. (2020). Infant exuberant object play at home: Immense amounts of time-distributed, variable practice. Databrary. Retrieved May 14, 2026 from https://databrary.org/volume/1118.
 }
 \usage{
 object_play

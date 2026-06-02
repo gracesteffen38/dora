@@ -371,5 +371,5 @@ body.show-descriptions .help-text {
 
 
 .accessibility-dropdown-btn{
-  font-size: 14px; padding-right: 10px; border: 2px solid #17a2b8;
+  font-size: 14px; padding-right: 10px; border: 2px solid #17a2b8;position:absolute:center:0px;
 }

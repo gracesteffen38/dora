@@ -7,7 +7,7 @@ ui <- fluidPage(
       content = "width=device-width, initial-scale=1"
     ),
     tags$title("Time Series Explorer - Accessible Data Visualization"),
-    # includeCSS("www/styles.css"),
+    includeCSS("www/styles.css"),
     includeCSS("www/accessibility.css"),
     includeScript("www/accessibility.js"),
     includeScript("www/app.js"),
@@ -23,21 +23,25 @@ ui <- fluidPage(
   tags$div(id = "sticky-toolbar", class = "toolbar sticky-toolbar",
 
              # Left side - Back button
-           tags$div(class = "tb-slot tb-left", id = "tb-back",
+             tags$div(conditionalPanel(
+               condition = "input.sidebar_state == 'viz'",
                actionButton("back_data", "← Back to Data Options",
                             class = "btn btn-outline-secondary", accesskey = "b",
-                            title = "Back (Alt+B)")
+                            title = "Back to Data Options (Alt+B)")
+             )
              ),
-             # accessibility menu
-           tags$div(class = "tb-slot tb-center", id = "toolbar-accessibility",
+
+             # accessibility
+             tags$div(id = "toolbar-accessibility", style = "flex: 1; text-align: center;",
                       tags$div(class = "btn-group",
                                tags$button(id = "accessibility-dropdown-btn", class = "btn btn-outline-info btn-sm accessibility-dropdown-btn",
                                            type = "button",
                                            `data-toggle` = "dropdown", `aria-haspopup` = "true", `aria-expanded` = "false",
                                            title = "Accessibility Settings (Alt+A)",
                                            icon("universal-access"), " Accessibility Settings ", tags$span(class = "caret")),
-                               tags$ul(id = "accessibility-dropdown-menu", class = "dropdown-menu",
-                                       style = "display: none; padding: 15px; min-width: 600px;position: absolute; center: 50px;",
+                               tags$ul(id = "accessibility-dropdown-menu", class = "dropdown-menu dropdown-menu-left",
+                                       style = "display: none; padding: 15px; min-width: 600px; position: absolute; left: 50%;
+  transform: translateX(-50%); top:100%;z-index: 2000;",
                                        tags$li(
                                          fluidRow(
                                            column(4,
@@ -72,8 +76,12 @@ ui <- fluidPage(
                                )
                       )
              ),
+
+             # Save menu
              # Right side - Save menu
-           tags$div(class = "tb-slot tb-right", id = "tb-save",
+             tags$div(style ="padding: 0px 10px 0px 0px;",
+               conditionalPanel(
+                 condition = "input.sidebar_state == 'viz'",
                tags$div(class = "btn-group",
                         tags$button(id = "save-dropdown-btn", class = "btn btn-success dropdown-toggle",
                                     type = "button",
@@ -142,9 +150,10 @@ ui <- fluidPage(
                                  )
                         )
                )
+             )
              ),
-             # Help button (right side)
-           tags$div(class = "tb-slot tb-right",
+             # Help button
+             tags$div(style ="padding: 0px 0px 0px 0px;",
                tags$div(class = "btn-group",
                         tags$button(id = "help-dropdown-btn",
                                     class = "btn btn-sm",
@@ -161,7 +170,7 @@ ui <- fluidPage(
                       z-index: 2000; padding: 8px 0;",
                                  tags$a(href = "https://forms.gle/G3MxUSmnZzFqC5Yj8",
                                         target = "_blank",
-                                        style = "display: block; padding: 8px 16px; color: #333;
+                                        style = "display: block; padding: 8px 0px 8px 26px; color: #333;
                        text-decoration: none; font-size: 14px;",
                                         icon("bug"), " Report a bug..."),
                                  tags$hr(style = "margin: 4px 0;"),
@@ -280,6 +289,21 @@ ui <- fluidPage(
           checkboxInput("has_events",     "Event series or categorical variables", FALSE),
           tags$div(id = "data-structure-help", class = "help-text", style = "font-size: 0.9em; color: #666; display: none;",
                    "Continuous: numeric measurements over time. Events/categorical: 0/1 coded or labelled episodes."),
+          conditionalPanel(
+            condition = "input.has_events == true",
+            tags$div(
+              style = "margin-left: 15px; padding: 10px; border-left: 3px solid #17a2b8; background-color: #f8f9fa; margin-bottom: 15px;",
+              radioButtons("event_format", "Event Data Format:",
+                           choices = c("Continuous Time Series (one row per time point)" = "continuous",
+                                       "Intervals (one row per event with start/end times)" = "interval"),
+                           selected = "continuous"),
+              conditionalPanel(
+                condition = "input.event_format == 'interval'",
+                uiOutput("interval_ui")
+              )
+            )
+          ),
+
 
           checkboxInput("use_id", "Multiple participants", FALSE),
 
@@ -491,15 +515,6 @@ server <- function(input, output, session){
       data_converted()
     } else {
       data_original()
-    }
-  })
-  observeEvent(input$sidebar_state, {
-    if (input$sidebar_state == "viz") {
-      shinyjs::show("tb-back")
-      shinyjs::show("tb-save")
-    } else {
-      shinyjs::hide("tb-back")
-      shinyjs::hide("tb-save")
     }
   })
 
@@ -1137,6 +1152,24 @@ server <- function(input, output, session){
       )
     })
   }
+
+  output$interval_ui <- renderUI({
+    tagList(
+      selectInput("int_start", "Start Time Column", choices = names(data_reactive())),
+      radioButtons("interval_mode", "End format:",
+                   choices = c("End Time" = "end", "Duration" = "duration")),
+      conditionalPanel(
+        condition = "input.interval_mode == 'end'",
+        selectInput("int_end", "End Time Column", choices = names(data_reactive()))
+      ),
+      conditionalPanel(
+        condition = "input.interval_mode == 'duration'",
+        selectInput("int_dur", "Duration Column", choices = names(data_reactive()))
+      ),
+      selectInput("int_val", "Event/Categorical Column(s)", choices = names(data_reactive()), multiple = TRUE)
+    )
+  })
+
   observeEvent(data_reactive(), {
     selected_time(NULL)
     selected_signal(NULL)
@@ -1252,14 +1285,11 @@ server <- function(input, output, session){
     }
 
     req(input$event_var)
-    windows <- extract_event_windows_idx(df[[input$event_var]])
 
-    if (nrow(windows) > 0 && event_index() <= nrow(windows)) {
-      d <- diagnostics()
-      if (length(d$time) > 0) {
-        time_var <- d$time[1]
-        onset_time <- df[[time_var]][windows$start[event_index()]]
-
+    if (input$event_format == "interval") {
+      active_idx <- which(!is.na(df[[input$event_var]]) & df[[input$event_var]] != 0 & df[[input$event_var]] != "0")
+      if (length(active_idx) > 0 && event_index() <= length(active_idx)) {
+        onset_time <- df[[input$int_start]][active_idx[event_index()]]
         if (inherits(onset_time, c("POSIXct", "POSIXt", "POSIXlt"))) {
           paste("Event onset time:", format(onset_time, "%Y-%m-%d %H:%M:%S"))
         } else if (is.numeric(onset_time)) {
@@ -1267,8 +1297,26 @@ server <- function(input, output, session){
         } else {
           paste("Event onset time:", as.character(onset_time))
         }
-      } else {
-        paste("Event onset index:", windows$start[event_index()])
+      }
+    } else {
+      windows <- extract_event_windows_idx(df[[input$event_var]])
+
+      if (nrow(windows) > 0 && event_index() <= nrow(windows)) {
+        d <- diagnostics()
+        if (length(d$time) > 0) {
+          time_var <- d$time[1]
+          onset_time <- df[[time_var]][windows$start[event_index()]]
+
+          if (inherits(onset_time, c("POSIXct", "POSIXt", "POSIXlt"))) {
+            paste("Event onset time:", format(onset_time, "%Y-%m-%d %H:%M:%S"))
+          } else if (is.numeric(onset_time)) {
+            paste("Event onset time:", round(onset_time, 2), "seconds")
+          } else {
+            paste("Event onset time:", as.character(onset_time))
+          }
+        } else {
+          paste("Event onset index:", windows$start[event_index()])
+        }
       }
     }
   })
@@ -1631,6 +1679,49 @@ server <- function(input, output, session){
 
           for (target in plot_targets) {
             vec <- pdf[[target$col]]
+            if (input$event_format == "interval") {
+              active_idx <- which(!is.na(vec) & vec == target$val)
+              if (length(active_idx) > 0) {
+                rgba_col <- hex_to_rgba(target$color, alpha = 0.5)
+                for (i in seq_along(active_idx)) {
+                  shapes[[length(shapes) + 1]] <- list(type = "rect", x0 = pdf[[input$int_start]][active_idx[i]], x1 = pdf[[input$int_end]][active_idx[i]], y0 = y_min, y1 = y_max, fillcolor = rgba_col, line = list(width = 0), layer = "below")
+                }
+                if (!target$label %in% sapply(legend_traces, function(lt) lt$label)) legend_traces[[length(legend_traces) + 1]] <- target
+              }
+            } else {
+              is_active <- as.numeric(!is.na(vec) & vec == target$val)
+              windows <- extract_event_windows_idx(is_active)
+              if (nrow(windows) > 0) {
+                rgba_col <- hex_to_rgba(target$color, alpha = 0.5)
+                for (i in seq_len(nrow(windows))) {
+                  shapes[[length(shapes) + 1]] <- list(
+                    type = "rect",
+                    x0 = pt[windows$start[i]], x1 = pt[windows$end[i]],
+                    y0 = y_min, y1 = y_max,
+                    fillcolor = rgba_col, line = list(width = 0), layer = "below"
+                  )
+                }
+                if (!target$label %in% sapply(legend_traces, function(lt) lt$label))
+                  legend_traces[[length(legend_traces) + 1]] <- target
+              }
+            }
+        }
+      }
+        time_vec <- combined_time
+
+      } else {
+        for (target in plot_targets) {
+          vec <- filtered_data()[[target$col]]
+          if (input$event_format == "interval") {
+            active_idx <- which(!is.na(vec) & vec == target$val)
+            if (length(active_idx) > 0) {
+              rgba_col <- hex_to_rgba(target$color, alpha = 0.5)
+              for (i in seq_along(active_idx)) {
+                shapes[[length(shapes) + 1]] <- list(type = "rect", x0 = filtered_data()[[input$int_start]][active_idx[i]], x1 = filtered_data()[[input$int_end]][active_idx[i]], y0 = y_min, y1 = y_max, fillcolor = rgba_col, line = list(width = 0), layer = "below")
+              }
+              legend_traces[[length(legend_traces) + 1]] <- target
+            }
+          } else {
             is_active <- as.numeric(!is.na(vec) & vec == target$val)
             windows <- extract_event_windows_idx(is_active)
             if (nrow(windows) > 0) {
@@ -1638,35 +1729,14 @@ server <- function(input, output, session){
               for (i in seq_len(nrow(windows))) {
                 shapes[[length(shapes) + 1]] <- list(
                   type = "rect",
-                  x0 = pt[windows$start[i]], x1 = pt[windows$end[i]],
+                  x0 = time_vec[windows$start[i]], x1 = time_vec[windows$end[i]],
                   y0 = y_min, y1 = y_max,
                   fillcolor = rgba_col, line = list(width = 0), layer = "below"
                 )
               }
-              if (!target$label %in% sapply(legend_traces, function(lt) lt$label))
-                legend_traces[[length(legend_traces) + 1]] <- target
+              legend_traces[[length(legend_traces) + 1]] <- target
             }
-          }
         }
-        time_vec <- combined_time
-
-      } else {
-        for (target in plot_targets) {
-          vec <- filtered_data()[[target$col]]
-          is_active <- as.numeric(!is.na(vec) & vec == target$val)
-          windows <- extract_event_windows_idx(is_active)
-          if (nrow(windows) > 0) {
-            rgba_col <- hex_to_rgba(target$color, alpha = 0.5)
-            for (i in seq_len(nrow(windows))) {
-              shapes[[length(shapes) + 1]] <- list(
-                type = "rect",
-                x0 = time_vec[windows$start[i]], x1 = time_vec[windows$end[i]],
-                y0 = y_min, y1 = y_max,
-                fillcolor = rgba_col, line = list(width = 0), layer = "below"
-              )
-            }
-            legend_traces[[length(legend_traces) + 1]] <- target
-          }
         }
       }
 
@@ -1893,15 +1963,18 @@ server <- function(input, output, session){
 
     # event durations (barcode)
     if (input$viz_mode == "Event durations (barcode)") {
-      req(input$barcode_time, input$barcode_var)
+      req(input$barcode_var)
+      if (input$event_format == "interval") {
+        req(input$int_start, input$int_end)
+        df_clean <- filtered_data()[!is.na(filtered_data()[[input$int_start]]) & !is.na(filtered_data()[[input$int_end]]), ]
 
-      event_cols <- input$barcode_var
-      time_col <- input$barcode_time
-
-      df_clean <- filtered_data()[!is.na(filtered_data()[[time_col]]), ]
-      req(nrow(df_clean) > 0)
-
-      time_vec <- df_clean[[time_col]]
+        time_vec <- df_clean[[input$int_start]]
+      } else {
+        req(input$barcode_time)
+        df_clean <- filtered_data()[!is.na(filtered_data()[[input$barcode_time]]), ]
+        time_vec <- df_clean[[input$barcode_time]]
+      }
+            req(nrow(df_clean) > 0)
 
       # If the column came in as character or factor, try to parse it
       if (is.character(time_vec) || is.factor(time_vec)) {
@@ -1959,7 +2032,7 @@ server <- function(input, output, session){
 
       plot_targets <- list()
 
-      for (col in event_cols) {
+      for (col in input$barcode_var) {
         col_data <- df_clean[[col]]
         unique_vals <- sort(unique(col_data[!is.na(col_data)]))
         is_binary <- all(unique_vals %in% c(0, 1))
@@ -1973,7 +2046,7 @@ server <- function(input, output, session){
             if (uv != 0 & uv != "0") {
               plot_targets[[length(plot_targets) + 1]] <- list(
                 col = col, val = uv,
-                label = if (length(event_cols) > 1) paste(col, "-", uv) else as.character(uv),
+                label = if (length(input$barcode_var) > 1) paste(col, "-", uv) else as.character(uv),
                 is_binary = FALSE
               )
             }
@@ -1987,57 +2060,236 @@ server <- function(input, output, session){
       pal <- get_accessible_palette(n_targets)
 
       use_stacked <- isTRUE(input$barcode_layout == "stacked") && n_targets > 1
-
       p <- plotly::plot_ly()
 
-      if (use_stacked) {
-        row_height <- 1 / n_targets
+      row_height <- if (use_stacked) 1 / n_targets else 1
 
-        for (t_idx in seq_along(plot_targets)) {
-          target <- plot_targets[[t_idx]]
-          col_data <- df_clean[[target$col]]
-          active_idx <- which(col_data == target$val)
+      # ------------------------------------------------------------
+      # Build unified event table
+      # ------------------------------------------------------------
 
-          if (length(active_idx) == 0) next
+      event_df <- data.frame()
 
-          y_bottom <- 1 - (t_idx * row_height)
-          y_top <- 1 - ((t_idx - 1) * row_height)
-          y_gap <- row_height * 0.05
-          y_bottom <- y_bottom + y_gap
-          y_top <- y_top - y_gap
+      for (t_idx in seq_along(plot_targets)) {
 
-          # Use datetime or numeric x-positions
-          active_x <- x_positions[active_idx]
-          n_events <- length(active_x)
+        target <- plot_targets[[t_idx]]
+        col_data <- df_clean[[target$col]]
 
-          x_vals <- rep(active_x, each = 3)
-          y_vals <- rep(c(y_bottom, y_top, NA), times = n_events)
+        if (input$event_format == "interval") {
 
-          # Build hover text
-          if (is_datetime) {
-            hover_text <- rep(paste0(target$label, "<br>",
-                                     format(time_vec[active_idx], "%Y-%m-%d %H:%M:%S")), each = 3)
-          } else {
-            hover_text <- rep(paste0(target$label, "<br>", time_vec[active_idx]), each = 3)
+          active_idx <- which(!is.na(col_data) & col_data == target$val)
+
+          if (length(active_idx) > 0) {
+
+            tmp <- data.frame(
+              target_idx = t_idx,
+              label = target$label,
+              start = df_clean[[input$int_start]][active_idx],
+              end = df_clean[[input$int_end]][active_idx],
+              color = pal[t_idx],
+              stringsAsFactors = FALSE
+            )
+
+            event_df <- rbind(event_df, tmp)
           }
 
-          p <- plotly::add_trace(p,
-                                 x = x_vals, y = y_vals,
-                                 type = "scatter", mode = "lines",
-                                 line = list(color = pal[t_idx], width = 1.75, alpha = .8),
-                                 name = get_var_label(target$label),
-                                 showlegend = TRUE,
-                                 hoverinfo = "text",
-                                 text = hover_text
+        } else {
+
+          is_active <- as.numeric(!is.na(col_data) & col_data == target$val)
+
+          windows <- extract_event_windows_idx(is_active)
+
+          if (nrow(windows) > 0) {
+
+            tmp <- data.frame(
+              target_idx = t_idx,
+              label = target$label,
+              start = time_vec[windows$start],
+              end = time_vec[windows$end],
+              color = pal[t_idx],
+              stringsAsFactors = FALSE
+            )
+
+            event_df <- rbind(event_df, tmp)
+          }
+        }
+      }
+
+      # ------------------------------------------------------------
+      # Draw events
+      # ------------------------------------------------------------
+
+      legend_added <- rep(FALSE, n_targets)
+
+      for (i in seq_len(nrow(event_df))) {
+
+        ev <- event_df[i, ]
+
+        t_idx <- ev$target_idx
+
+        if (use_stacked) {
+
+          gap <- row_height * 0.05
+
+          y_bottom <- 1 - (t_idx * row_height) + gap
+          y_top <- 1 - ((t_idx - 1) * row_height) - gap
+
+        } else {
+
+          y_bottom <- 0
+          y_top <- 1
+        }
+
+        start_time <- ev$start
+        end_time <- ev$end
+
+        # ----------------------------------------------------------
+        # Convert to x positions
+        # ----------------------------------------------------------
+
+        if (input$event_format == "interval") {
+
+          if (is_datetime) {
+
+            x_start <- as.numeric(start_time)
+            x_end <- as.numeric(end_time)
+
+          } else {
+
+            x_start <- start_time
+            x_end <- end_time
+          }
+
+        } else {
+
+          start_idx <- which(time_vec == start_time)[1]
+          end_idx <- which(time_vec == end_time)[1]
+
+          x_start <- x_positions[start_idx]
+          x_end <- x_positions[end_idx]
+        }
+
+        # ----------------------------------------------------------
+        # Determine if point event
+        # ----------------------------------------------------------
+
+        is_point <- isTRUE(all.equal(x_start, x_end))
+
+        if (is_point) {
+
+          x_vals <- c(
+            x_start,
+            x_start,
+            NA
+          )
+
+          y_vals <- c(
+            y_bottom,
+            y_top,
+            NA
+          )
+
+          hover_text <- rep(
+            paste0(
+              get_var_label(ev$label),
+              "<br>",
+              as.character(start_time)
+            ),
+            3
+          )
+
+          p <- plotly::add_trace(
+            p,
+            x = x_vals,
+            y = y_vals,
+            type = "scatter",
+            mode = "lines",
+            line = list(
+              color = hex_to_rgba(ev$color, alpha = 0.8),
+              width = 1.75
+            ),
+            hoverinfo = "text",
+            text = hover_text,
+            name = get_var_label(ev$label),
+            legendgroup = ev$label,
+            showlegend = !legend_added[t_idx]
+          )
+
+        } else {
+
+          x_poly <- c(
+            x_start,
+            x_end,
+            x_end,
+            x_start,
+            x_start,
+            NA
+          )
+
+          y_poly <- c(
+            y_bottom,
+            y_bottom,
+            y_top,
+            y_top,
+            y_bottom,
+            NA
+          )
+
+          hover_text <- rep(
+            paste0(
+              get_var_label(ev$label),
+              "<br>Start: ",
+              as.character(start_time),
+              "<br>End: ",
+              as.character(end_time)
+            ),
+            length(x_poly)
+          )
+
+          p <- plotly::add_trace(
+            p,
+            x = x_poly,
+            y = y_poly,
+            type = "scatter",
+            mode = "lines",
+            fill = "toself",
+            fillcolor = hex_to_rgba(
+              ev$color,
+              alpha = if (use_stacked) 0.85 else 0.5
+            ),
+            line = list(
+              color = ev$color,
+              width = 1
+            ),
+            hoverinfo = "text",
+            text = hover_text,
+            name = get_var_label(ev$label),
+            legendgroup = ev$label,
+            showlegend = !legend_added[t_idx]
           )
         }
 
+        legend_added[t_idx] <- TRUE
+      }
+
+      # ------------------------------------------------------------
+      # Y-axis
+      # ------------------------------------------------------------
+
+      if (use_stacked) {
+
         tick_vals_y <- sapply(seq_along(plot_targets), function(i) {
+
           y_bottom <- 1 - (i * row_height)
           y_top <- 1 - ((i - 1) * row_height)
+
           (y_bottom + y_top) / 2
         })
-        tick_labels_y <- sapply(plot_targets, function(t) get_var_label(t$label))
+
+        tick_labels_y <- paste0(sapply(
+          plot_targets,
+          function(t) get_var_label(t$label)
+        ), "  ")
 
         y_axis_config <- list(
           title = list(text = ""),
@@ -2051,37 +2303,6 @@ server <- function(input, output, session){
         )
 
       } else {
-        for (t_idx in seq_along(plot_targets)) {
-          target <- plot_targets[[t_idx]]
-          col_data <- df_clean[[target$col]]
-          active_idx <- which(col_data == target$val)
-
-          if (length(active_idx) == 0) next
-
-          # Use datetime or numeric x-positions
-          active_x <- x_positions[active_idx]
-          n_events <- length(active_x)
-
-          x_vals <- rep(active_x, each = 3)
-          y_vals <- rep(c(0, 1, NA), times = n_events)
-
-          if (is_datetime) {
-            hover_text <- rep(paste0(target$label, "<br>",
-                                     format(time_vec[active_idx], "%Y-%m-%d %H:%M:%S")), each = 3)
-          } else {
-            hover_text <- rep(paste0(target$label, "<br>", time_vec[active_idx]), each = 3)
-          }
-
-          p <- plotly::add_trace(p,
-                                 x = x_vals, y = y_vals,
-                                 type = "scatter", mode = "lines",
-                                 line = list(color = hex_to_rgba(pal[t_idx], alpha = .8), width = 1.75),
-                                 name = get_var_label(target$label),
-                                 showlegend = TRUE,
-                                 hoverinfo = "text",
-                                 text = hover_text
-          )
-        }
 
         y_axis_config <- list(
           title = list(text = ""),
@@ -2092,55 +2313,100 @@ server <- function(input, output, session){
         )
       }
 
+
       labs <- get_labels(
-        default_title = paste("Event Barcode:", paste(event_cols, collapse = ", ")),
-        default_x = time_col,
+        default_title = paste(
+          "Event Barcode:",
+          paste(input$barcode_var, collapse = ", ")
+        ),
+        default_x = if (input$event_format == "interval")
+          input$int_start
+        else
+          input$barcode_time, #anchor error
         default_y = "",
         default_legend = "Events"
       )
 
-      if (use_stacked) margins$l <- max(margins$l, 80)
+      if (use_stacked)
+        margins$l <- max(margins$l, 120)
+
       margins$b <- max(margins$b, 40)
 
+      # ------------------------------------------------------------
+      # X-axis
+      # ------------------------------------------------------------
+
       if (is_datetime) {
-        time_range_secs <- as.numeric(difftime(
-          max(x_positions, na.rm = TRUE),
-          min(x_positions, na.rm = TRUE),
-          units = "secs"
-        ))
+
+        time_range_secs <- as.numeric(
+          difftime(
+            max(time_vec, na.rm = TRUE),
+            min(time_vec, na.rm = TRUE),
+            units = "secs"
+          )
+        )
 
         if (time_range_secs < 3600) {
+
           tick_fmt <- "%H:%M:%S"
+
         } else if (time_range_secs < 86400) {
+
           tick_fmt <- "%H:%M"
+
         } else {
+
           tick_fmt <- "%m-%d %H:%M"
         }
 
         x_axis_config <- list(
-          title = list(text = labs$x, font = list(size = fonts$axis_title_size), standoff = 5),
-          tickfont  = list(size = fonts$axis_text_size),
-          type      = "date",
+          title = list(
+            text = labs$x,
+            font = list(size = fonts$axis_title_size),
+            standoff = 5
+          ),
+          tickfont = list(
+            size = fonts$axis_text_size
+          ),
+          type = "date",
           tickformat = tick_fmt,
-          nticks    = 10,
+          nticks = 10,
           tickangle = -45
         )
+
       } else {
+
         x_axis_config <- list(
-          title = list(text = labs$x, font = list(size = fonts$axis_title_size), standoff = 5),
-          tickfont = list(size = fonts$axis_text_size)
+          title = list(
+            text = labs$x,
+            font = list(size = fonts$axis_title_size),
+            standoff = 5
+          ),
+          tickfont = list(
+            size = fonts$axis_text_size
+          )
         )
       }
-      p <- p |> plotly::layout(
-        title = list(text = labs$title, font = list(size = fonts$title_size)),
-        xaxis = x_axis_config,
-        yaxis = y_axis_config,
-        legend = list(
-          title = list(text = labs$legend, font = list(size = fonts$legend_size)),
-          font = list(size = fonts$legend_size)
-        ),
-        margin = margins
-      )
+
+      p <- p |>
+        plotly::layout(
+          title = list(
+            text = labs$title,
+            font = list(size = fonts$title_size)
+          ),
+          xaxis = x_axis_config,
+          yaxis = y_axis_config,
+          legend = list(
+            title = list(
+              text = labs$legend,
+              font = list(size = fonts$legend_size)
+            ),
+            font = list(
+              size = fonts$legend_size
+            )
+          ),
+          margin = margins
+        )
 
       plot_store(p)
       return(p)
