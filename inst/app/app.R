@@ -23,15 +23,13 @@ ui <- fluidPage(
   tags$div(id = "sticky-toolbar", class = "toolbar sticky-toolbar",
 
              # Left side - Back button
-             conditionalPanel(
-               condition = "input.sidebar_state == 'viz'",
-               style = "flex: 1; text-align: left;",
+           tags$div(class = "tb-slot tb-left", id = "tb-back",
                actionButton("back_data", "← Back to Data Options",
                             class = "btn btn-outline-secondary", accesskey = "b",
-                            title = "Back to Data Options (Alt+B)")
+                            title = "Back (Alt+B)")
              ),
              # accessibility menu
-             tags$div(id = "toolbar-accessibility", style = "flex: 1; text-align: center;",
+           tags$div(class = "tb-slot tb-center", id = "toolbar-accessibility",
                       tags$div(class = "btn-group",
                                tags$button(id = "accessibility-dropdown-btn", class = "btn btn-outline-info btn-sm accessibility-dropdown-btn",
                                            type = "button",
@@ -39,7 +37,7 @@ ui <- fluidPage(
                                            title = "Accessibility Settings (Alt+A)",
                                            icon("universal-access"), " Accessibility Settings ", tags$span(class = "caret")),
                                tags$ul(id = "accessibility-dropdown-menu", class = "dropdown-menu",
-                                       style = "display: none; padding: 15px; min-width: 600px;position: absolute; right: 50px;",
+                                       style = "display: none; padding: 15px; min-width: 600px;position: absolute; center: 50px;",
                                        tags$li(
                                          fluidRow(
                                            column(4,
@@ -75,9 +73,7 @@ ui <- fluidPage(
                       )
              ),
              # Right side - Save menu
-               conditionalPanel(
-                 condition = "input.sidebar_state == 'viz'",
-                 style = "flex: 1; text-align: right;",
+           tags$div(class = "tb-slot tb-right", id = "tb-save",
                tags$div(class = "btn-group",
                         tags$button(id = "save-dropdown-btn", class = "btn btn-success dropdown-toggle",
                                     type = "button",
@@ -148,7 +144,7 @@ ui <- fluidPage(
                )
              ),
              # Help button (right side)
-             tags$div(style = "flex: 1; text-align: right;",
+           tags$div(class = "tb-slot tb-right",
                tags$div(class = "btn-group",
                         tags$button(id = "help-dropdown-btn",
                                     class = "btn btn-sm",
@@ -495,6 +491,15 @@ server <- function(input, output, session){
       data_converted()
     } else {
       data_original()
+    }
+  })
+  observeEvent(input$sidebar_state, {
+    if (input$sidebar_state == "viz") {
+      shinyjs::show("tb-back")
+      shinyjs::show("tb-save")
+    } else {
+      shinyjs::hide("tb-back")
+      shinyjs::hide("tb-save")
     }
   })
 
