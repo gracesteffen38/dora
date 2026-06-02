@@ -7,7 +7,7 @@ ui <- fluidPage(
       content = "width=device-width, initial-scale=1"
     ),
     tags$title("Time Series Explorer - Accessible Data Visualization"),
-    includeCSS("www/styles.css"),
+    # includeCSS("www/styles.css"),
     includeCSS("www/accessibility.css"),
     includeScript("www/accessibility.js"),
     includeScript("www/app.js"),

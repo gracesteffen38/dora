@@ -2,34 +2,53 @@
 % Please edit documentation in R/expand_timeseries.R
 \name{expand_timeseries}
 \alias{expand_timeseries}
-\title{Expand interval data to continuous time series format}
+\title{Expand interval data to a continuous time-series format}
 \usage{
 expand_timeseries(
   data,
   id_var,
-  var_name,
   start_time_var,
   end_time_var,
-  time_unit
+  event_vars,
+  time_unit = 1
 )
 }
 \arguments{
-\item{data}{A data frame containing interval data}
+\item{data}{Data frame containing interval data.}
 
-\item{id_var}{Name of the participant ID column}
+\item{id_var}{Name of the participant / ID column (string).}
 
-\item{var_name}{Name of the event/activity column}
+\item{start_time_var}{Name of the onset column (string).
+May be numeric (seconds) or a date-time string/POSIXct.}
 
-\item{start_time_var}{Name of the start time column}
+\item{end_time_var}{Name of the offset column (string).
+Same type as `start_time_var`.}
 
-\item{end_time_var}{Name of the end time column}
+\item{event_vars}{Character vector of event column name(s).
+Supply a single name for a string-coded column, or one or more names
+for binary (0/1) columns.}
 
-\item{time_unit}{Numeric time step in seconds}
+\item{time_unit}{Timestep size in seconds (numeric, default 1).}
 }
 \value{
-A data frame in continuous time series format
+A data frame with columns `[id_var, time, <event cols>]`,
+  one row per timestep, values 0 or 1.
 }
 \description{
-Converts a dataframe with start/end time or start time and duration columns into a row-per-timepoint
-format, filling gaps with zeros.
+Converts a data frame with onset/offset columns into a row-per-timestep
+format, filling gaps between events with zeros.
+}
+\details{
+Handles two event-column layouts automatically:
+  • **String-coded** – a single column whose values are event names
+    (e.g. "A", "B").  Output contains one binary column per unique name,
+    prefixed with the original column name (e.g. `Event_A`, `Event_B`).
+  • **Binary wide** – one or more numeric 0/1 columns, one per event type.
+    Passed as a character vector to `event_vars`.
+
+For each interval the number of timestep bins is
+  `ceiling((end - start) / time_unit)`,
+so the bin at `t` represents `[t, t + time_unit)`.
+Overlapping intervals are resolved with OR logic (max per bin).
+Gaps inside the per-ID time range are filled with 0.
 }
