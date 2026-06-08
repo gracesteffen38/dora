@@ -1,6 +1,6 @@
 options(shiny.maxRequestSize = 100*1024^2)
 
-ui <- fluidPage(
+ui <- shiny::fluidPage(
   tags$head(
     tags$meta(
       name = "viewport",
@@ -242,39 +242,6 @@ ui <- fluidPage(
                                 style = "margin-top: 5px; align:center;")
             )
 
-          )
-        ),
-        conditionalPanel(
-          condition = "output.hasData == 'true'",
-          hr(),
-
-          tags$p(style = "margin-bottom: 4px; font-weight: 500;",
-                 "If your data uses intervals or durations, not continuous rows:"),
-          tags$div(class = "panel panel-default", style = "margin-bottom: 10px;",
-                   tags$div(class = "panel-heading", style = "padding: 8px 12px; background-color: #f8f9fa;",
-                            tags$a(id = "conversion-toggle", href = "#", style = "text-decoration: none; color: #333;",
-                                   icon("right-left"), " Convert Data Format ",
-                                   tags$span(id = "conversion-caret", class = "caret")
-                            )
-                   ),
-                   tags$div(id = "conversion-dropdown", style = "display: none; padding: 12px;",
-                            tags$p(style = "font-size: 0.88em; color: #666; margin-bottom: 10px;",
-                                   "Use this if your data has one row per event with start/end times or durations,
-                                    rather than one row per time point. This will expand it into a continuous format
-                                    the app can visualize."),
-                            uiOutput("interval_conversion_ui"),
-                            actionButton("convert_data", "Convert to Continuous Format",
-                                         class = "btn-success", accesskey = "c",
-                                         title = "Convert Data (Alt+C)"),
-                            br(), br(),
-                            textOutput("conversion_status"),
-                            conditionalPanel(
-                              condition = "output.conversionDone",
-                              downloadButton("download_converted", "Download Converted Data (.csv)",
-                                             class = "btn-sm btn-outline-success",
-                                             style = "margin-top: 8px;")
-                            )
-                   )
           )
         ),
 
