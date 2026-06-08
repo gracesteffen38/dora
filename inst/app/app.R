@@ -1760,7 +1760,7 @@ server <- function(input, output, session){
       df[id_col %in% selected_ids, , drop = FALSE]
     }
 
-  }) %>%
+  }) |>
     bindCache(
       subset_data(),
       input$use_id,
