@@ -323,32 +323,6 @@ ui <- fluidPage(
         condition = "input.sidebar_state == 'viz'",
 
         h4("Step 3: Visualization"),
-        tags$div(
-          class = "panel panel-default",
-          style = "margin-bottom: 10px;",
-
-          tags$div(
-            class = "panel-heading",
-            style = "padding: 8px 12px; background-color: #f8f9fa;",
-            tags$a(
-              id = "subset-toggle",
-              href = "#",
-              style = "text-decoration: none; color: #333;",
-              icon("filter"), " (Optional) Subset Data ",
-              tags$span(id = "subset-caret", class = "caret")
-            )
-          ),
-
-          tags$div(
-            id = "subset-dropdown",
-            style = "display: none; padding: 12px 14px 10px 14px;",
-            uiOutput("subset_ui"),
-            tags$div(
-              style = "margin-top: 8px;",
-              helpText("Show only one condition or group.")
-            )
-          )
-        ),
 
         selectInput("viz_mode", "Visualization type",
                     c("Raw time series", "Event + Continuous Overlay", "Event-locked average",
@@ -430,15 +404,6 @@ ui <- fluidPage(
             FALSE
           )
         ),
-        hr(),
-        actionButton(
-          "update_plot",
-          "Update Plot",
-          class = "btn-primary",
-          icon = icon("rotate"),
-          style = "width: 100%; margin-bottom: 10px;",
-          title = "Update the plot using the current selections"
-        ),
         # Custom labels dropdown
         tags$div(class = "panel panel-default", style = "margin-bottom: 10px;",
                  tags$div(class = "panel-heading", style = "padding: 8px 12px; background-color: #f8f9fa;",
@@ -455,17 +420,8 @@ ui <- fluidPage(
                             condition = "input.viz_mode == 'Raw time series' || input.viz_mode == 'Event + Continuous Overlay'",
                             textInput("custom_legend", "Legend Title", placeholder = "Auto-generated")
                           ),
-                          uiOutput("legend_labels_ui"),
-                          actionButton(
-                            "update_labels",
-                            "Apply Labels",
-                            class = "btn-outline-primary btn-sm",
-                            icon = icon("check"),
-                            style = "width: 100%; margin-top: 8px;",
-                            title = "Apply custom labels to the current plot"
-                          )
+                          uiOutput("legend_labels_ui")
                  ) ),
-
         hr(),
         h4("Second Plot (Optional)"),
         checkboxInput("show_second_plot", "Show second plot below main plot", FALSE),
@@ -521,31 +477,9 @@ server <- function(input, output, session){
     )
   }
 
-  label_values <- reactiveValues()
-
-  `%||%` <- function(x, y) {
-    if (is.null(x)) y else x
-  }
-
-  make_label_id <- function(var) {
-    paste0("legend_label_", gsub("[^a-zA-Z0-9]", "_", var))
-  }
-
   get_var_label <- function(var) {
-    key <- make_label_id(var)
-
-    current_val <- input[[key]]
-    stored_val  <- label_values[[key]]
-
-    if (isTruthy(current_val)) {
-      return(current_val)
-    }
-
-    if (isTruthy(stored_val)) {
-      return(stored_val)
-    }
-
-    paste("-", var)
+    key <- paste0("legend_label_", gsub("[^a-zA-Z0-9]", "_", var))
+    if (isTruthy(input[[key]])) input[[key]] else paste("-", var)
   }
 
   get_event_counts <- function(vals) {
@@ -582,20 +516,6 @@ server <- function(input, output, session){
     } else {
       data_original()
     }
-  })
-
-  current_label_vars <- reactive({
-    req(input$viz_mode)
-
-    vars <- switch(
-      input$viz_mode,
-      "Raw time series" = input$yvar,
-      "Event + Continuous Overlay" = c(input$signal_overlay, input$event_overlay),
-      "Event durations (barcode)" = input$barcode_var,
-      NULL
-    )
-
-    unique(vars)
   })
 
   observeEvent(input$open_demo_modal, {
@@ -825,23 +745,6 @@ server <- function(input, output, session){
 
     list(min = x_min, max = x_max)
   })
-
-  observe({
-    vars <- current_label_vars()
-
-    if (is.null(vars) || length(vars) == 0) {
-      return()
-    }
-
-    for (v in vars) {
-      key <- make_label_id(v)
-      val <- input[[key]]
-
-      if (!is.null(val)) {
-        label_values[[key]] <- val
-      }
-    }
-  }) # get labels - is this the right location?
 
   # Update CSS based on accessibility settings
   observe({
@@ -1248,7 +1151,7 @@ server <- function(input, output, session){
         duration = 15
       )
     })
-  } #end of converter
+  }
 
   output$interval_ui <- renderUI({
     tagList(
@@ -1299,62 +1202,6 @@ server <- function(input, output, session){
     do_convert()
   })
 
-  output$subset_ui <- renderUI({
-    df <- data_reactive()
-    req(df)
-
-    all_vars <- names(df)
-
-    tagList(
-      tags$div(
-        style = "margin-bottom: 12px;",
-        selectizeInput(
-          "subset_var",
-          "Subset variable",
-          choices = c("No subset" = "", all_vars),
-          selected = "",
-          multiple = FALSE,
-          options = list(
-            placeholder = "Choose a variable to subset by"
-          )
-        )
-      ),
-
-      conditionalPanel(
-        condition = "input.subset_var != null && input.subset_var != ''",
-        tags$div(
-          style = "margin-bottom: 8px;",
-          uiOutput("subset_values_ui")
-        )
-      )
-    )
-  })
-
-  output$subset_values_ui <- renderUI({
-    df <- data_reactive()
-    req(df)
-    req(input$subset_var)
-    req(input$subset_var != "")
-
-    vals <- sort(unique(as.character(df[[input$subset_var]])))
-    vals <- vals[!is.na(vals)]
-
-    selectizeInput(
-      "subset_values",
-      "Keep value(s)",
-      choices = vals,
-      selected = vals[1],
-      multiple = TRUE,
-      options = list(
-        plugins = list("remove_button"),
-        placeholder = "Select value(s) to keep"
-      )
-    )
-  })
-
-  outputOptions(output, "subset_ui", suspendWhenHidden = FALSE)
-  outputOptions(output, "subset_values_ui", suspendWhenHidden = FALSE)
-
   # Participant handling
   output$idvar_ui <- renderUI({
     df <- data_reactive()
@@ -1364,8 +1211,8 @@ server <- function(input, output, session){
   })
 
   all_ids <- reactive({
-  req(input$idvar)
-  unique(as.character(data_reactive()[[input$idvar]]))
+    req(input$idvar)
+    unique(data_reactive()[[input$idvar]])
   })
 
   id_index <- reactiveVal(1)
@@ -1376,12 +1223,6 @@ server <- function(input, output, session){
   selected_signal <- reactiveVal(NULL)
   selected_event <- reactiveVal(NULL)
 
-  plot_redraw_trigger <- reactiveVal(0)
-
-  request_plot_redraw <- function() {
-    plot_redraw_trigger(plot_redraw_trigger() + 1)
-  }
-
   observeEvent(input$viz_mode, {
     if (input$viz_mode == "Event-locked single event") {
       updateCheckboxInput(session, "step_through", value = TRUE)
@@ -1391,21 +1232,17 @@ server <- function(input, output, session){
   observeEvent(input$next_id,{
     id_index(ifelse(id_index() == length(all_ids()), 1, id_index() + 1))
     event_index(1)
-    request_plot_redraw()
   })
   observeEvent(input$prev_id,{
     id_index(ifelse(id_index() == 1, length(all_ids()), id_index() - 1))
-    event_index(1) # anchor - i don't remember what this is doing lol
-    request_plot_redraw()
+    event_index(1)
   })
 
   observeEvent(input$next_event,{
     event_index(event_index() + 1)
-    request_plot_redraw()
   })
   observeEvent(input$prev_event,{
     event_index(max(1, event_index() - 1))
-    request_plot_redraw()
   })
 
   output$current_participant <- renderText({
@@ -1452,7 +1289,7 @@ server <- function(input, output, session){
     if (input$event_format == "interval") {
       active_idx <- which(!is.na(df[[input$event_var]]) & df[[input$event_var]] != 0 & df[[input$event_var]] != "0")
       if (length(active_idx) > 0 && event_index() <= length(active_idx)) {
-        onset_time <- df[[input$int_start]][active_idx[event_index()]]
+        onset_time <- interval_start()[active_idx[event_index()]]
         if (inherits(onset_time, c("POSIXct", "POSIXt", "POSIXlt"))) {
           paste("Event onset time:", format(onset_time, "%Y-%m-%d %H:%M:%S"))
         } else if (is.numeric(onset_time)) {
@@ -1487,18 +1324,13 @@ server <- function(input, output, session){
   output$id_select_ui <- renderUI({
     ids <- all_ids()
     default_sel <- ids[seq_len(min(5, length(ids)))]
-
     tagList(
-      selectizeInput(
+      selectInput(
         "selected_ids",
         "Select participant(s)",
         choices = ids,
         selected = default_sel,
-        multiple = TRUE,
-        options = list(
-          plugins = list("remove_button"),
-          placeholder = "Select participant(s)"
-        )
+        multiple = TRUE
       ),
       checkboxInput("select_all_ids", "Select all participants", FALSE)
     )
@@ -1506,10 +1338,10 @@ server <- function(input, output, session){
 
   observeEvent(input$select_all_ids, {
     if (isTRUE(input$select_all_ids)) {
-      updateSelectizeInput(session, "selected_ids", selected = all_ids())
+      updateSelectInput(session, "selected_ids", selected = all_ids())
     } else {
       ids <- all_ids()
-      updateSelectizeInput(session, "selected_ids", selected = ids[seq_len(min(5, length(ids)))])
+      updateSelectInput(session, "selected_ids", selected = ids[seq_len(min(5, length(ids)))])
     }
   }, ignoreInit = TRUE)
 
@@ -1522,26 +1354,9 @@ server <- function(input, output, session){
   output$var_ui <- renderUI({
     data_reactive()
     d <- diagnostics()
-
     tagList(
-      selectizeInput(
-        "xvar",
-        "Time (x) variable",
-        choices = d$time,
-        selected = selected_time(),
-        multiple = FALSE
-      ),
-      selectizeInput(
-        "yvar",
-        "Signal (y) variable",
-        choices = d$numeric,
-        selected = selected_signal(),
-        multiple = TRUE,
-        options = list(
-          plugins = list("remove_button"),
-          placeholder = "Select signal variable(s)"
-        )
-      )
+      selectInput("xvar", "Time (x) variable", d$time, selected = selected_time()),
+      selectInput("yvar", "Signal (y) variable", d$numeric, selected = selected_signal(), multiple = T)
     )
   })
 
@@ -1556,25 +1371,25 @@ server <- function(input, output, session){
 
   # Label UI
   output$legend_labels_ui <- renderUI({
-    vars <- current_label_vars()
+    req(input$viz_mode)
 
-    if (is.null(vars) || length(vars) <= 1) {
-      return(NULL)
-    }
+    vars <- switch(input$viz_mode,
+                   "Raw time series"            = input$yvar,
+                   "Event + Continuous Overlay" = c(input$signal_overlay, input$event_overlay),
+                   "Event durations (barcode)"  = input$barcode_var,
+                   NULL
+    )
+
+    if (is.null(vars) || length(vars) <= 1) return(NULL)
 
     tagList(
       tags$hr(style = "margin: 8px 0;"),
-      tags$p(
-        style = "font-weight: 500; margin-bottom: 4px; font-size: 0.9em;",
-        "Variable Labels in Legend"
-      ),
+      tags$p(style = "font-weight: 500; margin-bottom: 4px; font-size: 0.9em;",
+             "Variable Labels in Legend"),
       lapply(vars, function(v) {
-        key <- make_label_id(v)
-
         textInput(
-          inputId = key,
-          label = tags$span(style = "font-size: 0.85em; color: #555;", v),
-          value = isolate(label_values[[key]] %||% ""),
+          inputId     = paste0("legend_label_", gsub("[^a-zA-Z0-9]", "_", v)),
+          label       = tags$span(style = "font-size: 0.85em; color: #555;", v),
           placeholder = v
         )
       })
@@ -1639,6 +1454,7 @@ server <- function(input, output, session){
     d <- diagnostics()
     df <- data_reactive()
 
+    # Identify categorical/event-like variables
     all_vars <- names(df)
     cat_vars <- all_vars[sapply(df, function(x) {
       is.factor(x) || is.character(x) ||
@@ -1646,35 +1462,12 @@ server <- function(input, output, session){
     })]
 
     tagList(
-      selectizeInput(
-        "time_overlay",
-        "Time (x) variable",
-        choices = d$time,
-        selected = selected_time(),
-        multiple = FALSE
-      ),
-      selectizeInput(
-        "signal_overlay",
-        "Continuous (y) variable(s)",
-        choices = d$numeric,
-        selected = selected_signal(),
-        multiple = TRUE,
-        options = list(
-          plugins = list("remove_button"),
-          placeholder = "Select continuous variable(s)"
-        )
-      ),
-      selectizeInput(
-        "event_overlay",
-        "Event variable(s)",
-        choices = cat_vars,
-        selected = selected_event(),
-        multiple = TRUE,
-        options = list(
-          plugins = list("remove_button"),
-          placeholder = "Select event variable(s)"
-        )
-      )
+      selectInput("time_overlay", "Time (x) variable", d$time, selected = selected_time()),
+      selectInput("signal_overlay", "Continuous (y) variable(s)", d$numeric, selected = selected_signal(), multiple = TRUE),
+
+      # CHANGE: Added multiple = TRUE so you can pick "Freezing" AND "Tremor"
+      selectInput("event_overlay", "Event variable(s)", cat_vars,
+                  selected = selected_event(), multiple = TRUE)
     )
   })
 
@@ -1698,34 +1491,13 @@ server <- function(input, output, session){
     }
 
     tagList(
-      selectizeInput(
-        "barcode_time",
-        "Time (x) variable",
-        choices = d$time,
-        selected = selected_time(),
-        multiple = FALSE
-      ),
-      selectizeInput(
-        "barcode_var",
-        "Event variable(s)",
-        choices = cat_vars,
-        selected = valid_sel,
-        multiple = TRUE,
-        options = list(
-          plugins = list("remove_button"),
-          placeholder = "Select event variable(s)"
-        )
-      ),
-      radioButtons(
-        "barcode_layout",
-        "Layout:",
-        choices = c(
-          "Stacked rows" = "stacked",
-          "Overlaid (single row)" = "overlay"
-        ),
-        selected = "stacked",
-        inline = TRUE
-      )
+      selectInput("barcode_time", "Time (x) variable", d$time, selected = selected_time()),
+      selectInput("barcode_var", "Event variable(s)", cat_vars,
+                  selected = valid_sel, multiple = TRUE),
+      radioButtons("barcode_layout", "Layout:",
+                   choices = c("Stacked rows" = "stacked",
+                               "Overlaid (single row)" = "overlay"),
+                   selected = "stacked", inline = TRUE)
     )
   })
 
@@ -1738,116 +1510,96 @@ server <- function(input, output, session){
   observeEvent(input$event_var, { selected_event(input$event_var) }, ignoreNULL = TRUE)
   observeEvent(input$event_overlay, { selected_event(input$event_overlay) }, ignoreNULL = TRUE)
   observeEvent(input$barcode_var, { selected_event(input$barcode_var) }, ignoreNULL = TRUE) #anchor - change?
-  observeEvent(input$update_plot, { request_plot_redraw()}, ignoreInit = TRUE)
-  observeEvent(input$update_labels, { request_plot_redraw()}, ignoreInit = TRUE)
 
-  selected_yvars <- reactive(input$yvar) |>
-    debounce(50)
+  current_plot_request <- reactiveVal(0)
 
-  selected_events <- reactive(input$event_overlay) |>
-    debounce(50)
-
-  selected_barcodes <- reactive(input$barcode_var) |>
-    debounce(50) #anchor
-
-
-  subset_data <- reactive({
-    df <- data_reactive()
-
-    if (is.null(input$subset_var) || input$subset_var == "") {
-      return(df)
+  observeEvent(
+    list(
+      input$yvar,
+      input$xvar,
+      input$next_id,
+      input$prev_id
+    ),
+    {
+      current_plot_request(current_plot_request() + 1)
     }
-    req(input$subset_var, input$subset_values)
+  ) # helper to ignore old input
 
-    df[
-      as.character(df[[input$subset_var]]) %in% as.character(input$subset_values),
-      ,
-      drop = FALSE
-    ]
+  selected_yvars <- reactive(input$yvar) %>%
+    debounce(250)
+
+  selected_events <- reactive(input$event_overlay) %>%
+    debounce(250)
+
+  selected_barcodes <- reactive(input$barcode_var) %>%
+    debounce(250) #anchor
+
+  interval_start <- reactive({
+    filtered_data()[[input$int_start]]
   })
+
+  interval_end <- reactive({
+
+    df <- filtered_data()
+
+    if (input$interval_mode == "end") {
+      return(df[[input$int_end]])
+    }
+
+    starts <- df[[input$int_start]]
+    durs <- df[[input$int_dur]]
+
+    starts + durs
+
+  })
+
 
   filtered_data <- reactive({
 
-    df <- subset_data()
+    df <- data_reactive()
 
-    if (!isTRUE(input$use_id)) {
+    if (!isTRUE(input$use_id))
       return(df)
-    }
 
     req(input$idvar)
 
-    id_col <- as.character(df[[input$idvar]])
-
     if (isTRUE(input$step_through)) {
-
-      current_id <- as.character(all_ids()[id_index()])
-
-      df[id_col == current_id, , drop = FALSE]
-
+      df[df[[input$idvar]] == all_ids()[id_index()], ]
     } else {
-
       req(input$selected_ids)
-
-      selected_ids <- as.character(input$selected_ids)
-
-      df[id_col %in% selected_ids, , drop = FALSE]
+      df[df[[input$idvar]] %in% input$selected_ids, ]
     }
 
   }) %>%
     bindCache(
-      subset_data(),
+      data_reactive(),
       input$use_id,
       input$idvar,
       input$step_through,
       id_index(),
       input$selected_ids
     ) #attempt to reduce computational load...
-
-  get_interval_start <- function(df) {
-    df[[input$int_start]]
-  }
-
-  get_interval_end <- function(df) {
-    if (input$interval_mode == "end") {
-      return(df[[input$int_end]])
-    }
-
-    starts <- df[[input$int_start]]
-    durs   <- as.numeric(df[[input$int_dur]])
-
-    starts + durs
-  }
-
-
   # Plot
   output$plot <- plotly::renderPlotly({
+    t0 <- Sys.time()
+
+    on.exit({
+      print(Sys.time() - t0)
+    })
+
+    fonts <- get_plot_fonts()
+    margins <- get_plot_margins()
+
+    request_id <- current_plot_request()
 
     req(input$sidebar_state == "viz")
-
-    plot_redraw_trigger()
-
     validate(
-      need(plot_redraw_trigger() > 0, "Choose your plotting options, then click Update Plot.")
+      need(input$viz_mode, "Please select a visualization type"),
+      need(data_reactive(), "Please upload data to create visualizations"),
+      need(nrow(data_reactive()) > 0, "The uploaded data appears to be empty")
     )
 
-    isolate({
-
-      t0 <- Sys.time()
-
-      on.exit({
-        print(Sys.time() - t0)
-      })
-
-      fonts <- get_plot_fonts()
-      margins <- get_plot_margins()
-
-      validate(
-        need(input$viz_mode, "Please select a visualization type"),
-        need(data_reactive(), "Please upload data to create visualizations"),
-        need(nrow(data_reactive()) > 0, "The uploaded data appears to be empty")
-      )
-
-      req(input$viz_mode)
+    req(input$viz_mode)
 
     # Add mode-specific validation
     if (input$viz_mode == "Raw time series") {
@@ -1985,7 +1737,7 @@ server <- function(input, output, session){
         for (v in input$signal_overlay) combined_signals[[v]] <- c()
 
         for (pid in input$selected_ids) {
-          pdf <- filtered_data()[filtered_data()[[input$idvar]] == pid, ] #anchor1
+          pdf <- filtered_data()[filtered_data()[[input$idvar]] == pid, ]
           if (nrow(pdf) == 0) next
           pt <- pdf[[input$time_overlay]]
           combined_time <- c(combined_time, pt, NA)
@@ -2275,50 +2027,24 @@ server <- function(input, output, session){
       return(p)
     }
 
-    # event durations (barcode anchor)
+    # event durations (barcode)
     if (input$viz_mode == "Event durations (barcode)") {
-
-      req(selected_barcodes())
-
-      plot_df <- filtered_data()
-
-      # Temporary check
-      print(unique(plot_df[[input$idvar]]))
-      print(nrow(plot_df))
-
+      req(selected_barcodes)
       if (input$event_format == "interval") {
+        req(interval_start(), interval_end())
+        valid_idx <- !is.na(interval_start()) & !is.na(interval_end())
 
-        req(input$int_start)
+        df_clean <- filtered_data()[valid_idx, ]
 
-        if (input$interval_mode == "end") {
-          req(input$int_end)
-          start_vec_all <- plot_df[[input$int_start]]
-          end_vec_all   <- plot_df[[input$int_end]]
-        } else {
-          req(input$int_dur)
-          start_vec_all <- plot_df[[input$int_start]]
-          end_vec_all   <- plot_df[[input$int_start]] + as.numeric(plot_df[[input$int_dur]])
-        }
-
-        valid_idx <- !is.na(start_vec_all) & !is.na(end_vec_all)
-
-        df_clean  <- plot_df[valid_idx, , drop = FALSE]
-        time_vec  <- start_vec_all[valid_idx]
-        start_vec <- start_vec_all[valid_idx]
-        end_vec   <- end_vec_all[valid_idx]
-
+        time_vec <- interval_start()[valid_idx]
+        end_vec  <- interval_end()[valid_idx] # anchor
       } else {
-
         req(input$barcode_time)
-
-        valid_idx <- !is.na(plot_df[[input$barcode_time]])
-
-        df_clean <- plot_df[valid_idx, , drop = FALSE]
+        df_clean <- filtered_data()[!is.na(filtered_data()[[input$barcode_time]]), ]
         time_vec <- df_clean[[input$barcode_time]]
       }
-
       req(nrow(df_clean) > 0)
-      print(nrow(df_clean))
+
       # If the column came in as character or factor, try to parse it
       if (is.character(time_vec) || is.factor(time_vec)) {
         time_vec_char <- as.character(time_vec)
@@ -2403,12 +2129,17 @@ server <- function(input, output, session){
       pal <- get_accessible_palette(n_targets)
 
       use_stacked <- isTRUE(input$barcode_layout == "stacked") && n_targets > 1
-
       p <- plotly::plot_ly()
 
       row_height <- if (use_stacked) 1 / n_targets else 1
 
       event_df <- data.frame()
+
+      valid_idx <- !is.na(interval_start()) & !is.na(interval_end())
+
+      df_clean <- filtered_data()[valid_idx, ]
+      start_vec <- interval_start()[valid_idx]
+      end_vec   <- interval_end()[valid_idx]
 
       for (t_idx in seq_along(plot_targets)) {
 
@@ -2427,11 +2158,6 @@ server <- function(input, output, session){
               start = start_vec[active_idx],
               end = end_vec[active_idx],
               color = pal[t_idx],
-              participant_id = if (isTRUE(input$use_id)) {
-                as.character(df_clean[[input$idvar]][active_idx])
-              } else {
-                NA_character_
-              },
               stringsAsFactors = FALSE
             )
 
@@ -2649,7 +2375,7 @@ server <- function(input, output, session){
           paste(selected_barcodes(), collapse = ", ")
         ),
         default_x = if (input$event_format == "interval")
-          input$int_start
+          interval_start()
         else
           input$barcode_time, #anchor error
         default_y = "",
@@ -2736,11 +2462,9 @@ server <- function(input, output, session){
       plot_store(p)
       return(p)
     }
-
-    })
-
+    if(request_id != current_plot_request())
+      return(NULL) # anchor: working on
   })
-    # End of plotting
 
   #Dynamic desc stats
   output$stats_section <- renderUI({

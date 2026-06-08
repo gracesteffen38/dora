@@ -30,6 +30,7 @@ Imports:
     webshot2,
     reticulate,
     zip,
+    shinycssloaders,
     stats
 LazyData: true
 URL: https://github.com/gracesteffen38/dora

@@ -226,7 +226,12 @@ $(document).on('click', '#labels-toggle', function(e) {
   $('#labels-caret').toggleClass('caret-up');
 });
 
-
+// Subsetting toggle
+$(document).on('click', '#subset-toggle', function(e) {
+  e.preventDefault();
+  $('#subset-dropdown').slideToggle(150);
+  $('#subset-caret').toggleClass('caret-up');
+});
 
 // Help dropdown toggle
 $(document).on('click', '#help-dropdown-btn', function(e) {
