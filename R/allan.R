@@ -39,8 +39,7 @@ allan_factor <- function(fin, numint) {
 #' @param include_shuffled Whether to include shuffled comparison
 #' @return List with actual, abcis, shuffled, slope
 #' @export
-compute_allan_factor_curve <- function(fin, rate, base = 2, powers = 10, start = 2, include_shuffled = TRUE) {
-  binwidth = 1/rate
+compute_allan_factor_curve <- function(fin, binwidth, base = 2, powers = 10, start = 2, include_shuffled = TRUE) {
   num_points <- powers - start + 1
   if (num_points < 1) return(NULL)
 
