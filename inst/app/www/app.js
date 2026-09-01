@@ -1,140 +1,190 @@
-// Track if save menu has been bound
 var saveMenuBound = false;
+var toolsMenuBound = false;
 
-// Keyboard shortcuts
-$(document).on('keydown', function(e) {
-  var tag = $(e.target).prop('tagName');
-  var inInput = $(e.target).is('input, textarea, select, .selectize-input');
+// Utility helpers
 
-  // ARROW KEYS — participant navigation (when not in text input)
-  if (!inInput) {
-    if (e.which == 37) { $('#prev_id').click(); e.preventDefault(); }
-    if (e.which == 39) { $('#next_id').click(); e.preventDefault(); }
-    // Up/Down for event navigation
-    if (e.which == 38) { $('#prev_event').click(); e.preventDefault(); }
-    if (e.which == 40) { $('#next_event').click(); e.preventDefault(); }
+function menuExists(menuId) {
+  return $(menuId).length > 0;
+}
+
+function isMenuVisible(menuId) {
+  return $(menuId).is(':visible');
+}
+
+function bindMenuIfNeeded(menuId, menuName) {
+  if (!window.Shiny || !menuExists(menuId)) return;
+
+  if (menuName === 'save' && !saveMenuBound) {
+    try { Shiny.bindAll($(menuId)[0]); } catch (err) {}
+    saveMenuBound = true;
   }
 
-  // ALT SHORTCUTS
-  if (e.altKey) {
-    switch(e.which) {
+  if (menuName === 'tools' && !toolsMenuBound) {
+    try { Shiny.bindAll($(menuId)[0]); } catch (err) {}
+    toolsMenuBound = true;
+  }
+}
 
-      // Alt+H — Help menu
+function closeToolbarMenusExcept(menuIdToKeepOpen) {
+  var menus = [
+    '#save-dropdown-menu',
+    '#tools-dropdown-menu',
+    '#help-dropdown-menu',
+    '#accessibility-dropdown-menu'
+  ];
+
+  menus.forEach(function(menuId) {
+    if (menuId !== menuIdToKeepOpen && menuExists(menuId)) {
+      $(menuId).hide();
+    }
+  });
+}
+
+function closeAllToolbarMenus() {
+  closeToolbarMenusExcept(null);
+}
+
+function toggleToolbarMenu(menuId, menuName) {
+  if (!menuExists(menuId)) return;
+
+  var opening = !isMenuVisible(menuId);
+
+  closeToolbarMenusExcept(menuId);
+
+  if (opening) {
+    $(menuId).show();
+    bindMenuIfNeeded(menuId, menuName);
+  } else {
+    $(menuId).hide();
+  }
+}
+
+function sendShinyEvent(inputId) {
+  if (!window.Shiny) return;
+
+  Shiny.setInputValue(inputId, new Date().getTime(), {
+    priority: 'event'
+  });
+}
+
+function isTypingTarget(target) {
+  return $(target).is(
+    'input, textarea, select, button, .selectize-input, .selectize-control'
+  );
+}
+
+// Keyboard shortcuts
+
+$(document).on('keydown', function(e) {
+  var inInput = isTypingTarget(e.target);
+
+  // Arrow keys: participant/event navigation when not typing
+  if (!inInput) {
+    if (e.which === 37) {
+      $('#prev_id').click();
+      e.preventDefault();
+    }
+
+    if (e.which === 39) {
+      $('#next_id').click();
+      e.preventDefault();
+    }
+
+    if (e.which === 38) {
+      $('#prev_event').click();
+      e.preventDefault();
+    }
+
+    if (e.which === 40) {
+      $('#next_event').click();
+      e.preventDefault();
+    }
+  }
+
+  // Alt shortcuts
+  if (e.altKey) {
+    switch (e.which) {
+      // Alt+H - Help menu
       case 72:
         e.preventDefault();
-        var helpMenu = document.getElementById('help-dropdown-menu');
-        if (helpMenu) {
-          var isVisible = helpMenu.style.display !== 'none';
-          helpMenu.style.display = isVisible ? 'none' : 'block';
-          document.getElementById('save-dropdown-menu').style.display = 'none';
-          document.getElementById('accessibility-dropdown-menu').style.display = 'none';
-        }
+        toggleToolbarMenu('#help-dropdown-menu', 'help');
         break;
 
-      // Alt+A — Accessibility menu
+      // Alt+A - Accessibility menu
       case 65:
         e.preventDefault();
-        var accMenu = document.getElementById('accessibility-dropdown-menu');
-        if (accMenu) {
-          var isVisible = accMenu.style.display !== 'none';
-          accMenu.style.display = isVisible ? 'none' : 'block';
-          document.getElementById('save-dropdown-menu').style.display = 'none';
-          var hm = document.getElementById('help-dropdown-menu');
-          if (hm) hm.style.display = 'none';
-        }
+        toggleToolbarMenu('#accessibility-dropdown-menu', 'accessibility');
         break;
 
-      // Alt+B — Back to data
+      // Alt+B - Back to data
       case 66:
         e.preventDefault();
         $('#back_data').click();
         break;
 
-      // Alt+V — Go to visualizations
+      // Alt+V - Go to visualizations
       case 86:
         e.preventDefault();
         $('#go_viz').click();
         break;
 
-      // Alt+C — Convert data
+      // Alt+C - Convert data
       case 67:
         e.preventDefault();
-        $('#convert_data').click();
+        sendShinyEvent('open_converter_modal');
         break;
 
-      // Alt+P — Peek at data
+      // Alt+P - Peek at data
       case 80:
         e.preventDefault();
         $('#peek_data').click();
         break;
 
-      // Alt+S — Save menu
+      // Alt+S - Save menu
       case 83:
         e.preventDefault();
-        var saveMenu = document.getElementById('save-dropdown-menu');
-        if (saveMenu) {
-          var isVisible = saveMenu.style.display !== 'none';
-          saveMenu.style.display = isVisible ? 'none' : 'block';
-          if (!isVisible && !saveMenuBound) {
-            try { Shiny.bindAll(saveMenu); } catch(err) {}
-            saveMenuBound = true;
-          }
-          document.getElementById('accessibility-dropdown-menu').style.display = 'none';
-          var hm = document.getElementById('help-dropdown-menu');
-          if (hm) hm.style.display = 'none';
-        }
+        toggleToolbarMenu('#save-dropdown-menu', 'save');
         break;
 
-      // Alt+D — Toggle second plot
+      // Alt+T - Tools menu
+      case 84:
+        e.preventDefault();
+        toggleToolbarMenu('#tools-dropdown-menu', 'tools');
+        break;
+
+      // Alt+D - Toggle second plot
       case 68:
         e.preventDefault();
-        var cb = document.getElementById('show_second_plot');
-        if (cb) { cb.click(); }
+        $('#show_second_plot').click();
         break;
 
-      // Alt+I — Toggle step through participants
+      // Alt+I - Toggle step-through participants
       case 73:
         e.preventDefault();
-        var st = document.getElementById('step_through');
-        if (st) { st.click(); }
+        $('#step_through').click();
         break;
 
-      // Alt+M — Toggle multiple participants checkbox
+      // Alt+M - Toggle multiple participants
       case 77:
         e.preventDefault();
-        var uid = document.getElementById('use_id');
-        if (uid) { uid.click(); }
+        $('#use_id').click();
         break;
     }
   }
 
-  // CTRL SHORTCUTS
-  if (e.ctrlKey) {
-    // Ctrl+S — Save menu (keep original)
-    if (e.which == 83) {
-      e.preventDefault();
-      var saveMenu = document.getElementById('save-dropdown-menu');
-      if (saveMenu) {
-        var isVisible = saveMenu.style.display !== 'none';
-        saveMenu.style.display = isVisible ? 'none' : 'block';
-        if (!isVisible && !saveMenuBound) {
-          try { Shiny.bindAll(saveMenu); } catch(err) {}
-          saveMenuBound = true;
-        }
-      }
-    }
+  // Ctrl+S - Save menu
+  if (e.ctrlKey && e.which === 83) {
+    e.preventDefault();
+    toggleToolbarMenu('#save-dropdown-menu', 'save');
   }
 
-  // ESCAPE — close all menus
-  if (e.which == 27) {
-    document.getElementById('save-dropdown-menu').style.display = 'none';
-    document.getElementById('accessibility-dropdown-menu').style.display = 'none';
-    var hm = document.getElementById('help-dropdown-menu');
-    if (hm) hm.style.display = 'none';
+  // Escape - close all menus
+  if (e.which === 27) {
+    closeAllToolbarMenus();
   }
 
-  // TAB — ensure focus visible (accessibility)
-  if (e.which == 9) {
+  // Tab - enable visible focus styles
+  if (e.which === 9) {
     document.body.classList.add('keyboard-nav');
   }
 });
@@ -144,125 +194,142 @@ $(document).on('mousedown', function() {
   document.body.classList.remove('keyboard-nav');
 });
 
+// Toolbar menu button clicks
 
-// Save dropdown toggle
 $(document).on('click', '#save-dropdown-btn', function(e) {
   e.preventDefault();
   e.stopPropagation();
-  var saveMenu = document.getElementById('save-dropdown-menu');
-  if (saveMenu) {
-    var isVisible = saveMenu.style.display !== 'none';
-    saveMenu.style.display = isVisible ? 'none' : 'block';
-    if (!isVisible && !saveMenuBound) {
-      try { Shiny.bindAll(saveMenu); } catch(err) {}
-      saveMenuBound = true;
-    }
-  }
-  var accMenu = document.getElementById('accessibility-dropdown-menu');
-  if (accMenu) accMenu.style.display = 'none';
-  var helpMenu = document.getElementById('help-dropdown-menu');
-  if (helpMenu) helpMenu.style.display = 'none';
-
+  toggleToolbarMenu('#save-dropdown-menu', 'save');
 });
 
+$(document).on('click', '#tools-dropdown-btn', function(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  toggleToolbarMenu('#tools-dropdown-menu', 'tools');
+});
 
-// Accessibility dropdown toggle
+$(document).on('click', '#help-dropdown-btn', function(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  toggleToolbarMenu('#help-dropdown-menu', 'help');
+});
+
 $(document).on('click', '#accessibility-dropdown-btn', function(e) {
   e.preventDefault();
   e.stopPropagation();
-  var accMenu = document.getElementById('accessibility-dropdown-menu');
-  if (accMenu) {
-    var isVisible = accMenu.style.display !== 'none';
-    accMenu.style.display = isVisible ? 'none' : 'block';
-  }
-  var saveMenu = document.getElementById('save-dropdown-menu');
-  if (saveMenu) saveMenu.style.display = 'none';
-  var helpMenu = document.getElementById('help-dropdown-menu');
-  if (helpMenu) helpMenu.style.display = 'none';
+  toggleToolbarMenu('#accessibility-dropdown-menu', 'accessibility');
 });
 
-// Handle clicks inside save menu
-$(document).on('click', '#save-dropdown-menu', function(e) {
-  var target = $(e.target);
-
-  // If clicking a download button or its child, let Shiny handle it
-  if (target.hasClass('shiny-download-link') || target.closest('.shiny-download-link').length) {
-    setTimeout(function() {
-      document.getElementById('save-dropdown-menu').style.display = 'none';
-    }, 500);
-    return;
+// Prevent dropdown menus from closing when interacting inside them
+$(document).on(
+  'click',
+  '#save-dropdown-menu, #tools-dropdown-menu, #help-dropdown-menu, #accessibility-dropdown-menu',
+  function(e) {
+    e.stopPropagation();
   }
+);
 
-  // For non-download areas, prevent menu from closing
-  e.stopPropagation();
+// Close menus when clicking outside
+$(document).on('click', function() {
+  closeAllToolbarMenus();
 });
 
-// Show loading state on save buttons
+// Save/download behavior
+
+$(document).on('click', '#save-dropdown-menu .shiny-download-link', function() {
+  setTimeout(function() {
+    $('#save-dropdown-menu').hide();
+  }, 500);
+});
+
 $(document).on('click', '.shiny-download-link', function() {
   var btn = $(this);
   var originalText = btn.html();
-  btn.html('Saving...').css('pointer-events', 'none').css('opacity', '0.6');
+
+  btn
+    .html('Saving...')
+    .css('pointer-events', 'none')
+    .css('opacity', '0.6');
+
   setTimeout(function() {
-    btn.html(originalText).css('pointer-events', '').css('opacity', '');
+    btn
+      .html(originalText)
+      .css('pointer-events', '')
+      .css('opacity', '');
   }, 4000);
 });
 
-// Prevent accessibility menu from closing when clicking inside
-$(document).on('click', '#accessibility-dropdown-menu', function(e) {
-  e.stopPropagation();
-});
+// Sidebar/dropdown toggles
 
-// Data conversion toggle
 $(document).on('click', '#conversion-toggle', function(e) {
   e.preventDefault();
   $('#conversion-dropdown').slideToggle(200);
   $('#conversion-caret').toggleClass('caret-up');
 });
 
-// Custom labels toggle
 $(document).on('click', '#labels-toggle', function(e) {
   e.preventDefault();
   $('#labels-dropdown').slideToggle(200);
   $('#labels-caret').toggleClass('caret-up');
 });
 
-// Subsetting toggle
 $(document).on('click', '#subset-toggle', function(e) {
   e.preventDefault();
   $('#subset-dropdown').slideToggle(150);
   $('#subset-caret').toggleClass('caret-up');
 });
 
-// Help dropdown toggle
-$(document).on('click', '#help-dropdown-btn', function(e) {
+// Tools menu actions
+
+$(document).on('click', '#open-converter-tool', function(e) {
   e.preventDefault();
   e.stopPropagation();
-  var helpMenu = document.getElementById('help-dropdown-menu');
-  if (helpMenu) {
-    var isVisible = helpMenu.style.display !== 'none';
-    helpMenu.style.display = isVisible ? 'none' : 'block';
-  }
-  // Close other menus
-  var saveMenu = document.getElementById('save-dropdown-menu');
-  var accMenu = document.getElementById('accessibility-dropdown-menu');
-  if (saveMenu) saveMenu.style.display = 'none';
-  if (accMenu) accMenu.style.display = 'none';
+  $('#tools-dropdown-menu').hide();
+  sendShinyEvent('open_converter_modal');
 });
 
-// Close dropdowns when clicking outside
-$(document).on('click', function(e) {
-  if (!$(e.target).closest('#save-dropdown-btn, #save-dropdown-menu').length) {
-    var saveMenu = document.getElementById('save-dropdown-menu');
-    if (saveMenu) saveMenu.style.display = 'none';
-  }
-  if (!$(e.target).closest('#accessibility-dropdown-btn, #accessibility-dropdown-menu').length) {
-    var accMenu = document.getElementById('accessibility-dropdown-menu');
-    if (accMenu) accMenu.style.display = 'none';
-  }
-  if (!$(e.target).closest('#help-dropdown-btn, #help-dropdown-menu').length) {
-    var helpMenu = document.getElementById('help-dropdown-menu');
-    if (helpMenu) helpMenu.style.display = 'none';
-  }
+$(document).on('click', '#open-structure-checker', function(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  $('#tools-dropdown-menu').hide();
+  sendShinyEvent('open_structure_checker');
+});
+
+$(document).on('click', '#open-template-tool', function(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  $('#tools-dropdown-menu').hide();
+  sendShinyEvent('open_template_tool');
+});
+
+$(document).on('click', '#open-missing-tool', function(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  $('#tools-dropdown-menu').hide();
+  sendShinyEvent('open_missing_tool');
+});
+
+$(document).on('click', '#open-participant-summary', function(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  $('#tools-dropdown-menu').hide();
+  sendShinyEvent('open_participant_summary');
+});
+
+$(document).on('click', '#open-event-summary', function(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  $('#tools-dropdown-menu').hide();
+  sendShinyEvent('open_event_summary');
+});
+
+// Help menu actions
+
+$(document).on('click', '#open-plot-presets', function(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  $('#help-dropdown-menu').hide();
+  sendShinyEvent('open_plot_presets');
 });
 
 // Listen for plotly zoom/pan - bind when plot renders, not on page load
@@ -285,7 +352,7 @@ $(document).on('shiny:value', function(e) {
 function doDownloadPlot(opts) {
   var plotEl = document.getElementById(opts.elementId);
   if (!plotEl) {
-    console.warn('DORA: plot element not found for export — is a plot visible?');
+    console.warn('DORA: plot element not found for export - is a plot visible?');
     return;
   }
   Plotly.downloadImage(plotEl, {

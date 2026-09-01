@@ -32,49 +32,228 @@ ui <- shiny::fluidPage(
            ),
 
            # accessibility
-           tags$div(id = "toolbar-accessibility", style = "flex: 1; text-align: center;",
-                    tags$div(class = "btn-group",
-                             tags$button(id = "accessibility-dropdown-btn", class = "btn btn-outline-info btn-sm accessibility-dropdown-btn",
-                                         type = "button",
-                                         `data-toggle` = "dropdown", `aria-haspopup` = "true", `aria-expanded` = "false",
-                                         title = "Accessibility Settings (Alt+A)",
-                                         icon("universal-access"), " Accessibility Settings ", tags$span(class = "caret")),
-                             tags$ul(id = "accessibility-dropdown-menu", class = "dropdown-menu dropdown-menu-left",
-                                     style = "display: none; padding: 15px; min-width: 600px; position: absolute; left: 50%;
-  transform: translateX(-50%); top:100%;z-index: 2000;",
-                                     tags$li(
-                                       fluidRow(
-                                         column(4,
-                                                tags$h6("Visual", style = "font-weight: bold; margin-bottom: 10px;"),
-                                                checkboxInput("high_contrast", "High Contrast", FALSE),
-                                                checkboxInput("large_text", "Large Text", FALSE)
-                                         ),
-                                         column(4,
-                                                tags$h6("Motor", style = "font-weight: bold; margin-bottom: 10px;"),
-                                                checkboxInput("large_targets", "Large Targets", FALSE),
-                                                checkboxInput("reduce_motion", "Reduce Motion", FALSE)
-                                         ),
-                                         column(4,
-                                                tags$h6("Cognitive", style = "font-weight: bold; margin-bottom: 10px;"),
-                                                checkboxInput("simplified_ui", "Simplified UI", FALSE),
-                                                checkboxInput("show_descriptions", "Extra Help", FALSE),
-                                                checkboxInput("confirm_actions", "Confirm Actions", FALSE)
-                                         )
-                                       ),
-                                       tags$hr(),
-                                       fluidRow(
-                                         column(6,
-                                                actionButton("preset_vision", "Vision Preset", class = "btn-sm btn-outline-primary", style = "width: 100%;"),
-                                                br(), br(),
-                                                actionButton("preset_motor", "Motor Preset", class = "btn-sm btn-outline-primary", style = "width: 100%;")
-                                         ),
-                                         column(6,
-                                                actionButton("reset_accessibility", "Reset All", class = "btn-sm btn-outline-secondary", style = "width: 100%;")
-                                         )
-                                       )
-                                     )
-                             )
-                    )
+           tags$div(
+             id = "toolbar-accessibility",
+             style = paste(
+               "flex: 1;",
+               "text-align: center;",
+               "overflow: visible;"
+             ),
+
+             tags$div(
+               class = "btn-group",
+               style = "position: relative;",
+
+               tags$button(
+                 id = "accessibility-dropdown-btn",
+                 class = "btn btn-outline-info btn-sm accessibility-dropdown-btn",
+                 type = "button",
+                 `aria-haspopup` = "true",
+                 `aria-expanded` = "false",
+                 title = "Accessibility Settings (Alt+A)",
+                 icon("universal-access"),
+                 " Accessibility Settings ",
+                 tags$span(class = "caret")
+               ),
+
+               tags$div(
+                 id = "accessibility-dropdown-menu",
+                 style = paste(
+                   "display: none;",
+                   "position: absolute;",
+                   "left: 50%;",
+                   "top: 100%;",
+                   "transform: translateX(-50%);",
+                   "width: 600px;",
+                   "max-width: calc(100vw - 32px);",
+                   "background: white;",
+                   "border: 1px solid #ddd;",
+                   "border-radius: 6px;",
+                   "box-shadow: 0 4px 12px rgba(0,0,0,0.15);",
+                   "z-index: 2000;",
+                   "padding: 15px;",
+                   "text-align: left;"
+                 ),
+
+                 fluidRow(
+                   column(
+                     4,
+                     tags$h6(
+                       "Visual",
+                       style = "font-weight: bold; margin-bottom: 10px;"
+                     ),
+                     checkboxInput(
+                       "high_contrast",
+                       "High Contrast",
+                       FALSE
+                     ),
+                     checkboxInput(
+                       "large_text",
+                       "Large Text",
+                       FALSE
+                     )
+                   ),
+
+                   column(
+                     4,
+                     tags$h6(
+                       "Motor",
+                       style = "font-weight: bold; margin-bottom: 10px;"
+                     ),
+                     checkboxInput(
+                       "large_targets",
+                       "Large Targets",
+                       FALSE
+                     ),
+                     checkboxInput(
+                       "reduce_motion",
+                       "Reduce Motion",
+                       FALSE
+                     )
+                   ),
+
+                   column(
+                     4,
+                     tags$h6(
+                       "Cognitive",
+                       style = "font-weight: bold; margin-bottom: 10px;"
+                     ),
+                     checkboxInput(
+                       "simplified_ui",
+                       "Simplified UI",
+                       FALSE
+                     ),
+                     checkboxInput(
+                       "show_descriptions",
+                       "Extra Help",
+                       FALSE
+                     ),
+                     checkboxInput(
+                       "confirm_actions",
+                       "Confirm Actions",
+                       FALSE
+                     )
+                   )
+                 ),
+
+                 tags$hr(),
+
+                 fluidRow(
+                   column(
+                     6,
+                     actionButton(
+                       "preset_vision",
+                       "Vision Preset",
+                       class = "btn-sm btn-outline-primary",
+                       style = "width: 100%;"
+                     ),
+                     br(),
+                     br(),
+                     actionButton(
+                       "preset_motor",
+                       "Motor Preset",
+                       class = "btn-sm btn-outline-primary",
+                       style = "width: 100%;"
+                     )
+                   ),
+
+                   column(
+                     6,
+                     actionButton(
+                       "reset_accessibility",
+                       "Reset All",
+                       class = "btn-sm btn-outline-secondary",
+                       style = "width: 100%;"
+                     )
+                   )
+                 )
+               )
+             )
+           ),
+
+           # Tools menu
+           tags$div(
+             style = "padding: 0px 10px 0px 0px;",
+             tags$div(
+               class = "btn-group",
+               tags$button(
+                 id = "tools-dropdown-btn",
+                 class = "btn btn-outline-secondary dropdown-toggle",
+                 type = "button",
+                 title = "Tools",
+                 icon("gear"), " Tools ", tags$span(class = "caret")
+               ),
+               tags$div(
+                 id = "tools-dropdown-menu",
+                 style = "display: none; position: absolute; right: 0; top: 100%;
+               min-width: 240px; background: white; border: 1px solid #ddd;
+               border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+               z-index: 2000; padding: 8px 0;",
+
+                 tags$a(
+                   id = "open-converter-tool",
+                   href = "#",
+                   style = "display: block; padding: 9px 16px; color: #333;
+           text-decoration: none; font-size: 14px;",
+                   icon("right-left"), " Data Converter"
+                 ),
+
+                 tags$hr(style = "margin: 4px 0;"),
+
+                 tags$a(
+                   id = "open-structure-checker",
+                   href = "#",
+                   style = "display: block; padding: 9px 16px; color: #333;
+           text-decoration: none; font-size: 14px;",
+                   icon("magnifying-glass-chart"), " Dataset Structure Checker"
+                 ),
+
+                 tags$a(
+                   id = "open-template-tool",
+                   href = "#",
+                   style = "display: block; padding: 9px 16px; color: #333;
+           text-decoration: none; font-size: 14px;",
+                   icon("file-csv"), " Download Data Templates"
+                 ),
+
+                 tags$a(
+                   id = "open-missing-tool",
+                   href = "#",
+                   style = "display: block; padding: 9px 16px; color: #333;
+           text-decoration: none; font-size: 14px;",
+                   icon("circle-exclamation"), " Missing Data Inspector"
+                 ),
+
+                 tags$a(
+                   id = "open-participant-summary",
+                   href = "#",
+                   style = "display: block; padding: 9px 16px; color: #333;
+           text-decoration: none; font-size: 14px;",
+                   icon("users"), " Participant / Visit Summary"
+                 ),
+
+                 tags$a(
+                   id = "open-event-summary",
+                   href = "#",
+                   style = "display: block; padding: 9px 16px; color: #333;
+           text-decoration: none; font-size: 14px;",
+                   icon("bars-progress"), " Event Summary"
+                 ),
+
+                 tags$hr(style = "margin: 4px 0;"),
+
+                 tags$a(
+                   id = "download_quality_report",
+                   href = "",
+                   class = "shiny-download-link",
+                   download = "",
+                   target = "_blank",
+                   style = "display: block; padding: 9px 16px; color: #333;
+           text-decoration: none; font-size: 14px;",
+                   icon("file-lines"), " Download Data Quality Report"
+                 )
+               )
+             )
            ),
 
            # Save menu
@@ -168,6 +347,14 @@ ui <- shiny::fluidPage(
                       min-width: 340px; background: white; border: 1px solid #ddd;
                       border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
                       z-index: 2000; padding: 8px 0;",
+                                      tags$a(
+                                        id = "open-plot-presets",
+                                        href = "#",
+                                        style = "display: block; padding: 8px 0px 8px 26px; color: #333;
+           text-decoration: none; font-size: 14px;",
+                                        icon("wand-magic-sparkles"), " Help me choose a plot..."
+                                      ),
+                                      tags$hr(style = "margin: 4px 0;"),
                                       tags$a(href = "https://forms.gle/G3MxUSmnZzFqC5Yj8",
                                              target = "_blank",
                                              style = "display: block; padding: 8px 0px 8px 26px; color: #333;
@@ -397,15 +584,6 @@ ui <- shiny::fluidPage(
             FALSE
           )
         ),
-        hr(),
-        actionButton(
-          "update_plot",
-          "Update Plot",
-          class = "btn-primary",
-          icon = icon("rotate"),
-          style = "width: 100%; margin-bottom: 10px;",
-          title = "Update the plot using the current selections"
-        ),
         # Custom labels dropdown
         tags$div(class = "panel panel-default", style = "margin-bottom: 10px;",
                  tags$div(class = "panel-heading", style = "padding: 8px 12px; background-color: #f8f9fa;",
@@ -419,19 +597,37 @@ ui <- shiny::fluidPage(
                           textInput("custom_xlab", "X-Axis Label", placeholder = "Variable name"),
                           textInput("custom_ylab", "Y-Axis Label", placeholder = "Variable name"),
                           conditionalPanel(
-                            condition = "input.viz_mode == 'Raw time series' || input.viz_mode == 'Event + Continuous Overlay'",
-                            textInput("custom_legend", "Legend Title", placeholder = "Auto-generated")
+                            condition = paste0(
+                              "input.viz_mode == 'Raw time series' || ",
+                              "input.viz_mode == 'Event + Continuous Overlay' || ",
+                              "input.viz_mode == 'Event durations (barcode)'"
+                            ),
+                            textInput(
+                              "custom_legend",
+                              "Legend Title",
+                              placeholder = "Auto-generated"
+                            )
                           ),
-                          uiOutput("legend_labels_ui"),
-                          actionButton(
-                            "update_labels",
-                            "Apply Labels",
-                            class = "btn-outline-primary btn-sm",
-                            icon = icon("check"),
-                            style = "width: 100%; margin-top: 8px;",
-                            title = "Apply custom labels to the current plot"
-                          )
+                          uiOutput("legend_labels_ui")
+                          # actionButton(
+                          #   "update_labels",
+                          #   "Apply Labels",
+                          #   class = "btn-outline-primary btn-sm",
+                          #   icon = icon("check"),
+                          #   style = "width: 100%; margin-top: 8px;",
+                          #   title = "Apply custom labels to the current plot"
+                          # )
                  ) ),
+        hr(),
+        actionButton(
+          "update_plot",
+          "Update Plot",
+          class = "btn-primary",
+          icon = icon("rotate"),
+          style = "width: 100%; margin-bottom: 10px;",
+          title = "Update the plot using the current selections"
+        ),
+
 
         hr(),
         h4("Second Plot (Optional)"),
@@ -454,6 +650,16 @@ ui <- shiny::fluidPage(
                  textOutput("plot_description")),
 
         shinycssloaders::withSpinner(plotly::plotlyOutput("plot", height = "550px")),
+        tags$div(
+          style = "margin-top: 10px; margin-bottom: 12px;",
+          actionButton(
+            "explain_plot",
+            "Explain this plot",
+            class = "btn-outline-info btn-sm",
+            icon = icon("circle-info"),
+            title = "Explain what the current plot is showing"
+          )
+        ),
 
         conditionalPanel(
           condition = "input.show_second_plot == true",
@@ -464,7 +670,7 @@ ui <- shiny::fluidPage(
           shinycssloaders::withSpinner(plotly::plotlyOutput("plot2", height = "400px"))
         ),
         uiOutput("stats_section")
-      ),
+      )
 
 
     )
@@ -490,14 +696,110 @@ server <- function(input, output, session){
 
   label_values <- reactiveValues()
 
+  # label observers - maybe need to be moved down?
+  observe({
+    vars <- current_label_vars()
+
+    if (is.null(vars) || length(vars) == 0) {
+      return()
+    }
+
+    for (v in vars) {
+      key <- make_label_id(v)
+      val <- input[[key]]
+
+      if (!is.null(val)) {
+        label_values[[key]] <- trimws(val)
+      }
+    }
+  })
+
   `%||%` <- function(x, y) {
     if (is.null(x)) y else x
   }
+
+  observe({
+    categories <- current_event_categories()
+
+    if (is.null(categories) || nrow(categories) == 0) {
+      return()
+    }
+
+    for (i in seq_len(nrow(categories))) {
+      variable_name <- categories$variable[i]
+      category_value <- categories$category[i]
+
+      key <- make_event_category_label_id(
+        variable = variable_name,
+        category = category_value
+      )
+
+      val <- input[[key]]
+
+      if (!is.null(val)) {
+        label_values[[key]] <- trimws(val)
+      }
+    }
+  })
 
   make_label_id <- function(var) {
     paste0("legend_label_", gsub("[^a-zA-Z0-9]", "_", var))
   }
 
+  make_event_category_label_id <- function(variable, category) {
+    make_label_id(
+      paste(
+        "event_category",
+        variable,
+        category,
+        sep = "__"
+      )
+    )
+  }
+
+  get_event_category_label <- function(variable, category) {
+    key <- make_event_category_label_id(
+      variable = variable,
+      category = category
+    )
+
+    current_val <- input[[key]]
+    stored_val  <- label_values[[key]]
+
+    if (isTruthy(current_val)) {
+      return(current_val)
+    }
+
+    if (isTruthy(stored_val)) {
+      return(stored_val)
+    }
+
+    as.character(category)
+  }
+
+  get_event_trace_label <- function(variable, category) {
+    variable_key <- make_label_id(variable)
+
+    current_variable <- input[[variable_key]]
+    stored_variable  <- label_values[[variable_key]]
+
+    variable_label <- if (isTruthy(current_variable)) {
+      current_variable
+    } else if (isTruthy(stored_variable)) {
+      stored_variable
+    } else {
+      variable
+    }
+
+    category_label <- get_event_category_label(
+      variable = variable,
+      category = category
+    )
+
+    paste(variable_label, "-", category_label)
+  }
+
+  #get_variable_label
   get_var_label <- function(var) {
     key <- make_label_id(var)
 
@@ -512,7 +814,368 @@ server <- function(input, output, session){
       return(stored_val)
     }
 
-    paste("-", var)
+    paste("", var) #anchor
+  }
+
+  add_legend_target <- function(legend_traces, target) {
+    if (length(legend_traces) == 0) {
+      legend_traces[[1]] <- target
+      return(legend_traces)
+    }
+
+    existing_keys <- vapply(
+      legend_traces,
+      function(x) x$legend_key,
+      character(1)
+    )
+
+    if (!target$legend_key %in% existing_keys) {
+      legend_traces[[length(legend_traces) + 1]] <- target
+    }
+
+    legend_traces
+  }
+
+  get_barcode_target_label <- function(
+    variable,
+    category,
+    is_binary,
+    show_variable = FALSE
+  ) {
+    if (isTRUE(is_binary)) {
+      return(get_var_label(variable))
+    }
+
+    category_label <- get_event_category_label(
+      variable = variable,
+      category = category
+    )
+
+    if (isTRUE(show_variable)) {
+      variable_label <- get_var_label(variable)
+
+      # get_var_label() default begins with "-" that marker when building a combined label.
+      if (identical(variable_label, paste("-", variable))) {
+        variable_label <- variable
+      }
+
+      return(
+        paste(variable_label, "-", category_label)
+      )
+    }
+
+    category_label
+  }
+
+
+  # START anchor
+  # Convert supported time variables to numeric values
+  .numeric_event_time <- function(time) {
+    if (is.numeric(time)) {
+      return(as.numeric(time))
+    }
+
+    if (inherits(time, c("POSIXct", "POSIXlt", "Date", "difftime"))) {
+      return(as.numeric(time))
+    }
+
+    converted <- suppressWarnings(
+      as.numeric(as.character(time))
+    )
+
+    failed <- !is.na(time) & is.na(converted)
+
+    if (any(failed)) {
+      stop(
+        "`time` must be numeric, Date/POSIX time, difftime, ",
+        "or coercible to numeric."
+      )
+    }
+
+    converted
+  }
+
+
+  # Extract event onset times
+  .extract_abney_onsets <- function(
+    vector,
+    event,
+    event_format = c("continuous", "interval"),
+    time = NULL
+  ) {
+    event_format <- match.arg(event_format)
+
+    if (length(event) != 1L) {
+      stop("`event` must contain exactly one event value.")
+    }
+
+    if (!is.null(time) && length(time) != length(vector)) {
+      stop("`vector` and `time` must have the same length.")
+    }
+
+    event_character <- as.character(event)
+    vector_character <- as.character(vector)
+
+    if (is.null(time)) {
+      time_numeric <- seq_along(vector)
+    } else {
+      time_numeric <- .numeric_event_time(time)
+    }
+
+    if (event_format == "interval") {
+      # Each matching row already represents one event episode.
+      keep <- !is.na(vector) &
+        !is.na(time_numeric) &
+        vector_character == event_character
+
+      # Do not use unique(): simultaneous events should be retained.
+      return(sort(time_numeric[keep]))
+    }
+
+    # Continuous sampled-state format
+    valid_time <- which(!is.na(time_numeric))
+
+    if (length(valid_time) == 0L) {
+      return(numeric(0))
+    }
+
+    # Detect runs in chronological order
+    ordered_rows <- valid_time[
+      order(time_numeric[valid_time], valid_time)
+    ]
+
+    ordered_vector <- vector[ordered_rows]
+    ordered_time <- time_numeric[ordered_rows]
+
+    active <- !is.na(ordered_vector) &
+      as.character(ordered_vector) == event_character
+
+    # An onset occurs when the current sample is active and
+    # the immediately preceding sample was not active.
+    previously_active <- c(FALSE, head(active, -1L))
+    onset <- active & !previously_active
+
+    ordered_time[onset]
+  }
+
+
+  # Calculate the Abney et al. burstiness statistic from event times
+  .abney_burstiness_from_times <- function(event_times) {
+    event_times <- .numeric_event_time(event_times)
+    event_times <- sort(event_times[is.finite(event_times)])
+
+    # R's sd() requires at least two IEIs, meaning at least
+    # three event onsets.
+    if (length(event_times) < 3L) {
+      return(NA_real_)
+    }
+
+    interevent_intervals <- diff(event_times)
+
+    mean_iei <- mean(interevent_intervals)
+    sd_iei <- stats::sd(interevent_intervals)
+
+    denominator <- sd_iei + mean_iei
+
+    if (
+      !is.finite(mean_iei) ||
+      !is.finite(sd_iei) ||
+      !is.finite(denominator) ||
+      denominator == 0
+    ) {
+      return(NA_real_)
+    }
+
+    (sd_iei - mean_iei) / denominator
+  }
+
+
+  #' Calculate burstiness following Abney et al. (2018)
+  #'
+  #' For continuous sampled data, consecutive occurrences of an event
+  #' are collapsed into a single onset. For interval data, each matching
+  #' row is treated as one event and its start time is used as the onset.
+  #'
+  #' @param vector Event or state vector.
+  #' @param event_format Either `"continuous"` or `"interval"`.
+  #' @param time Optional time vector for continuous data and required
+  #'   start-time vector for interval data. If omitted for continuous
+  #'   data, row positions are used.
+  #' @param event Event value to analyze. Defaults to `1`.
+  #'
+  #' @return Numeric burstiness estimate or `NA_real_`.
+  #' @export
+  get_burstiness <- function(
+    vector,
+    event_format = c("continuous", "interval"),
+    time = NULL,
+    event = 1
+  ) {
+    event_format <- match.arg(event_format)
+
+    if (event_format == "interval" && is.null(time)) {
+      stop(
+        "`time` must provide the interval start times when ",
+        "`event_format = 'interval'`."
+      )
+    }
+
+    event_times <- .extract_abney_onsets(
+      vector = vector,
+      event = event,
+      event_format = event_format,
+      time = time
+    )
+
+    .abney_burstiness_from_times(event_times)
+  }
+
+  get_burstiness <- function(
+    vector,
+    event_format = c("continuous", "interval"),
+    time = NULL,
+    event = 1,
+    method = c("finite", "original")
+  ) {
+    event_format <- match.arg(event_format)
+    method <- match.arg(method)
+
+    event_times <- .extract_event_times(
+      vector = vector,
+      event = event,
+      event_format = event_format,
+      time = time
+    )
+
+    .burstiness_from_times(
+      event_times = event_times,
+      method = method
+    )
+  }
+
+
+  #' Calculate Abney et al. burstiness by event category
+  #'
+  #' @param vector Binary or categorical event vector.
+  #' @param event_format Either `"continuous"` or `"interval"`.
+  #' @param time Optional timestamp vector for continuous data and
+  #'   required onset-time vector for interval data.
+  #' @param events Optional values to analyze. If omitted, binary data
+  #'   analyze event 1; categorical data analyze all observed values.
+  #'
+  #' @return Data frame containing one row per event category.
+  #' @export
+  get_burstiness_by_event <- function(
+    vector,
+    event_format = c("continuous", "interval"),
+    time = NULL,
+    events = NULL
+  ) {
+    event_format <- match.arg(event_format)
+
+    observed <- unique(
+      as.character(vector[!is.na(vector)])
+    )
+
+    is_binary <- length(observed) == 0L ||
+      all(observed %in% c("0", "1"))
+
+    if (is.null(events)) {
+      if (is_binary) {
+        events <- "1"
+      } else {
+        events <- observed
+      }
+    }
+
+    events <- as.character(events)
+
+    results <- lapply(events, function(event_value) {
+      event_times <- .extract_abney_onsets(
+        vector = vector,
+        event = event_value,
+        event_format = event_format,
+        time = time
+      )
+
+      interevent_intervals <- diff(event_times)
+
+      data.frame(
+        event = event_value,
+        n_events = length(event_times),
+        n_interevent_intervals = length(interevent_intervals),
+        mean_iei = if (length(interevent_intervals) > 0L) {
+          mean(interevent_intervals)
+        } else {
+          NA_real_
+        },
+        sd_iei = if (length(interevent_intervals) > 1L) {
+          stats::sd(interevent_intervals)
+        } else {
+          NA_real_
+        },
+        burstiness = .abney_burstiness_from_times(event_times),
+        stringsAsFactors = FALSE
+      )
+    })
+
+    if (length(results) == 0L) {
+      return(
+        data.frame(
+          event = character(0),
+          n_events = integer(0),
+          n_interevent_intervals = integer(0),
+          mean_iei = numeric(0),
+          sd_iei = numeric(0),
+          burstiness = numeric(0)
+        )
+      )
+    }
+
+    do.call(rbind, results)
+  }
+  #END anchor
+  get_app_burstiness <- function(sub_df, event_variable) {
+    event_values <- sub_df[[event_variable]]
+
+    if (identical(input$event_format, "interval")) {
+      req(input$int_start)
+
+      get_burstiness_by_event(
+        vector = event_values,
+        event_format = "interval",
+        time = sub_df[[input$int_start]]
+      )
+    } else {
+      # Ideally use the same time variable displayed on the x-axis.
+      # If rows are guaranteed to be evenly spaced, time = NULL is
+      # mathematically sufficient.
+      get_burstiness_by_event(
+        vector = event_values,
+        event_format = "continuous",
+        time = NULL
+      )
+    }
+  }
+
+  is_binary_event_vector <- function(x) {
+    observed <- unique(as.character(x[!is.na(x)]))
+
+    length(observed) == 0L ||
+      all(observed %in% c("0", "1"))
+  }
+
+
+  format_burstiness_value <- function(value, n_events) {
+    if (!is.na(value)) {
+      return(sprintf("%.4f", value))
+    }
+
+    if (n_events < 3L) {
+      return("NA (<3 event episodes)")
+    }
+
+    "NA"
   }
 
   get_event_counts <- function(vals) {
@@ -533,14 +1196,348 @@ server <- function(input, output, session){
     list(n_events = n_events, total_duration = total_dur)
   }
 
-  # Store main plot second plot and stats for saving
+  check_plot_cancelled <- function(my_request, my_cancel) {
+    if (!identical(my_request, plot_request_id()) ||
+        !identical(my_cancel, plot_cancel_id()) ||
+        !identical(input$sidebar_state, "viz")) {
+      validate(need(FALSE, "Plot canceled. Update the plot to build a new one."))
+    }
+  }
+
+  make_plot_explanation <- function() {
+    req(input$viz_mode)
+
+    mode <- input$viz_mode
+
+    if (mode == "Raw time series") {
+      return(tagList(
+        tags$p("This plot shows one or more continuous variables changing over time."),
+        tags$ul(
+          tags$li(paste("X-axis:", input$xvar %||% "selected time variable")),
+          tags$li(paste("Y-variable(s):", paste(input$yvar %||% "selected signal variable(s)", collapse = ", "))),
+          tags$li("Use this plot to inspect trends, noise, outliers, missing segments, and participant-level differences.")
+        ),
+        tags$p(tags$strong("What to check next: "), "Look for flat lines, sudden jumps, gaps, and participants whose signal scale differs from others.")
+      ))
+    }
+
+    if (mode == "Event + Continuous Overlay") {
+      return(tagList(
+        tags$p("This plot overlays event periods on top of continuous signal traces."),
+        tags$ul(
+          tags$li(paste("Time variable:", input$time_overlay %||% "selected time variable")),
+          tags$li(paste("Continuous signal(s):", paste(input$signal_overlay %||% "selected signal(s)", collapse = ", "))),
+          tags$li(paste("Event variable(s):", paste(input$event_overlay %||% "selected event(s)", collapse = ", "))),
+          tags$li("Use this plot to see whether signal changes appear to occur before, during, or after events.")
+        ),
+        tags$p(tags$strong("What to check next: "), "If event rectangles do not appear, verify that the event variable is coded as 0/1 or has non-zero active values.")
+      ))
+    }
+
+    if (mode == "Event durations (barcode)") {
+      return(tagList(
+        tags$p("This plot shows when event states are active and how long they last."),
+        tags$ul(
+          tags$li(paste("Time variable:", input$barcode_time %||% "selected time variable")),
+          tags$li(paste("Event variable(s):", paste(input$barcode_var %||% "selected event variable(s)", collapse = ", "))),
+          tags$li("Stacked rows help compare event timing across variables or participants."),
+          tags$li("Overlaid mode is useful when you want to see whether events co-occur.")
+        ),
+        tags$p(tags$strong("What to check next: "), "Use the Event Summary tool to count bouts and total active duration.")
+      ))
+    }
+
+    if (mode == "Event-locked average") {
+      return(tagList(
+        tags$p("This plot summarizes the average signal trajectory around event onsets."),
+        tags$ul(
+          tags$li(paste("Event variable:", input$event_var %||% "selected event")),
+          tags$li(paste("Signal variable:", input$signal_var %||% "selected signal")),
+          tags$li(paste("Window:", input$pre, "seconds before to", input$post, "seconds after each event")),
+          tags$li("Use this plot to ask whether the signal systematically changes around events.")
+        ),
+        tags$p(tags$strong("What to check next: "), "Check how many events are averaged. A small number of events can make the average unstable.")
+      ))
+    }
+
+    if (mode == "Event-locked single event") {
+      return(tagList(
+        tags$p("This plot shows the signal around one event at a time."),
+        tags$ul(
+          tags$li(paste("Event variable:", input$event_var %||% "selected event")),
+          tags$li(paste("Signal variable:", input$signal_var %||% "selected signal")),
+          tags$li("Use Previous Event and Next Event to step through individual episodes."),
+          tags$li("This view is useful for checking whether event-locked averages are driven by a few unusual events.")
+        ),
+        tags$p(tags$strong("What to check next: "), "Compare several individual events before relying on the average.")
+      ))
+    }
+
+    tagList(tags$p("Select a visualization mode to see an explanation."))
+  }
+
+  safe_pct <- function(x, digits = 1) {
+    if (is.na(x) || is.nan(x) || is.infinite(x)) return(NA_real_)
+    round(100 * x, digits)
+  }
+
+  guess_visit_vars <- function(df) {
+    names(df)[grepl("visit|session|wave|occasion|timepoint|assessment", names(df), ignore.case = TRUE)]
+  }
+
+  guess_event_vars <- function(df) {
+    names(df)[sapply(df, function(x) {
+      clean <- na.omit(x)
+      if (length(clean) == 0) return(FALSE)
+
+      is.factor(x) ||
+        is.character(x) ||
+        is.logical(x) ||
+        (is.numeric(x) && length(unique(clean)) <= 20)
+    })]
+  }
+
+  guess_numeric_signal_vars <- function(df) {
+    names(df)[sapply(df, is.numeric)]
+  }
+
+  guess_time_vars <- function(df) {
+    names(df)[sapply(df, function(x) {
+      inherits(x, c("POSIXct", "POSIXt", "Date")) ||
+        is.numeric(x)
+    })]
+  }
+
+  make_missing_summary <- function(df) {
+    data.frame(
+      Variable = names(df),
+      Class = sapply(df, function(x) paste(class(x), collapse = "/")),
+      Missing_N = sapply(df, function(x) sum(is.na(x))),
+      Missing_Percent = sapply(df, function(x) safe_pct(mean(is.na(x)))),
+      Unique_N = sapply(df, function(x) length(unique(na.omit(x)))),
+      stringsAsFactors = FALSE
+    )
+  }
+
+  make_time_summary <- function(df, time_var = NULL, id_var = NULL) {
+    if (is.null(time_var) || !time_var %in% names(df)) {
+      return(data.frame(Note = "No time variable selected or detected."))
+    }
+
+    if (!is.null(id_var) && id_var %in% names(df)) {
+      groups <- split(df, as.character(df[[id_var]]))
+    } else {
+      groups <- list("All Data" = df)
+    }
+
+    out <- lapply(names(groups), function(id) {
+      sub <- groups[[id]]
+      t <- sub[[time_var]]
+
+      if (inherits(t, c("POSIXct", "POSIXt", "Date"))) {
+        time_min <- suppressWarnings(min(t, na.rm = TRUE))
+        time_max <- suppressWarnings(max(t, na.rm = TRUE))
+        duration <- as.numeric(difftime(time_max, time_min, units = "secs"))
+      } else {
+        t_num <- suppressWarnings(as.numeric(t))
+        time_min <- suppressWarnings(min(t_num, na.rm = TRUE))
+        time_max <- suppressWarnings(max(t_num, na.rm = TRUE))
+        duration <- time_max - time_min
+      }
+
+      dt <- suppressWarnings(diff(sort(unique(as.numeric(t)))))
+      dt <- dt[is.finite(dt) & dt > 0]
+
+      data.frame(
+        ID = id,
+        Rows = nrow(sub),
+        Time_Min = as.character(time_min),
+        Time_Max = as.character(time_max),
+        Duration = round(duration, 4),
+        Median_Time_Step = if (length(dt) > 0) round(median(dt), 4) else NA_real_,
+        Irregular_Time_Steps = if (length(dt) > 1) length(unique(round(dt, 6))) > 1 else NA,
+        stringsAsFactors = FALSE
+      )
+    })
+
+    do.call(rbind, out)
+  }
+
+  make_participant_summary <- function(df, id_var = NULL, time_var = NULL) {
+    visit_vars <- guess_visit_vars(df)
+
+    if (!is.null(id_var) && id_var %in% names(df)) {
+      groups <- split(df, as.character(df[[id_var]]))
+    } else {
+      groups <- list("All Data" = df)
+    }
+
+    out <- lapply(names(groups), function(id) {
+      sub <- groups[[id]]
+
+      visits <- if (length(visit_vars) > 0) {
+        paste(
+          sapply(visit_vars, function(v) {
+            paste0(v, ": ", length(unique(na.omit(sub[[v]]))))
+          }),
+          collapse = "; "
+        )
+      } else {
+        "No visit/session-like variable detected"
+      }
+
+      if (!is.null(time_var) && time_var %in% names(sub)) {
+        t <- sub[[time_var]]
+
+        if (inherits(t, c("POSIXct", "POSIXt", "Date"))) {
+          start <- suppressWarnings(min(t, na.rm = TRUE))
+          end <- suppressWarnings(max(t, na.rm = TRUE))
+          duration <- as.numeric(difftime(end, start, units = "secs"))
+        } else {
+          t_num <- suppressWarnings(as.numeric(t))
+          start <- suppressWarnings(min(t_num, na.rm = TRUE))
+          end <- suppressWarnings(max(t_num, na.rm = TRUE))
+          duration <- end - start
+        }
+      } else {
+        start <- NA
+        end <- NA
+        duration <- NA
+      }
+
+      data.frame(
+        ID = id,
+        Rows = nrow(sub),
+        Start_Time = as.character(start),
+        End_Time = as.character(end),
+        Duration = round(duration, 4),
+        Visit_Summary = visits,
+        stringsAsFactors = FALSE
+      )
+    })
+
+    do.call(rbind, out)
+  }
+
+  make_event_summary <- function(df, event_vars, id_var = NULL) {
+    if (is.null(event_vars) || length(event_vars) == 0) {
+      return(data.frame(Note = "No event-like variables selected or detected."))
+    }
+
+    if (!is.null(id_var) && id_var %in% names(df)) {
+      groups <- split(df, as.character(df[[id_var]]))
+    } else {
+      groups <- list("All Data" = df)
+    }
+
+    rows <- list()
+
+    for (id in names(groups)) {
+      sub <- groups[[id]]
+
+      for (v in event_vars) {
+        if (!v %in% names(sub)) next
+
+        counts <- get_event_counts(sub[[v]])
+        active <- sub[[v]]
+        active_clean <- active[!is.na(active)]
+        percent_active <- if (length(active_clean) > 0) {
+          is_active <- active_clean != 0 & active_clean != "0"
+          safe_pct(mean(is_active))
+        } else {
+          NA_real_
+        }
+
+        rows[[length(rows) + 1]] <- data.frame(
+          ID = id,
+          Variable = v,
+          Event_Count = counts$n_events,
+          Total_Active_Rows = counts$total_duration,
+          Percent_Active = percent_active,
+          Unique_Values = paste(head(unique(na.omit(as.character(sub[[v]]))), 8), collapse = ", "),
+          stringsAsFactors = FALSE
+        )
+      }
+    }
+
+    if (length(rows) == 0) {
+      return(data.frame(Note = "No event summaries could be generated."))
+    }
+
+    do.call(rbind, rows)
+  }
+
+  make_data_quality_report <- function(df, input, diagnostics_obj) {
+    time_vars <- diagnostics_obj$time
+    numeric_vars <- diagnostics_obj$numeric
+    binary_vars <- diagnostics_obj$binary
+    event_like_vars <- guess_event_vars(df)
+    visit_vars <- guess_visit_vars(df)
+
+    id_var <- if (isTRUE(input$use_id) && isTruthy(input$idvar)) input$idvar else NULL
+    time_var <- if (length(time_vars) > 0) time_vars[1] else NULL
+
+    missing_summary <- make_missing_summary(df)
+    participant_summary <- make_participant_summary(df, id_var = id_var, time_var = time_var)
+    event_summary <- make_event_summary(df, event_vars = head(event_like_vars, 10), id_var = id_var)
+    time_summary <- make_time_summary(df, time_var = time_var, id_var = id_var)
+
+    warnings <- c()
+
+    if (length(time_vars) == 0) warnings <- c(warnings, "- No obvious time variable detected.")
+    if (length(numeric_vars) == 0) warnings <- c(warnings, "- No numeric signal variables detected.")
+    if (length(event_like_vars) == 0) warnings <- c(warnings, "- No event-like variables detected.")
+
+    high_missing <- missing_summary$Variable[missing_summary$Missing_Percent >= 25]
+    if (length(high_missing) > 0) {
+      warnings <- c(warnings, paste0("- Variables with at least 25% missing values: ", paste(high_missing, collapse = ", ")))
+    }
+
+    if (length(warnings) == 0) {
+      warnings <- "- No major issues detected by the basic checks."
+    }
+
+    c(
+      "DATA QUALITY REPORT",
+      paste("Generated:", Sys.time()),
+      "",
+      "DATASET OVERVIEW",
+      paste("Rows:", nrow(df)),
+      paste("Columns:", ncol(df)),
+      paste("Participant ID variable:", ifelse(is.null(id_var), "None selected", id_var)),
+      paste("Likely time variables:", ifelse(length(time_vars) > 0, paste(time_vars, collapse = ", "), "None detected")),
+      paste("Likely numeric signals:", ifelse(length(numeric_vars) > 0, paste(numeric_vars, collapse = ", "), "None detected")),
+      paste("Likely binary event variables:", ifelse(length(binary_vars) > 0, paste(binary_vars, collapse = ", "), "None detected")),
+      paste("Likely event/categorical variables:", ifelse(length(event_like_vars) > 0, paste(event_like_vars, collapse = ", "), "None detected")),
+      paste("Likely visit/session variables:", ifelse(length(visit_vars) > 0, paste(visit_vars, collapse = ", "), "None detected")),
+      "",
+      "WARNINGS / THINGS TO CHECK",
+      warnings,
+      "",
+      "MISSING DATA SUMMARY",
+      capture.output(print(missing_summary, row.names = FALSE)),
+      "",
+      "TIME SUMMARY",
+      capture.output(print(time_summary, row.names = FALSE)),
+      "",
+      "PARTICIPANT / VISIT SUMMARY",
+      capture.output(print(participant_summary, row.names = FALSE)),
+      "",
+      "EVENT SUMMARY",
+      capture.output(print(event_summary, row.names = FALSE)),
+      "",
+      "NOTES",
+      "- This report is a screening aid. It does not guarantee that the data are correctly structured for every analysis.",
+      "- Check time units, participant IDs, event coding, and missing values before interpreting plots."
+    )
+  }
+
   plot_store  <- reactiveVal(NULL)
   plot2_store <- reactiveVal(NULL)
   stats_store <- reactiveVal(NULL)
   data_converted <- reactiveVal(NULL)
   conversion_done <- reactiveVal(FALSE)
   last_data_source <- reactiveVal("demo")
-  # Track demo choice separately from the input
   active_demo <- reactiveVal(NULL)
 
   data_reactive <- reactive({
@@ -565,6 +1562,92 @@ server <- function(input, output, session){
     unique(vars)
   })
 
+  event_label_vars <- reactive({
+    req(input$viz_mode)
+
+    vars <- switch(
+      input$viz_mode,
+      "Event + Continuous Overlay" = input$event_overlay,
+      "Event durations (barcode)" = input$barcode_var,
+      "Event-Locked Single" = input$event_var,
+      "Event-Locked Average" = input$event_var,
+      NULL
+    )
+
+    unique(vars)
+  })
+
+  current_event_categories <- reactive({
+    df <- data_reactive()
+    vars <- event_label_vars() #ach
+
+    if (
+      is.null(df) ||
+      is.null(vars) ||
+      length(vars) == 0
+    ) {
+      return(data.frame(
+        variable = character(),
+        category = character(),
+        stringsAsFactors = FALSE
+      ))
+    }
+
+    vars <- vars[vars %in% names(df)]
+
+    if (length(vars) == 0) {
+      return(data.frame(
+        variable = character(),
+        category = character(),
+        stringsAsFactors = FALSE
+      ))
+    }
+
+    category_list <- lapply(vars, function(v) {
+      x <- df[[v]]
+
+      observed <- as.character(x[!is.na(x)])
+
+      if (length(observed) == 0) {
+        return(NULL)
+      }
+
+      # Preserve factor-level ordering where possible
+      if (is.factor(x)) {
+        categories <- levels(x)
+        categories <- categories[categories %in% observed]
+      } else {
+        categories <- unique(observed)
+      }
+
+      # Standard binary event columns do not need category labels:
+      # the existing variable label describes the event represented by 1.
+      is_standard_binary <- all(categories %in% c("0", "1"))
+
+      if (is_standard_binary) {
+        return(NULL)
+      }
+
+      data.frame(
+        variable = rep(v, length(categories)),
+        category = categories,
+        stringsAsFactors = FALSE
+      )
+    })
+
+    category_list <- Filter(Negate(is.null), category_list)
+
+    if (length(category_list) == 0) {
+      return(data.frame(
+        variable = character(),
+        category = character(),
+        stringsAsFactors = FALSE
+      ))
+    }
+
+    do.call(rbind, category_list)
+  })
+
   observeEvent(input$open_demo_modal, {
     showModal(modalDialog(
       title = "Select a Demo Dataset",
@@ -576,7 +1659,7 @@ server <- function(input, output, session){
       tags$div(
         style = "cursor: pointer; padding: 12px; border: 1px solid #ddd;
                border-radius: 6px; margin-bottom: 10px; background: white;",
-        onclick = "Shiny.setInputValue('demo_selected', 'demo1', {priority: 'event'})",
+        onclick = "Shiny.setInputValue('demo_selected', 'object_play', {priority: 'event'})",
         tags$strong("Infant Object Play"),
         tags$p(style = "margin: 4px 0 0 0; color: #666; font-size: 0.9em;",
                "Event-coded object interactions")
@@ -584,7 +1667,7 @@ server <- function(input, output, session){
       tags$div(
         style = "cursor: pointer; padding: 12px; border: 1px solid #ddd;
                border-radius: 6px; margin-bottom: 10px; background: white;",
-        onclick = "Shiny.setInputValue('demo_selected', 'demo2', {priority: 'event'})",
+        onclick = "Shiny.setInputValue('demo_selected', 'biobehavioral_interactions', {priority: 'event'})",
         tags$strong("Mother-Child Interactions"),
         tags$p(style = "margin: 4px 0 0 0; color: #666; font-size: 0.9em;",
                "Mixed continuous and event data from dyadic observations")
@@ -592,7 +1675,7 @@ server <- function(input, output, session){
       tags$div(
         style = "cursor: pointer; padding: 12px; border: 1px solid #ddd;
                border-radius: 6px; margin-bottom: 10px; background: white;",
-        onclick = "Shiny.setInputValue('demo_selected', 'demo3', {priority: 'event'})",
+        onclick = "Shiny.setInputValue('demo_selected', 'music_bouts', {priority: 'event'})",
         tags$strong("Daily Music Bouts"),
         tags$p(style = "margin: 4px 0 0 0; color: #666; font-size: 0.9em;",
                "Event-coded music listening episodes across the day")
@@ -600,7 +1683,7 @@ server <- function(input, output, session){
       tags$div(
         style = "cursor: pointer; padding: 12px; border: 1px solid #ddd;
                border-radius: 6px; margin-bottom: 10px; background: white;",
-        onclick = "Shiny.setInputValue('demo_selected', 'demo4', {priority: 'event'})",
+        onclick = "Shiny.setInputValue('demo_selected', 'cradling_diaries', {priority: 'event'})",
         tags$strong("Gahvora Cradling Diaries"),
         tags$p(style = "margin: 4px 0 0 0; color: #666; font-size: 0.9em;",
                "Gahvora cradle use across the day")
@@ -625,6 +1708,384 @@ server <- function(input, output, session){
     conversion_done(FALSE)
   }, ignoreInit = TRUE)
 
+  observeEvent(input$open_structure_checker, {
+    df <- data_reactive()
+
+    if (is.null(df) || nrow(df) == 0) {
+      showNotification("Please upload a file or select a demo dataset first.", type = "error", duration = 6)
+      return()
+    }
+
+    d <- diagnostics()
+
+    time_vars <- d$time
+    numeric_vars <- d$numeric
+    binary_vars <- d$binary
+    event_like_vars <- guess_event_vars(df)
+    visit_vars <- guess_visit_vars(df)
+
+    id_msg <- if (isTRUE(input$use_id) && isTruthy(input$idvar)) {
+      paste0("Participant ID variable: ", input$idvar,
+             " (", length(unique(na.omit(df[[input$idvar]]))), " unique IDs)")
+    } else {
+      "No participant ID variable is currently selected."
+    }
+
+    warning_rows <- list()
+
+    if (length(time_vars) == 0) {
+      warning_rows[[length(warning_rows) + 1]] <- "No obvious time variable detected."
+    }
+
+    if (length(numeric_vars) == 0) {
+      warning_rows[[length(warning_rows) + 1]] <- "No numeric signal variables detected."
+    }
+
+    if (length(event_like_vars) == 0) {
+      warning_rows[[length(warning_rows) + 1]] <- "No event-like or categorical variables detected."
+    }
+
+    missing_summary <- make_missing_summary(df)
+    high_missing <- missing_summary$Variable[missing_summary$Missing_Percent >= 25]
+
+    if (length(high_missing) > 0) {
+      warning_rows[[length(warning_rows) + 1]] <- paste(
+        "Variables with at least 25% missing values:",
+        paste(high_missing, collapse = ", ")
+      )
+    }
+
+    warnings_text <- if (length(warning_rows) == 0) {
+      tags$p(style = "color: #198754;", icon("circle-check"), " No major structure issues detected.")
+    } else {
+      tags$ul(lapply(warning_rows, tags$li))
+    }
+
+    showModal(modalDialog(
+      title = tagList(icon("magnifying-glass-chart"), " Dataset Structure Checker"),
+      size = "l",
+      easyClose = TRUE,
+      footer = modalButton("Close"),
+
+      tags$p(
+        style = "color: #666;",
+        "This is different from Peek at data: instead of showing raw rows, it summarizes what the app thinks your dataset contains and flags issues that may affect visualization."
+      ),
+
+      tags$div(
+        style = "padding: 12px; background: #f8f9fa; border-left: 4px solid #0d6efd; border-radius: 4px; margin-bottom: 12px;",
+        tags$strong("Dataset overview"),
+        tags$ul(
+          tags$li(paste("Rows:", nrow(df))),
+          tags$li(paste("Columns:", ncol(df))),
+          tags$li(id_msg),
+          tags$li(paste("Likely time variables:", ifelse(length(time_vars) > 0, paste(time_vars, collapse = ", "), "None detected"))),
+          tags$li(paste("Likely numeric signals:", ifelse(length(numeric_vars) > 0, paste(numeric_vars, collapse = ", "), "None detected"))),
+          tags$li(paste("Likely binary event variables:", ifelse(length(binary_vars) > 0, paste(binary_vars, collapse = ", "), "None detected"))),
+          tags$li(paste("Likely event/categorical variables:", ifelse(length(event_like_vars) > 0, paste(event_like_vars, collapse = ", "), "None detected"))),
+          tags$li(paste("Likely visit/session variables:", ifelse(length(visit_vars) > 0, paste(visit_vars, collapse = ", "), "None detected")))
+        )
+      ),
+
+      tags$h4("Warnings / things to check"),
+      warnings_text,
+
+      tags$h4("Missingness summary"),
+      tags$div(
+        style = "max-height: 250px; overflow-y: auto;",
+        tableOutput("structure_missing_table")
+      )
+    ))
+  }, ignoreInit = TRUE)
+
+  output$structure_missing_table <- renderTable({
+    df <- data_reactive()
+    req(df)
+    make_missing_summary(df)
+  })
+
+  observeEvent(input$open_missing_tool, {
+    df <- data_reactive()
+
+    if (is.null(df) || nrow(df) == 0) {
+      showNotification("Please upload a file or select a demo dataset first.", type = "error", duration = 6)
+      return()
+    }
+
+    showModal(modalDialog(
+      title = tagList(icon("circle-exclamation"), " Missing Data Inspector"),
+      size = "l",
+      easyClose = TRUE,
+      footer = modalButton("Close"),
+
+      tags$p(
+        style = "color: #666;",
+        "This summarizes missing values by variable. High missingness can lead to blank plots, broken event summaries, or misleading averages."
+      ),
+
+      tags$div(
+        style = "max-height: 420px; overflow-y: auto;",
+        tableOutput("missing_summary_table")
+      )
+    ))
+  }, ignoreInit = TRUE)
+
+  output$missing_summary_table <- renderTable({
+    df <- data_reactive()
+    req(df)
+
+    ms <- make_missing_summary(df)
+    ms[order(-ms$Missing_Percent, ms$Variable), ]
+  })
+
+
+  observeEvent(input$open_participant_summary, {
+    df <- data_reactive()
+
+    if (is.null(df) || nrow(df) == 0) {
+      showNotification("Please upload a file or select a demo dataset first.", type = "error", duration = 6)
+      return()
+    }
+
+    showModal(modalDialog(
+      title = tagList(icon("users"), " Participant / Visit Summary"),
+      size = "l",
+      easyClose = TRUE,
+      footer = modalButton("Close"),
+
+      tags$p(
+        style = "color: #666;",
+        "This summarizes how many rows, time points, and detected visits/sessions each participant contributes."
+      ),
+
+      tags$div(
+        style = "max-height: 420px; overflow-y: auto;",
+        tableOutput("participant_summary_table")
+      )
+    ))
+  }, ignoreInit = TRUE)
+
+  output$participant_summary_table <- renderTable({
+    df <- data_reactive()
+    req(df)
+
+    d <- diagnostics()
+    time_var <- if (length(d$time) > 0) d$time[1] else NULL
+    id_var <- if (isTRUE(input$use_id) && isTruthy(input$idvar)) input$idvar else NULL
+
+    make_participant_summary(df, id_var = id_var, time_var = time_var)
+  })
+
+  observeEvent(input$open_event_summary, {
+    df <- data_reactive()
+
+    if (is.null(df) || nrow(df) == 0) {
+      showNotification("Please upload a file or select a demo dataset first.", type = "error", duration = 6)
+      return()
+    }
+
+    showModal(modalDialog(
+      title = tagList(icon("bars-progress"), " Event Summary"),
+      size = "l",
+      easyClose = TRUE,
+      footer = modalButton("Close"),
+
+      tags$p(
+        style = "color: #666;",
+        "This summarizes event-like variables using counts, total active rows, and percent active. It is useful before choosing a barcode, overlay, or event-locked plot."
+      ),
+
+      uiOutput("event_summary_selector"),
+
+      tags$div(
+        style = "max-height: 420px; overflow-y: auto;",
+        tableOutput("event_summary_table")
+      )
+    ))
+  }, ignoreInit = TRUE)
+
+  output$event_summary_selector <- renderUI({
+    df <- data_reactive()
+    req(df)
+
+    event_vars <- guess_event_vars(df)
+
+    selectizeInput(
+      "event_summary_vars",
+      "Event-like variables to summarize",
+      choices = event_vars,
+      selected = head(event_vars, 5),
+      multiple = TRUE,
+      options = list(
+        plugins = list("remove_button"),
+        placeholder = "Select event variables"
+      )
+    )
+  })
+
+  output$event_summary_table <- renderTable({
+    df <- data_reactive()
+    req(df)
+
+    id_var <- if (isTRUE(input$use_id) && isTruthy(input$idvar)) input$idvar else NULL
+    event_vars <- input$event_summary_vars
+
+    make_event_summary(df, event_vars = event_vars, id_var = id_var)
+  })
+
+  observeEvent(input$open_plot_presets, {
+    showModal(modalDialog(
+      title = tagList(icon("wand-magic-sparkles"), " Help Me Choose a Plot"),
+      size = "m",
+      easyClose = TRUE,
+      footer = modalButton("Close"),
+
+      tags$p(
+        style = "color: #666;",
+        "Choose a preset based on what you are trying to understand. The app will select a reasonable visualization mode and starting variables when possible."
+      ),
+
+      tags$div(style = "margin-bottom: 8px;",
+               actionButton("preset_first_look", "First look at my data",
+                            class = "btn-outline-primary", style = "width: 100%;")),
+
+      tags$div(style = "margin-bottom: 8px;",
+               actionButton("preset_event_timing", "Show event timing / durations",
+                            class = "btn-outline-primary", style = "width: 100%;")),
+
+      tags$div(style = "margin-bottom: 8px;",
+               actionButton("preset_overlay", "Overlay events on continuous signals",
+                            class = "btn-outline-primary", style = "width: 100%;")),
+
+      tags$div(style = "margin-bottom: 8px;",
+               actionButton("preset_event_locked", "Look at signal response around events",
+                            class = "btn-outline-primary", style = "width: 100%;")),
+
+      tags$div(style = "margin-bottom: 8px;",
+               actionButton("preset_compare_people", "Compare several participants",
+                            class = "btn-outline-primary", style = "width: 100%;"))
+    ))
+  }, ignoreInit = TRUE)
+
+
+  choose_first <- function(x) {
+    if (length(x) > 0) x[1] else NULL
+  }
+
+  choose_first_n <- function(x, n = 2) {
+    if (length(x) > 0) head(x, n) else NULL
+  }
+
+  observeEvent(input$preset_first_look, {
+    df <- data_reactive()
+    req(df)
+
+    d <- diagnostics()
+
+    if (length(d$numeric) > 0) {
+      updateSelectInput(session, "viz_mode", selected = "Raw time series")
+      updateSelectizeInput(session, "xvar", selected = choose_first(d$time))
+      updateSelectizeInput(session, "yvar", selected = choose_first_n(d$numeric, 2))
+      updateSelectInput(session, "plot_type", selected = "Line")
+    } else {
+      event_vars <- guess_event_vars(df)
+      updateSelectInput(session, "viz_mode", selected = "Event durations (barcode)")
+      updateSelectizeInput(session, "barcode_time", selected = choose_first(d$time))
+      updateSelectizeInput(session, "barcode_var", selected = choose_first_n(event_vars, 3))
+      updateRadioButtons(session, "barcode_layout", selected = "stacked")
+    }
+
+    removeModal()
+    request_plot_redraw()
+  }, ignoreInit = TRUE)
+
+  observeEvent(input$preset_event_timing, {
+    df <- data_reactive()
+    req(df)
+
+    d <- diagnostics()
+    event_vars <- guess_event_vars(df)
+
+    updateSelectInput(session, "viz_mode", selected = "Event durations (barcode)")
+    updateSelectizeInput(session, "barcode_time", selected = choose_first(d$time))
+    updateSelectizeInput(session, "barcode_var", selected = choose_first_n(event_vars, 4))
+    updateRadioButtons(session, "barcode_layout", selected = "stacked")
+
+    removeModal()
+    request_plot_redraw()
+  }, ignoreInit = TRUE)
+
+  observeEvent(input$preset_overlay, {
+    df <- data_reactive()
+    req(df)
+
+    d <- diagnostics()
+    event_vars <- guess_event_vars(df)
+
+    if (length(d$numeric) == 0 || length(event_vars) == 0) {
+      showNotification("This preset needs at least one continuous signal and one event-like variable.", type = "error", duration = 6)
+      return()
+    }
+
+    updateSelectInput(session, "viz_mode", selected = "Event + Continuous Overlay")
+    updateSelectizeInput(session, "time_overlay", selected = choose_first(d$time))
+    updateSelectizeInput(session, "signal_overlay", selected = choose_first_n(d$numeric, 2))
+    updateSelectizeInput(session, "event_overlay", selected = choose_first_n(event_vars, 2))
+
+    removeModal()
+    request_plot_redraw()
+  }, ignoreInit = TRUE)
+
+  observeEvent(input$preset_event_locked, {
+    df <- data_reactive()
+    req(df)
+
+    d <- diagnostics()
+    event_vars <- d$binary
+
+    if (length(d$numeric) == 0 || length(event_vars) == 0) {
+      showNotification("This preset needs at least one numeric signal and one binary event variable.", type = "error", duration = 6)
+      return()
+    }
+
+    updateSelectInput(session, "viz_mode", selected = "Event-locked average")
+    updateSelectizeInput(session, "event_var", selected = choose_first(event_vars))
+    updateSelectizeInput(session, "signal_var", selected = choose_first(d$numeric))
+    updateNumericInput(session, "pre", value = 5)
+    updateNumericInput(session, "post", value = 5)
+
+    removeModal()
+    request_plot_redraw()
+  }, ignoreInit = TRUE)
+
+  observeEvent(input$preset_compare_people, {
+    df <- data_reactive()
+    req(df)
+
+    d <- diagnostics()
+
+    if (!isTRUE(input$use_id) || !isTruthy(input$idvar)) {
+      showNotification("To compare participants, first turn on Multiple participants and choose an ID variable.", type = "error", duration = 7)
+      return()
+    }
+
+    ids <- all_ids()
+    selected <- head(ids, min(5, length(ids)))
+
+    updateCheckboxInput(session, "step_through", value = FALSE)
+    updateSelectizeInput(session, "selected_ids", selected = selected)
+
+    if (length(d$numeric) > 0) {
+      updateSelectInput(session, "viz_mode", selected = "Raw time series")
+      updateSelectizeInput(session, "xvar", selected = choose_first(d$time))
+      updateSelectizeInput(session, "yvar", selected = choose_first_n(d$numeric, 1))
+      updateSelectInput(session, "plot_type", selected = "Line")
+    }
+
+    removeModal()
+    request_plot_redraw()
+  }, ignoreInit = TRUE)
+
 
   # Store both original and converted data
   # cradling_diaries
@@ -633,10 +2094,10 @@ server <- function(input, output, session){
     df <- if (last_data_source() == "demo") {
       req(!is.null(active_demo()))
       demo_file <- switch(active_demo(),
-                          "demo1" = system.file("extdata", "object_play.csv", package = "dora"),
-                          "demo2" = system.file("extdata", "biobehavioral_interactions.csv", package = "dora"),
-                          "demo3" = system.file("extdata", "music_bouts.csv", package = "dora"),
-                          "demo4" = system.file("extdata", "cradling_diaries.csv", package = "dora")
+                          "object_play" = system.file("extdata", "object_play.csv", package = "dora"),
+                          "biobehavioral_interactions" = system.file("extdata", "biobehavioral_interactions.csv", package = "dora"),
+                          "music_bouts" = system.file("extdata", "music_bouts.csv", package = "dora"),
+                          "cradling_diaries" = system.file("extdata", "cradling_diaries.csv", package = "dora")
       )
       if (demo_file == "") stop("Demo file not found. Try reinstalling the package.")
       readr::read_csv(demo_file, show_col_types = FALSE)
@@ -674,6 +2135,27 @@ server <- function(input, output, session){
     }
     df
   })
+
+  observeEvent(input$explain_plot, {
+    if (is.null(plot_store())) {
+      showNotification("Generate a plot first, then click Explain this plot.", type = "error", duration = 6)
+      return()
+    }
+
+    showModal(modalDialog(
+      title = tagList(icon("circle-info"), " Explain This Plot"),
+      size = "m",
+      easyClose = TRUE,
+      footer = modalButton("Close"),
+
+      tags$div(
+        style = "padding: 10px; background: #f8f9fa; border-left: 4px solid #0d6efd; border-radius: 4px; margin-bottom: 12px;",
+        textOutput("plot_description")
+      ),
+
+      make_plot_explanation()
+    ))
+  }, ignoreInit = TRUE)
 
   output$hasData <- renderText({
     has <- (last_data_source() == "demo" && !is.null(active_demo())) ||
@@ -750,9 +2232,9 @@ server <- function(input, output, session){
   # Helper function to get plot margins based on accessibility settings
   get_plot_margins <- function() {
     if (isTRUE(accessibility$large_text)) {
-      list(t = 80, b = 60, l = 60, r = 40)
+      list(t = 80, b = 60, l = 50, r = 40)
     } else {
-      list(t = 50, b = 50, l = 50, r = 40)
+      list(t = 50, b = 50, l = 40, r = 40)
     }
   }
 
@@ -793,22 +2275,22 @@ server <- function(input, output, session){
     list(min = x_min, max = x_max)
   })
 
-  observe({
-    vars <- current_label_vars()
-
-    if (is.null(vars) || length(vars) == 0) {
-      return()
-    }
-
-    for (v in vars) {
-      key <- make_label_id(v)
-      val <- input[[key]]
-
-      if (!is.null(val)) {
-        label_values[[key]] <- val
-      }
-    }
-  }) # get labels - is this the right location?
+  # observe({
+  #   vars <- current_label_vars()
+  #
+  #   if (is.null(vars) || length(vars) == 0) {
+  #     return()
+  #   }
+  #
+  #   for (v in vars) {
+  #     key <- make_label_id(v)
+  #     val <- input[[key]]
+  #
+  #     if (!is.null(val)) {
+  #       label_values[[key]] <- val
+  #     }
+  #   }
+  # }) # get labels - is this the right location?
 
   # Update CSS based on accessibility settings
   observe({
@@ -950,34 +2432,71 @@ server <- function(input, output, session){
 
   #check here
   observeEvent(input$back_data, {
+    cancel_current_plot()
+
     updateTextInput(session, "sidebar_state", value = "data")
     updateCheckboxInput(session, "show_second_plot", value = FALSE)
+
     plot_store(NULL)
     plot2_store(NULL)
     stats_store(NULL)
+
+    updateTextInput(session,"sidebar_state",value="data")
+  })
+
+  output$interval_ui <- renderUI({
+    tagList(
+      selectInput("int_start", "Start Time Column", choices = names(data_reactive())),
+      radioButtons("interval_mode", "End format:",
+                   choices = c("End Time" = "end", "Duration" = "duration")),
+      conditionalPanel(
+        condition = "input.interval_mode == 'end'",
+        selectInput("int_end", "End Time Column", choices = names(data_reactive()))
+      ),
+      conditionalPanel(
+        condition = "input.interval_mode == 'duration'",
+        selectInput("int_dur", "Duration Column", choices = names(data_reactive()))
+      ),
+      selectInput("int_val", "Event/Categorical Column(s)", choices = names(data_reactive()), multiple = TRUE)
+    )
   })
 
   observeEvent(input$demo_selected, {
     active_demo(input$demo_selected)
     last_data_source("demo")
+    cancel_current_plot()
     data_converted(NULL)
     conversion_done(FALSE)
+
+    plot_store(NULL)
+    plot2_store(NULL)
+    stats_store(NULL)
     removeModal()
 
     demo_types <- switch(input$demo_selected,
-                         "demo1" = list(continuous = FALSE, events = TRUE, multiple = TRUE),
-                         "demo2" = list(continuous = TRUE,  events = TRUE, multiple = TRUE),
-                         "demo3" = list(continuous = FALSE, events = TRUE, multiple = TRUE),
-                         "demo4" = list(continuous = FALSE, events = TRUE, multiple = TRUE)
+                         "object_play" = list(continuous = FALSE, events = TRUE, multiple = TRUE, int_cont = "interval", start = names(data_reactive())[3], end = "offset"),
+                         "biobehavioral_interactions" = list(continuous = TRUE,  events = TRUE, multiple = TRUE, int_cont = "continuous"),
+                         "music_bouts" = list(continuous = FALSE, events = TRUE, multiple = TRUE, int_cont = "interval"),
+                         "cradling_diaries" = list(continuous = FALSE, events = TRUE, multiple = TRUE, int_cont = "interval")
     )
     updateCheckboxInput(session, "has_continuous", value = demo_types$continuous)
     updateCheckboxInput(session, "has_events",     value = demo_types$events)
     updateCheckboxInput(session, "use_id",     value = demo_types$multiple)
+    updateRadioButtons(session, "event_format", selected = demo_types$int_cont)
+    updateSelectInput(session, "int_start", selected = demo_types$start)
   }, ignoreInit = TRUE)
 
   observeEvent(input$file, {
+    cancel_current_plot()
+
+    active_demo(NULL)
+    last_data_source("file")
     data_converted(NULL)
     conversion_done(FALSE)
+
+    plot_store(NULL)
+    plot2_store(NULL)
+    stats_store(NULL)
     #updateCheckboxInput(session, "is_interval_data", value = FALSE)
   }, ignoreInit = TRUE)
 
@@ -992,10 +2511,10 @@ server <- function(input, output, session){
       paste("Currently using:", input$file$name)
     } else if (last_data_source() == "demo" && !is.null(active_demo())) {
       label <- switch(active_demo(),
-                      "demo1" = "Infant Object Play",
-                      "demo2" = "Mother-Child Interactions",
-                      "demo3" = "Daily Music Bouts",
-                      "demo4" = "Gahvora Cradling Diaries"
+                      "object_play" = "Infant Object Play",
+                      "biobehavioral_interactions" = "Mother-Child Interactions",
+                      "music_bouts" = "Daily Music Bouts",
+                      "cradling_diaries" = "Gahvora Cradling Diaries"
       )
       paste("Currently using:", label)
     } else {
@@ -1085,9 +2604,7 @@ server <- function(input, output, session){
   )
   do_convert <- function() {
     shinyjs::disable("convert_data")
-    on.exit({
-      shinyjs::enable("convert_data")
-    })
+
     shinyjs::disable("convert_data")
     id <- showNotification("Converting data, please wait...", duration = NULL, type = "message")
     on.exit({
@@ -1217,23 +2734,6 @@ server <- function(input, output, session){
     })
   } #end of converter
 
-  output$interval_ui <- renderUI({
-    tagList(
-      selectInput("int_start", "Start Time Column", choices = names(data_reactive())),
-      radioButtons("interval_mode", "End format:",
-                   choices = c("End Time" = "end", "Duration" = "duration")),
-      conditionalPanel(
-        condition = "input.interval_mode == 'end'",
-        selectInput("int_end", "End Time Column", choices = names(data_reactive()))
-      ),
-      conditionalPanel(
-        condition = "input.interval_mode == 'duration'",
-        selectInput("int_dur", "Duration Column", choices = names(data_reactive()))
-      ),
-      selectInput("int_val", "Event/Categorical Column(s)", choices = names(data_reactive()), multiple = TRUE)
-    )
-  })
-
   observeEvent(data_reactive(), {
     selected_time(NULL)
     selected_signal(NULL)
@@ -1253,11 +2753,27 @@ server <- function(input, output, session){
       )
     ))
   })
+
+  output$download_quality_report <- downloadHandler(
+    filename = function() {
+      paste0("data_quality_report_", Sys.Date(), ".txt")
+    },
+    content = function(file) {
+      df <- data_reactive()
+
+      if (is.null(df) || nrow(df) == 0) {
+        writeLines("No data available. Please upload a file or select a demo dataset first.", file)
+        return()
+      }
+
+      d <- diagnostics()
+      report <- make_data_quality_report(df, input, d)
+      writeLines(report, file)
+    }
+  )
+
   # Convert interval data
   observeEvent(input$convert_data, {
-    if (!show_confirmation("This will convert your interval data to continuous format. Continue?", "convert")) {
-      return()
-    }
     do_convert()
   })
 
@@ -1296,6 +2812,67 @@ server <- function(input, output, session){
       )
     )
   })
+
+  observeEvent(input$open_converter_modal, {
+    if (is.null(data_reactive()) || nrow(data_reactive()) == 0) {
+      showNotification(
+        "Please upload a file or select a demo dataset before using the data converter.",
+        type = "error",
+        duration = 6
+      )
+      return()
+    }
+
+    showModal(
+      modalDialog(
+        title = tagList(icon("right-left"), " Data Converter"),
+        size = "l",
+        easyClose = TRUE,
+
+        tags$p(
+          style = "font-size: 0.92em; color: #666; margin-bottom: 12px;",
+          "Use this tool if your data has one row per event with start/end times or durations.
+         The converter expands it into a continuous time-series format that can be downloaded
+         and reused later."
+        ),
+
+        tags$div(
+          style = "padding: 12px; background-color: #f8f9fa; border-left: 4px solid #17a2b8;
+                 border-radius: 4px; margin-bottom: 14px;",
+          tags$strong("Tip: "),
+          "You do not need to convert your data every time you use the app. Convert once, download the converted file,
+         then upload that converted file directly in the future."
+        ),
+
+        uiOutput("interval_conversion_ui"),
+
+        tags$hr(),
+
+        textOutput("conversion_status"),
+
+        conditionalPanel(
+          condition = "output.conversionDone",
+          downloadButton(
+            "download_converted",
+            "Download Converted Data (.csv)",
+            class = "btn-sm btn-outline-success",
+            style = "margin-top: 8px;"
+          )
+        ),
+
+        footer = tagList(
+          modalButton("Close"),
+          actionButton(
+            "convert_data",
+            "Convert to Continuous Format",
+            class = "btn-success",
+            icon = icon("right-left"),
+            title = "Convert data"
+          )
+        )
+      )
+    )
+  }, ignoreInit = TRUE)
 
   output$subset_values_ui <- renderUI({
     df <- data_reactive()
@@ -1343,10 +2920,15 @@ server <- function(input, output, session){
   selected_signal <- reactiveVal(NULL)
   selected_event <- reactiveVal(NULL)
 
-  plot_redraw_trigger <- reactiveVal(0)
+  plot_request_id <- reactiveVal(0)
+  plot_cancel_id  <- reactiveVal(0)
 
   request_plot_redraw <- function() {
-    plot_redraw_trigger(plot_redraw_trigger() + 1)
+    plot_request_id(plot_request_id() + 1)
+  }
+
+  cancel_current_plot <- function() {
+    plot_cancel_id(plot_cancel_id() + 1)
   }
 
   observeEvent(input$viz_mode, {
@@ -1358,20 +2940,24 @@ server <- function(input, output, session){
   observeEvent(input$next_id,{
     id_index(ifelse(id_index() == length(all_ids()), 1, id_index() + 1))
     event_index(1)
+    cancel_current_plot()
     request_plot_redraw()
   })
   observeEvent(input$prev_id,{
     id_index(ifelse(id_index() == 1, length(all_ids()), id_index() - 1))
     event_index(1) # anchor - i don't remember what this is doing lol
+    cancel_current_plot()
     request_plot_redraw()
   })
 
   observeEvent(input$next_event,{
     event_index(event_index() + 1)
+    cancel_current_plot()
     request_plot_redraw()
   })
   observeEvent(input$prev_event,{
     event_index(max(1, event_index() - 1))
+    cancel_current_plot()
     request_plot_redraw()
   })
 
@@ -1524,29 +3110,147 @@ server <- function(input, output, session){
   # Label UI
   output$legend_labels_ui <- renderUI({
     vars <- current_label_vars()
+    category_df <- current_event_categories()
 
-    if (is.null(vars) || length(vars) <= 1) {
+    has_variable_labels <- !is.null(vars) && length(vars) > 1
+    has_category_labels <- nrow(category_df) > 0
+
+    if (!has_variable_labels && !has_category_labels) {
       return(NULL)
     }
 
-    tagList(
-      tags$hr(style = "margin: 8px 0;"),
-      tags$p(
-        style = "font-weight: 500; margin-bottom: 4px; font-size: 0.9em;",
-        "Variable Labels in Legend"
-      ),
-      lapply(vars, function(v) {
+    sections <- list()
+
+    # Labels for different variables/traces
+    if (has_variable_labels) {
+      variable_inputs <- lapply(vars, function(v) {
         key <- make_label_id(v)
 
         textInput(
           inputId = key,
-          label = tags$span(style = "font-size: 0.85em; color: #555;", v),
+          label = tags$span(
+            style = "font-size: 0.85em; color: #555;",
+            v
+          ),
           value = isolate(label_values[[key]] %||% ""),
           placeholder = v
         )
       })
-    )
+
+      sections <- append(
+        sections,
+        list(
+          tags$div(
+            tags$hr(style = "margin: 8px 0;"),
+            tags$p(
+              style = paste(
+                "font-weight: 500;",
+                "margin-bottom: 4px;",
+                "font-size: 0.9em;"
+              ),
+              "Variable Labels in Legend"
+            ),
+            variable_inputs
+          )
+        )
+      )
+    }
+
+    # Labels for categories within event variables
+    if (has_category_labels) {
+      category_variable_order <- unique(category_df$variable)
+
+      category_sections <- lapply(
+        category_variable_order,
+        function(variable_name) {
+          rows <- category_df[
+            category_df$variable == variable_name,
+            ,
+            drop = FALSE
+          ]
+
+          category_inputs <- lapply(
+            seq_len(nrow(rows)),
+            function(i) {
+              category_value <- rows$category[i]
+
+              key <- make_event_category_label_id(
+                variable = variable_name,
+                category = category_value
+              )
+
+              textInput(
+                inputId = key,
+                label = tags$span(
+                  style = "font-size: 0.85em; color: #555;",
+                  category_value
+                ),
+                value = isolate(
+                  label_values[[key]] %||% ""
+                ),
+                placeholder = category_value
+              )
+            }
+          )
+
+          tags$div(
+            style = paste(
+              "margin-bottom: 10px;",
+              "padding: 8px;",
+              "border: 1px solid #e5e5e5;",
+              "border-radius: 4px;"
+            ),
+
+            tags$p(
+              style = paste(
+                "font-weight: 600;",
+                "margin: 0 0 6px 0;",
+                "font-size: 0.9em;"
+              ),
+              variable_name
+            ),
+
+            category_inputs
+          )
+        }
+      )
+
+      sections <- append(
+        sections,
+        list(
+          tags$div(
+            tags$hr(style = "margin: 8px 0;"),
+
+            tags$p(
+              style = paste(
+                "font-weight: 500;",
+                "margin-bottom: 4px;",
+                "font-size: 0.9em;"
+              ),
+              "Event Category Labels"
+            ),
+
+            tags$p(
+              style = paste(
+                "font-size: 0.8em;",
+                "color: #666;",
+                "margin-bottom: 8px;"
+              ),
+              paste(
+                "Rename the values used for event types.",
+                "Leave a field blank to retain its original value."
+              )
+            ),
+
+            category_sections
+          )
+        )
+      )
+    }
+
+    do.call(tagList, sections)
   })
+
   outputOptions(output, "legend_labels_ui", suspendWhenHidden = FALSE)
 
   output$second_plot_ui <- renderUI({
@@ -1704,18 +3408,20 @@ server <- function(input, output, session){
   observeEvent(input$signal_overlay, { selected_signal(input$signal_overlay) }, ignoreNULL = TRUE)
   observeEvent(input$event_var, { selected_event(input$event_var) }, ignoreNULL = TRUE)
   observeEvent(input$event_overlay, { selected_event(input$event_overlay) }, ignoreNULL = TRUE)
-  observeEvent(input$barcode_var, { selected_event(input$barcode_var) }, ignoreNULL = TRUE) #anchor - change?
-  observeEvent(input$update_plot, { request_plot_redraw()}, ignoreInit = TRUE)
-  observeEvent(input$update_labels, { request_plot_redraw()}, ignoreInit = TRUE)
+  observeEvent(input$barcode_var, { selected_event(input$barcode_var) }, ignoreNULL = TRUE)
+  observeEvent(input$update_plot, {
+    cancel_current_plot()
+    request_plot_redraw()}, ignoreInit = TRUE)
 
-  selected_yvars <- reactive(input$yvar) |>
-    debounce(50)
+  # observeEvent(input$update_labels, {
+  #   cancel_current_plot()
+  #   request_plot_redraw()}, ignoreInit = TRUE)
 
   selected_events <- reactive(input$event_overlay) |>
-    debounce(50)
+    debounce(0)
 
   selected_barcodes <- reactive(input$barcode_var) |>
-    debounce(50) #anchor
+    debounce(0)
 
 
   subset_data <- reactive({
@@ -1791,16 +3497,20 @@ server <- function(input, output, session){
 
     req(input$sidebar_state == "viz")
 
-    plot_redraw_trigger()
+    plot_request_id()
 
     validate(
-      need(plot_redraw_trigger() > 0, "Choose your plotting options, then click Update Plot.")
+      need(plot_request_id() > 0, "Choose your plotting options, then click Update Plot.")
     )
+
+    my_request <- plot_request_id()
+    my_cancel  <- plot_cancel_id()
 
     isolate({
 
-      t0 <- Sys.time()
+      check_plot_cancelled(my_request, my_cancel)
 
+      t0 <- Sys.time()
       on.exit({
         print(Sys.time() - t0)
       })
@@ -1813,6 +3523,7 @@ server <- function(input, output, session){
         need(data_reactive(), "Please upload data to create visualizations"),
         need(nrow(data_reactive()) > 0, "The uploaded data appears to be empty")
       )
+      check_plot_cancelled(my_request, my_cancel)
 
       req(input$viz_mode)
 
@@ -1826,6 +3537,7 @@ server <- function(input, output, session){
 
     # Raw time series
     if (input$viz_mode == "Raw time series") {
+      check_plot_cancelled(my_request, my_cancel)
       req(input$xvar, input$yvar)
       is_single_view <- !isTRUE(input$use_id) || isTRUE(input$step_through)
       time_vec <- filtered_data()[[input$xvar]]
@@ -1841,11 +3553,13 @@ server <- function(input, output, session){
 
       if (is_single_view) {
         for (var in input$yvar) {
+          check_plot_cancelled(my_request, my_cancel)
           p <- plotly::add_trace(p, x = filtered_data()[[input$xvar]], y = filtered_data()[[var]], name = get_var_label(var),
                                  type = "scatter", mode = ifelse(input$plot_type == "Line", "lines", "markers"))
         }
       } else {
         for (var in input$yvar) {
+          check_plot_cancelled(my_request, my_cancel)
           p <- plotly::add_trace(p, x = filtered_data()[[input$xvar]], y = filtered_data()[[var]],
                                  name = paste(filtered_data()[[input$idvar]], get_var_label(var)),
                                  type = "scatter", mode = ifelse(input$plot_type == "Line", "lines", "markers"))
@@ -1872,6 +3586,7 @@ server <- function(input, output, session){
 
     # Event + Continuous Overlay
     if (input$viz_mode == "Event + Continuous Overlay") {
+      check_plot_cancelled(my_request, my_cancel)
       req(input$time_overlay, input$signal_overlay, selected_events)
 
       time_vec <- filtered_data()[[input$time_overlay]]
@@ -1916,11 +3631,12 @@ server <- function(input, output, session){
 
         if(is_binary) {
           # if binary column (e.g. "Freezing") -> One color
-          plot_targets[[length(plot_targets)+1]] <- list(
+          plot_targets[[length(plot_targets) + 1]] <- list(
             col = col,
             val = 1,
             color = master_pal[color_idx],
-            label = col # Label is just the column name
+            legend_key = paste(col, "1", sep = "__"),
+            is_binary = TRUE
           )
           color_idx <- color_idx + 1
         } else {
@@ -1929,11 +3645,12 @@ server <- function(input, output, session){
           unique_vals <- unique_vals[unique_vals != 0 & unique_vals != "0"]
 
           for(uv in unique_vals){
-            plot_targets[[length(plot_targets)+1]] <- list(
+            plot_targets[[length(plot_targets) + 1]] <- list(
               col = col,
               val = uv,
               color = master_pal[color_idx],
-              label = paste(col, "-", uv) # Label is col - value
+              legend_key = paste(col, as.character(uv), sep = "__"),
+              is_binary = FALSE
             )
             color_idx <- color_idx + 1
           }
@@ -1952,7 +3669,8 @@ server <- function(input, output, session){
         for (v in input$signal_overlay) combined_signals[[v]] <- c()
 
         for (pid in input$selected_ids) {
-          pdf <- filtered_data()[filtered_data()[[input$idvar]] == pid, ] #anchor1
+          check_plot_cancelled(my_request, my_cancel)
+          pdf <- filtered_data()[filtered_data()[[input$idvar]] == pid, ]
           if (nrow(pdf) == 0) next
           pt <- pdf[[input$time_overlay]]
           combined_time <- c(combined_time, pt, NA)
@@ -1967,7 +3685,16 @@ server <- function(input, output, session){
                 for (i in seq_along(active_idx)) {
                   shapes[[length(shapes) + 1]] <- list(type = "rect", x0 = time_vec[active_idx[i]], x1 = end_vec[active_idx[i]], y0 = y_min, y1 = y_max, fillcolor = rgba_col, line = list(width = 0), layer = "below")
                 }
-                if (!target$label %in% sapply(legend_traces, function(lt) lt$label)) legend_traces[[length(legend_traces) + 1]] <- target
+                existing_keys <- vapply(
+                  legend_traces,
+                  function(lt) lt$legend_key,
+                  character(1)
+                )
+
+                legend_traces <- add_legend_target(
+                  legend_traces,
+                  target
+                )
               }
             } else {
               is_active <- as.numeric(!is.na(vec) & vec == target$val)
@@ -1982,8 +3709,10 @@ server <- function(input, output, session){
                     fillcolor = rgba_col, line = list(width = 0), layer = "below"
                   )
                 }
-                if (!target$label %in% sapply(legend_traces, function(lt) lt$label))
-                  legend_traces[[length(legend_traces) + 1]] <- target
+                legend_traces <- add_legend_target(
+                  legend_traces,
+                  target
+                )
               }
             }
           }
@@ -2033,20 +3762,36 @@ server <- function(input, output, session){
 
       # Add continuous lines
       for (var in input$signal_overlay) {
+        check_plot_cancelled(my_request, my_cancel)
         y_data <- if (multi_participant) combined_signals[[var]] else filtered_data()[[var]]
         p <- plotly::add_trace(p, x = time_vec, y = y_data,
                                name = get_var_label(var), type = "scatter", mode = "lines")
       }
 
       for (tr in legend_traces) {
-        p <- plotly::add_trace(p,
-                               x = time_vec[1],
-                               y = y_min,
-                               type = "scatter",
-                               mode = "markers",
-                               marker = list(color = tr$color, symbol = "square"),
-                               name = get_var_label(tr$label),
-                               visible = "legendonly"
+        trace_label <- if (isTRUE(tr$is_binary)) {
+          get_var_label(tr$col)
+        } else {
+          get_event_trace_label(
+            variable = tr$col,
+            category = tr$val
+          )
+        }
+
+        p <- plotly::add_trace(
+          p,
+          x = time_vec[1],
+          y = y_min,
+          type = "scatter",
+          mode = "markers",
+          marker = list(
+            color = tr$color,
+            symbol = "square"
+          ),
+          name = trace_label,
+          legendgroup = tr$legend_key,
+          visible = "legendonly",
+          hoverinfo = "skip"
         )
       }
 
@@ -2072,6 +3817,7 @@ server <- function(input, output, session){
 
     # Event-locked single event
     if (input$viz_mode == "Event-locked single event") {
+      check_plot_cancelled(my_request, my_cancel)
       req(input$event_var, input$signal_var)
       windows <- extract_event_windows_idx(filtered_data()[[input$event_var]])
       req(nrow(windows) > 0)
@@ -2134,6 +3880,7 @@ server <- function(input, output, session){
     }
     # Event-locked average
     if (input$viz_mode == "Event-locked average") {
+      check_plot_cancelled(my_request, my_cancel)
       req(input$event_var, input$signal_var)
 
       win <- (-input$pre):input$post
@@ -2146,6 +3893,7 @@ server <- function(input, output, session){
         req(input$idvar, input$selected_ids)
         all_rows <- list()
         for (pid in input$selected_ids) {
+          check_plot_cancelled(my_request, my_cancel)
           pdf <- filtered_data()[filtered_data()[[input$idvar]] == pid, ]
           if (nrow(pdf) == 0) next
           pw <- extract_event_windows_idx(pdf[[input$event_var]])
@@ -2244,6 +3992,7 @@ server <- function(input, output, session){
 
     # event durations (barcode anchor)
     if (input$viz_mode == "Event durations (barcode)") {
+      check_plot_cancelled(my_request, my_cancel)
 
       req(selected_barcodes())
 
@@ -2342,24 +4091,52 @@ server <- function(input, output, session){
 
       plot_targets <- list()
 
+      multiple_barcode_vars <- length(selected_barcodes()) > 1
+
       for (col in selected_barcodes()) {
         col_data <- df_clean[[col]]
-        unique_vals <- sort(unique(col_data[!is.na(col_data)]))
-        is_binary <- all(unique_vals %in% c(0, 1))
+
+        unique_vals <- unique(
+          col_data[!is.na(col_data)]
+        )
+
+        # Sort when possible, but avoid errors for unusual classes.
+        unique_vals <- tryCatch(
+          sort(unique_vals),
+          error = function(e) unique_vals
+        )
+
+        is_binary <- all(
+          as.character(unique_vals) %in% c("0", "1")
+        )
 
         if (is_binary) {
           plot_targets[[length(plot_targets) + 1]] <- list(
-            col = col, val = 1, label = col, is_binary = TRUE
+            col = col,
+            val = 1,
+            is_binary = TRUE,
+            legend_key = paste(
+              col,
+              "1",
+              sep = "__"
+            )
           )
         } else {
+          unique_vals <- unique_vals[
+            !as.character(unique_vals) %in% c("0")
+          ]
+
           for (uv in unique_vals) {
-            if (uv != 0 & uv != "0") {
-              plot_targets[[length(plot_targets) + 1]] <- list(
-                col = col, val = uv,
-                label = if (length(selected_barcodes()) > 1) paste(col, "-", uv) else as.character(uv),
-                is_binary = FALSE
+            plot_targets[[length(plot_targets) + 1]] <- list(
+              col = col,
+              val = uv,
+              is_binary = FALSE,
+              legend_key = paste(
+                col,
+                as.character(uv),
+                sep = "__"
               )
-            }
+            )
           }
         }
       }
@@ -2390,12 +4167,17 @@ server <- function(input, output, session){
 
             tmp <- data.frame(
               target_idx = t_idx,
-              label = target$label,
+              variable = target$col,
+              category = as.character(target$val),
+              is_binary = target$is_binary,
+              legend_key = target$legend_key,
               start = start_vec[active_idx],
               end = end_vec[active_idx],
               color = pal[t_idx],
               participant_id = if (isTRUE(input$use_id)) {
-                as.character(df_clean[[input$idvar]][active_idx])
+                as.character(
+                  df_clean[[input$idvar]][active_idx]
+                )
               } else {
                 NA_character_
               },
@@ -2415,10 +4197,20 @@ server <- function(input, output, session){
 
             tmp <- data.frame(
               target_idx = t_idx,
-              label = target$label,
+              variable = target$col,
+              category = as.character(target$val),
+              is_binary = target$is_binary,
+              legend_key = target$legend_key,
               start = time_vec[windows$start],
               end = time_vec[windows$end],
               color = pal[t_idx],
+              participant_id = if (isTRUE(input$use_id)) {
+                as.character(
+                  df_clean[[input$idvar]][windows$start]
+                )
+              } else {
+                NA_character_
+              },
               stringsAsFactors = FALSE
             )
 
@@ -2434,6 +4226,13 @@ server <- function(input, output, session){
         ev <- event_df[i, ]
 
         t_idx <- ev$target_idx
+
+        display_label <- get_barcode_target_label(
+          variable = as.character(ev$variable),
+          category = as.character(ev$category),
+          is_binary = isTRUE(as.logical(ev$is_binary)),
+          show_variable = multiple_barcode_vars
+        )
 
         if (use_stacked) {
 
@@ -2491,7 +4290,7 @@ server <- function(input, output, session){
 
           hover_text <- rep(
             paste0(
-              get_var_label(ev$label),
+              display_label,
               "<br>",
               as.character(start_time)
             ),
@@ -2510,9 +4309,9 @@ server <- function(input, output, session){
             ),
             hoverinfo = "text",
             text = hover_text,
-            name = get_var_label(ev$label),
-            legendgroup = ev$label,
-            showlegend = !legend_added[t_idx]
+            name = display_label,
+            legendgroup = ev$legend_key,
+            showlegend= !use_stacked && !legend_added[t_idx] #anchor
           )
 
         } else {
@@ -2537,7 +4336,7 @@ server <- function(input, output, session){
 
           hover_text <- rep(
             paste0(
-              get_var_label(ev$label),
+              display_label,
               "<br>Start: ",
               as.character(start_time),
               "<br>End: ",
@@ -2555,7 +4354,7 @@ server <- function(input, output, session){
             fill = "toself",
             fillcolor = hex_to_rgba(
               ev$color,
-              alpha = if (use_stacked) 0.85 else 0.5
+              alpha = if (use_stacked) 0.9 else 0.65
             ),
             line = list(
               color = ev$color,
@@ -2563,9 +4362,9 @@ server <- function(input, output, session){
             ),
             hoverinfo = "text",
             text = hover_text,
-            name = get_var_label(ev$label),
-            legendgroup = ev$label,
-            showlegend = !legend_added[t_idx]
+            name = display_label,
+            legendgroup = ev$legend_key,
+            showlegend = !use_stacked && !legend_added[t_idx]
           )
         }
 
@@ -2582,10 +4381,21 @@ server <- function(input, output, session){
           (y_bottom + y_top) / 2
         })
 
-        tick_labels_y <- paste0(sapply(
-          plot_targets,
-          function(t) get_var_label(t$label)
-        ), "  ")
+        tick_labels_y <- paste0(
+          vapply(
+            plot_targets,
+            function(target) {
+              get_barcode_target_label(
+                variable = target$col,
+                category = target$val,
+                is_binary = target$is_binary,
+                show_variable = multiple_barcode_vars
+              )
+            },
+            character(1)
+          ),
+          "  "
+        )
 
         y_axis_config <- list(
           title = list(text = ""),
@@ -2595,7 +4405,8 @@ server <- function(input, output, session){
           tickmode = "array",
           tickvals = tick_vals_y,
           ticktext = tick_labels_y,
-          tickfont = list(size = fonts$axis_text_size)
+          tickfont = list(size = fonts$axis_text_size),
+          automargin = TRUE
         )
 
       } else {
@@ -2605,28 +4416,36 @@ server <- function(input, output, session){
           range = c(0, 1),
           showgrid = FALSE,
           zeroline = FALSE,
-          showticklabels = FALSE
+          showticklabels = FALSE,
+          automargin = TRUE
         )
       }
 
 
       labs <- get_labels(
-        default_title = paste(
+        default_title = paste0(
           "Event Barcode:",
-          paste(selected_barcodes(), collapse = ", ")
+          paste0(
+            vapply(
+              selected_barcodes(),
+              get_var_label,
+              character(1)
+            ),
+            collapse = ", "
+          )
         ),
         default_x = if (input$event_format == "interval")
           input$int_start
         else
-          input$barcode_time, #anchor error
+          input$barcode_time,
         default_y = "",
         default_legend = "Events"
       )
 
       if (use_stacked)
-        margins$l <- max(margins$l, 120)
+        margins$l <- max(margins$l, 0)
 
-      margins$b <- max(margins$b, 40)
+      margins$b <- max(margins$b, 0)
 
       if (is_datetime) {
 
@@ -2688,6 +4507,7 @@ server <- function(input, output, session){
           ),
           xaxis = x_axis_config,
           yaxis = y_axis_config,
+          showlegend = !use_stacked,
           legend = list(
             title = list(
               text = labs$legend,
@@ -2828,19 +4648,65 @@ server <- function(input, output, session){
           # event vars
           if (length(event_vars()) > 0) {
             cat("  Event variables:\n")
+
             for (e_var in event_vars()) {
-              e_vals   <- sub_df[[e_var]]
-              counts   <- get_event_counts(e_vals)
-              is_bin   <- all(unique(na.omit(e_vals)) %in% c(0, 1))
-              b        <- get_burstiness(e_vals)
-              b_str    <- if (is.na(b)) "NA" else sprintf("%.4f", b)
-              note_str <- if (!is_bin) {
-                n_types <- length(unique(na.omit(e_vals[e_vals != 0 & e_vals != "0"])))
-                sprintf("  (Categorical: %d types)", n_types)
-              } else ""
-              cat(sprintf("    %-20s  Count: %d, Total duration (rows): %d, Burstiness: %s%s\n",
-                          e_var, counts$n_events, counts$total_duration, b_str, note_str))
+
+              e_vals <- sub_df[[e_var]]
+              counts <- get_event_counts(e_vals)
+
+              is_bin <- is_binary_event_vector(e_vals)
+              b_results <- get_app_burstiness(sub_df, e_var)
+
+              if (is_bin) {
+                b_row <- b_results[1, ]
+
+                b_str <- format_burstiness_value(
+                  value = b_row$burstiness,
+                  n_events = b_row$n_events
+                )
+
+                cat(sprintf(
+                  paste0(
+                    "    %-20s  Count: %d, ",
+                    "Total duration (rows): %d, ",
+                    "Burstiness: %s\n"
+                  ),
+                  e_var,
+                  counts$n_events,
+                  counts$total_duration,
+                  b_str
+                ))
+              } else {
+                cat(sprintf(
+                  paste0(
+                    "    %-20s  Count: %d, ",
+                    "Total duration (rows): %d ",
+                    "(Categorical: %d types)\n"
+                  ),
+                  e_var,
+                  counts$n_events,
+                  counts$total_duration,
+                  nrow(b_results)
+                ))
+
+                for (j in seq_len(nrow(b_results))) {
+                  b_row <- b_results[j, ]
+
+                  b_str <- format_burstiness_value(
+                    value = b_row$burstiness,
+                    n_events = b_row$n_events
+                  )
+
+                  cat(sprintf(
+                    "      %-16s  Episodes: %d, Burstiness: %s\n",
+                    b_row$event,
+                    b_row$n_events,
+                    b_str
+                  ))
+                }
+              }
             }
+
             cat("\n")
           }
 
@@ -2857,26 +4723,51 @@ server <- function(input, output, session){
         } else if (calc_type == "event") {
 
           for (e_var in event_vars()) {
-            vals   <- sub_df[[e_var]]
+            vals <- sub_df[[e_var]]
             counts <- get_event_counts(vals)
-            b      <- get_burstiness(vals)
-            is_bin <- all(unique(na.omit(vals)) %in% c(0, 1))
+
+            is_bin <- is_binary_event_vector(vals)
+            b_results <- get_app_burstiness(sub_df, e_var)
 
             cat(paste("  Variable:", e_var, "\n"))
-            cat(sprintf("    Event count:           %d\n", counts$n_events))
-            cat(sprintf("    Total duration (rows): %d\n", counts$total_duration))
-            if (is.na(b)) {
-              if (!is_bin) {
-                cat("    Burstiness: NA (Categorical/Multiclass)\n")
-              } else if (counts$n_events < 2) {
-                cat("    Burstiness: NA (<2 events detected)\n")
-              } else {
-                cat("    Burstiness: NA\n")
-              }
+            cat(sprintf(
+              "    Event count:           %d\n",
+              counts$n_events
+            ))
+            cat(sprintf(
+              "    Total duration (rows): %d\n",
+              counts$total_duration
+            ))
+
+            if (is_bin) {
+              b_row <- b_results[1, ]
+
+              cat(sprintf(
+                "    Burstiness:            %s\n",
+                format_burstiness_value(
+                  value = b_row$burstiness,
+                  n_events = b_row$n_events
+                )
+              ))
             } else {
-              cat(sprintf("    Burstiness: %.4f\n", b))
+              cat("    Burstiness by event type:\n")
+
+              for (j in seq_len(nrow(b_results))) {
+                b_row <- b_results[j, ]
+
+                cat(sprintf(
+                  "      %-3s Episodes: %d, Burstiness: %s\n",
+                  b_row$event,
+                  b_row$n_events,
+                  format_burstiness_value(
+                    value = b_row$burstiness,
+                    n_events = b_row$n_events
+                  )
+                ))
+              }
             }
           }
+
           cat("\n")
         }
       }
@@ -2919,37 +4810,6 @@ server <- function(input, output, session){
 
     fonts <- get_plot_fonts()
     margins <- get_plot_margins()
-
-    # additional time series
-    # if (input$second_plot_type == "raw") {
-    #   req(input$second_yvar)
-    #   labs <- get_labels(
-    #     default_title = paste("Raw Time Series"),
-    #     default_x = input$xvar,
-    #     default_y = "Value",
-    #     default_legend = if(is_single_view) "Variable" else "Participant"
-    #   )
-    #
-    #   time_var <- selected_time()
-    #   req(time_var)
-    #   time_vec <- df[[input$xvar]]
-    #   p2 <- plotly::plot_ly(df, x = df[[time_var]], y = df[[input$second_yvar]],
-    #                         type = "scatter", mode = "lines",
-    #                         name = input$second_yvar)
-    #
-    #   p2 <- p2 |> plotly::layout(
-    #     title = list(text = paste("Secondary Plot:", input$second_yvar), font = list(size = fonts$title_size)),
-    #     xaxis = get_datetime_axis(time_vec, labs$x, fonts),
-    #     yaxis = list(
-    #       title = list(text = input$second_yvar, font = list(size = fonts$axis_title_size)),
-    #       tickfont = list(size = fonts$axis_text_size)
-    #     ),
-    #     margin = margins
-    #   )
-    #
-    #   plot2_store(p2)
-    #   return(p2)
-    # }
 
     # Allan factor
     if (input$second_plot_type == "allan_factor") {
