@@ -529,7 +529,10 @@ ui <- shiny::fluidPage(
               column(6, actionButton("next_id", "Next Participant",
                                      title = "Next Participant (→ Right Arrow)", icon = icon("arrow-right")))
             ),
-            textOutput("current_participant")
+            tags$div(
+              style = "margin-top: 0.5em;",
+              textOutput("current_participant")
+            )
           )
         ),
 
@@ -627,8 +630,6 @@ ui <- shiny::fluidPage(
           style = "width: 100%; margin-bottom: 10px;",
           title = "Update the plot using the current selections"
         ),
-
-
         hr(),
         h4("Second Plot (Optional)"),
         checkboxInput("show_second_plot", "Show second plot below main plot", FALSE),
@@ -660,16 +661,19 @@ ui <- shiny::fluidPage(
             title = "Explain what the current plot is showing"
           )
         ),
+        uiOutput("stats_section"),
 
         conditionalPanel(
           condition = "input.show_second_plot == true",
+          tags$div(
+            style = "margin-top: 40px; margin-bottom: 15px",
           tags$div(class = "help-text",
                    style = "margin-top: 15px; margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #007bff; border-radius: 4px; display: none;",
                    textOutput("plot2_description")),
 
           shinycssloaders::withSpinner(plotly::plotlyOutput("plot2", height = "400px"))
-        ),
-        uiOutput("stats_section")
+        )
+        )
       )
 
 
@@ -716,6 +720,99 @@ server <- function(input, output, session){
 
   `%||%` <- function(x, y) {
     if (is.null(x)) y else x
+  }
+
+  make_variable_order_key <- function(variable) {
+    paste("variable", variable, sep = "::")
+  }
+
+  make_category_order_key <- function(variable, category) {
+    paste(
+      "category",
+      variable,
+      as.character(category),
+      sep = "::"
+    )
+  }
+
+  order_by_plot_labels <- function(x, keys) {
+    if (length(x) < 2) {
+      return(x)
+    }
+
+    requested_order <- input$plot_label_order
+
+    if (is.null(requested_order) || length(requested_order) == 0) {
+      return(x)
+    }
+
+    requested_order <- unlist(
+      requested_order,
+      use.names = FALSE
+    )
+
+    ranks <- match(keys, requested_order)
+
+    # Unrecognized/new items retain their original relative order.
+    fallback_ranks <- length(requested_order) + seq_along(keys)
+    ranks[is.na(ranks)] <- fallback_ranks[is.na(ranks)]
+
+    x[order(ranks, seq_along(ranks))]
+  }
+
+  ordered_variables <- function(variables) {
+    variables <- unique(variables)
+
+    if (length(variables) < 2) {
+      return(variables)
+    }
+
+    keys <- vapply(
+      variables,
+      make_variable_order_key,
+      character(1)
+    )
+
+    order_by_plot_labels(variables, keys)
+  }
+
+  target_order_key <- function(target) {
+    if (isTRUE(target$is_binary)) {
+      make_variable_order_key(target$col)
+    } else {
+      make_category_order_key(target$col, target$val)
+    }
+  }
+
+  ordered_plot_targets <- function(targets) {
+    if (length(targets) < 2) {
+      return(targets)
+    }
+
+    keys <- vapply(
+      targets,
+      target_order_key,
+      character(1)
+    )
+
+    order_by_plot_labels(targets, keys)
+  }
+
+  plot_label_rank <- function(key) {
+    requested_order <- input$plot_label_order
+
+    if (is.null(requested_order) || length(requested_order) == 0) {
+      return(10000)
+    }
+
+    requested_order <- unlist(
+      requested_order,
+      use.names = FALSE
+    )
+
+    rank <- match(key, requested_order)
+
+    if (is.na(rank)) 10000 else rank
   }
 
   observe({
@@ -1540,6 +1637,14 @@ server <- function(input, output, session){
   last_data_source <- reactiveVal("demo")
   active_demo <- reactiveVal(NULL)
 
+  demo_interval_defaults <- reactiveValues(
+    start = NULL,
+    mode = "end",
+    end = NULL,
+    duration = NULL,
+    options = NULL
+  )
+
   data_reactive <- reactive({
     if (conversion_done() && !is.null(data_converted())) {
       data_converted()
@@ -1553,9 +1658,21 @@ server <- function(input, output, session){
 
     vars <- switch(
       input$viz_mode,
-      "Raw time series" = input$yvar,
-      "Event + Continuous Overlay" = c(input$signal_overlay, input$event_overlay),
-      "Event durations (barcode)" = input$barcode_var,
+      "Raw time series" =
+        input$yvar,
+
+      "Event + Continuous Overlay" =
+        c(input$signal_overlay, input$event_overlay),
+
+      "Event durations (barcode)" =
+        input$barcode_var,
+
+      "Event-locked average" =
+        c(input$signal_var, input$event_var),
+
+      "Event-locked single event" =
+        c(input$signal_var, input$event_var),
+
       NULL
     )
 
@@ -1567,10 +1684,18 @@ server <- function(input, output, session){
 
     vars <- switch(
       input$viz_mode,
-      "Event + Continuous Overlay" = input$event_overlay,
-      "Event durations (barcode)" = input$barcode_var,
-      "Event-Locked Single" = input$event_var,
-      "Event-Locked Average" = input$event_var,
+      "Event + Continuous Overlay" =
+        input$event_overlay,
+
+      "Event durations (barcode)" =
+        input$barcode_var,
+
+      "Event-locked average" =
+        input$event_var,
+
+      "Event-locked single event" =
+        input$event_var,
+
       NULL
     )
 
@@ -1668,7 +1793,7 @@ server <- function(input, output, session){
         style = "cursor: pointer; padding: 12px; border: 1px solid #ddd;
                border-radius: 6px; margin-bottom: 10px; background: white;",
         onclick = "Shiny.setInputValue('demo_selected', 'biobehavioral_interactions', {priority: 'event'})",
-        tags$strong("Mother-Child Interactions"),
+        tags$strong("Mother-Child Biobehavioral Interactions"),
         tags$p(style = "margin: 4px 0 0 0; color: #666; font-size: 0.9em;",
                "Mixed continuous and event data from dyadic observations")
       ),
@@ -2445,21 +2570,75 @@ server <- function(input, output, session){
   })
 
   output$interval_ui <- renderUI({
+    columns <- names(data_reactive())
+
+    valid_columns <- function(selected_columns) {
+      if (is.null(selected_columns)) {
+        return(NULL)
+      }
+
+      selected_columns <- as.character(selected_columns)
+
+      selected_columns[
+        selected_columns %in% columns
+      ]
+    }
+
+    valid_column <- function(selected_column) {
+      valid <- valid_columns(selected_column)
+
+      if (length(valid) > 0) {
+        valid[1]
+      } else {
+        NULL
+      }
+    }
+
+    selected_mode <- demo_interval_defaults$mode
+
+    if (
+      !isTruthy(selected_mode) ||
+      !selected_mode %in% c("end", "duration")
+    ) {
+      selected_mode <- "end"
+    }
+
     tagList(
-      selectInput("int_start", "Start Time Column", choices = names(data_reactive())),
-      radioButtons("interval_mode", "End format:",
-                   choices = c("End Time" = "end", "Duration" = "duration")),
+      selectInput(
+        "int_start", "Start Time Column", choices = columns,
+        selected = valid_column(demo_interval_defaults$start)
+      ),
+
+      radioButtons(
+        "interval_mode", "End format:",
+        choices = c("End Time" = "end","Duration" = "duration"),
+        selected = selected_mode
+      ),
+
       conditionalPanel(
         condition = "input.interval_mode == 'end'",
-        selectInput("int_end", "End Time Column", choices = names(data_reactive()))
+
+        selectInput(
+          "int_end", "End Time Column", choices = columns,
+          selected = valid_column(demo_interval_defaults$end))
       ),
+
       conditionalPanel(
         condition = "input.interval_mode == 'duration'",
-        selectInput("int_dur", "Duration Column", choices = names(data_reactive()))
+        selectInput("int_dur", "Duration Column", choices = columns,
+                    selected = valid_column(demo_interval_defaults$duration))
       ),
-      selectInput("int_val", "Event/Categorical Column(s)", choices = names(data_reactive()), multiple = TRUE)
+
+      selectInput("int_val", "Event/Categorical Column(s)", choices = columns,
+                  selected = valid_columns(demo_interval_defaults$options),multiple = TRUE)
     )
   })
+
+  outputOptions(
+    output,
+    "interval_ui",
+    suspendWhenHidden = FALSE
+  )
 
   observeEvent(input$demo_selected, {
     active_demo(input$demo_selected)
@@ -2473,17 +2652,66 @@ server <- function(input, output, session){
     stats_store(NULL)
     removeModal()
 
-    demo_types <- switch(input$demo_selected,
-                         "object_play" = list(continuous = FALSE, events = TRUE, multiple = TRUE, int_cont = "interval", start = names(data_reactive())[3], end = "offset"),
-                         "biobehavioral_interactions" = list(continuous = TRUE,  events = TRUE, multiple = TRUE, int_cont = "continuous"),
-                         "music_bouts" = list(continuous = FALSE, events = TRUE, multiple = TRUE, int_cont = "interval"),
-                         "cradling_diaries" = list(continuous = FALSE, events = TRUE, multiple = TRUE, int_cont = "interval")
+    demo_types <- switch(
+      input$demo_selected,
+
+      "object_play" = list(
+        continuous = FALSE,
+        events = TRUE,
+        multiple = TRUE,
+        int_cont = "interval",
+        start = "onset",
+        interval_mode = "end",
+        end = "offset",
+        duration = NULL,
+        options = c("bobj", "objcat")
+      ),
+
+      "biobehavioral_interactions" = list(
+        continuous = TRUE,
+        events = TRUE,
+        multiple = TRUE,
+        int_cont = "continuous"
+      ),
+
+      "music_bouts" = list(
+        continuous = FALSE,
+        events = TRUE,
+        multiple = TRUE,
+        int_cont = "interval",
+        start = "DayInSeconds",
+        interval_mode = "duration",
+        duration = "DurationSecs",
+        interval = NULL,
+        options = c("Live",	"Recorded",	"Vocal", "Instrumental", "oneVoice",	"oneTune",	"LV_1V1T",	"RVI_1V1T")
+      ),
+
+      "cradling_diaries" = list(
+        continuous = FALSE,
+        events = TRUE,
+        multiple = TRUE,
+        int_cont = "interval"
+      )
     )
+    demo_interval_defaults$start <-
+      demo_types$start %||% NULL
+
+    demo_interval_defaults$mode <-
+      demo_types$interval_mode %||% "end"
+
+    demo_interval_defaults$end <-
+      demo_types$end %||% NULL
+
+    demo_interval_defaults$duration <-
+      demo_types$duration %||% NULL
+
+    demo_interval_defaults$options <-
+      demo_types$options %||% NULL
+
     updateCheckboxInput(session, "has_continuous", value = demo_types$continuous)
-    updateCheckboxInput(session, "has_events",     value = demo_types$events)
-    updateCheckboxInput(session, "use_id",     value = demo_types$multiple)
+    updateCheckboxInput(session, "has_events", value = demo_types$events)
+    updateCheckboxInput(session, "use_id", value = demo_types$multiple)
     updateRadioButtons(session, "event_format", selected = demo_types$int_cont)
-    updateSelectInput(session, "int_start", selected = demo_types$start)
   }, ignoreInit = TRUE)
 
   observeEvent(input$file, {
@@ -3112,144 +3340,180 @@ server <- function(input, output, session){
     vars <- current_label_vars()
     category_df <- current_event_categories()
 
-    has_variable_labels <- !is.null(vars) && length(vars) > 1
-    has_category_labels <- nrow(category_df) > 0
+    vars <- vars[!is.na(vars) & nzchar(vars)]
 
-    if (!has_variable_labels && !has_category_labels) {
+    if (length(vars) == 0 && nrow(category_df) == 0) {
       return(NULL)
     }
 
-    sections <- list()
+    make_order_item <- function(
+    order_key,
+    input_id,
+    field_label,
+    placeholder,
+    item_type
+    ) {
+      tags$div(
+        class = "label-order-item",
+        `data-order-key` = order_key,
+        style = paste(
+          "display: flex;",
+          "align-items: flex-start;",
+          "gap: 8px;",
+          "padding: 8px;",
+          "margin-bottom: 7px;",
+          "border: 1px solid #e5e5e5;",
+          "border-radius: 4px;",
+          "background: #fff;"
+        ),
 
-    # Labels for different variables/traces
-    if (has_variable_labels) {
-      variable_inputs <- lapply(vars, function(v) {
-        key <- make_label_id(v)
-
-        textInput(
-          inputId = key,
-          label = tags$span(
-            style = "font-size: 0.85em; color: #555;",
-            v
+        tags$div(
+          style = paste(
+            "display: flex;",
+            "flex-direction: column;",
+            "gap: 3px;",
+            "padding-top: 23px;"
           ),
-          value = isolate(label_values[[key]] %||% ""),
-          placeholder = v
-        )
-      })
 
-      sections <- append(
-        sections,
-        list(
-          tags$div(
-            tags$hr(style = "margin: 8px 0;"),
-            tags$p(
-              style = paste(
-                "font-weight: 500;",
-                "margin-bottom: 4px;",
-                "font-size: 0.9em;"
+          tags$button(
+            type = "button",
+            class = "move-label-up btn btn-default btn-xs",
+            title = paste("Move", field_label, "up"),
+            `aria-label` = paste("Move", field_label, "up"),
+            icon("chevron-up")
+          ),
+
+          tags$button(
+            type = "button",
+            class = "move-label-down btn btn-default btn-xs",
+            title = paste("Move", field_label, "down"),
+            `aria-label` = paste("Move", field_label, "down"),
+            icon("chevron-down")
+          )
+        ),
+
+        tags$div(
+          style = "flex: 1; min-width: 0;",
+
+          textInput(
+            inputId = input_id,
+            label = tags$span(
+              tags$small(
+                style = "color: #777;",
+                paste0(item_type, ": ")
               ),
-              "Variable Labels in Legend"
+              field_label
             ),
-            variable_inputs
+            value = isolate(label_values[[input_id]] %||% ""),
+            placeholder = placeholder
           )
         )
       )
     }
 
-    # Labels for categories within event variables
-    if (has_category_labels) {
-      category_variable_order <- unique(category_df$variable)
+    records <- list()
 
-      category_sections <- lapply(
-        category_variable_order,
-        function(variable_name) {
-          rows <- category_df[
-            category_df$variable == variable_name,
-            ,
-            drop = FALSE
-          ]
+    # Interleave each variable with its categories so the default
+    # order matches the existing variable/category organization.
+    for (variable_name in vars) {
+      variable_input_id <- make_label_id(variable_name)
 
-          category_inputs <- lapply(
-            seq_len(nrow(rows)),
-            function(i) {
-              category_value <- rows$category[i]
+      records[[length(records) + 1]] <- list(
+        key = make_variable_order_key(variable_name),
+        node = make_order_item(
+          order_key = make_variable_order_key(variable_name),
+          input_id = variable_input_id,
+          field_label = variable_name,
+          placeholder = variable_name,
+          item_type = "Variable"
+        )
+      )
 
-              key <- make_event_category_label_id(
-                variable = variable_name,
-                category = category_value
-              )
+      variable_categories <- category_df[
+        category_df$variable == variable_name,
+        ,
+        drop = FALSE
+      ]
 
-              textInput(
-                inputId = key,
-                label = tags$span(
-                  style = "font-size: 0.85em; color: #555;",
-                  category_value
-                ),
-                value = isolate(
-                  label_values[[key]] %||% ""
-                ),
-                placeholder = category_value
-              )
-            }
+      if (nrow(variable_categories) > 0) {
+        for (i in seq_len(nrow(variable_categories))) {
+          category_value <- variable_categories$category[i]
+
+          category_input_id <- make_event_category_label_id(
+            variable = variable_name,
+            category = category_value
           )
 
-          tags$div(
-            style = paste(
-              "margin-bottom: 10px;",
-              "padding: 8px;",
-              "border: 1px solid #e5e5e5;",
-              "border-radius: 4px;"
+          records[[length(records) + 1]] <- list(
+            key = make_category_order_key(
+              variable_name,
+              category_value
             ),
-
-            tags$p(
-              style = paste(
-                "font-weight: 600;",
-                "margin: 0 0 6px 0;",
-                "font-size: 0.9em;"
+            node = make_order_item(
+              order_key = make_category_order_key(
+                variable_name,
+                category_value
               ),
-              variable_name
-            ),
-
-            category_inputs
+              input_id = category_input_id,
+              field_label = paste(
+                variable_name,
+                category_value,
+                sep = " — "
+              ),
+              placeholder = category_value,
+              item_type = "Category"
+            )
           )
         }
-      )
-
-      sections <- append(
-        sections,
-        list(
-          tags$div(
-            tags$hr(style = "margin: 8px 0;"),
-
-            tags$p(
-              style = paste(
-                "font-weight: 500;",
-                "margin-bottom: 4px;",
-                "font-size: 0.9em;"
-              ),
-              "Event Category Labels"
-            ),
-
-            tags$p(
-              style = paste(
-                "font-size: 0.8em;",
-                "color: #666;",
-                "margin-bottom: 8px;"
-              ),
-              paste(
-                "Rename the values used for event types.",
-                "Leave a field blank to retain its original value."
-              )
-            ),
-
-            category_sections
-          )
-        )
-      )
+      }
     }
 
-    do.call(tagList, sections)
+    record_keys <- vapply(
+      records,
+      function(record) record$key,
+      character(1)
+    )
+
+    records <- isolate(
+      order_by_plot_labels(records, record_keys)
+    )
+
+    tags$div(
+      tags$hr(style = "margin: 8px 0;"),
+
+      tags$p(
+        style = paste(
+          "font-weight: 500;",
+          "margin-bottom: 4px;",
+          "font-size: 0.9em;"
+        ),
+        "Plot Labels and Order"
+      ),
+
+      tags$p(
+        style = paste(
+          "font-size: 0.8em;",
+          "color: #666;",
+          "margin-bottom: 8px;"
+        ),
+        paste(
+          "Rename labels and use the arrow buttons to change their order.",
+          "Click Update Plot to apply the changes."
+        )
+      ),
+
+      tags$div(
+        id = "plot-label-order-list",
+        lapply(records, function(record) record$node)
+      )
+    )
   })
+
+  outputOptions(
+    output,
+    "legend_labels_ui",
+    suspendWhenHidden = FALSE
+  )
 
   outputOptions(output, "legend_labels_ui", suspendWhenHidden = FALSE)
 
@@ -3258,28 +3522,59 @@ server <- function(input, output, session){
     d <- diagnostics()
     tagList(
       if (isTRUE(input$use_id) && isTruthy(input$idvar)) {
-        ids <- tryCatch(all_ids(), error = function(e) NULL)
+        ids <- tryCatch(
+          as.character(all_ids()),
+          error = function(e) NULL
+        )
+
         if (!is.null(ids) && length(ids) > 0) {
-          selectInput(
-            "second_plot_id",
-            "Participant (second plot)",
-            choices = ids,
-            selected = ids[1],
-            multiple = FALSE
+          selected_second_id <- isolate(input$second_plot_id)
+
+          if (
+            !isTruthy(selected_second_id) ||
+            !as.character(selected_second_id) %in% ids
+          ) {
+            selected_second_id <- ids[1]
+          }
+
+          tagList(
+            selectInput("second_plot_type", "Second plot type",
+                        c("Allan Factor (event data)" = "allan_factor",
+                          "Allan Deviation (continuous)" = "allan_deviation")),
+            selectInput(
+              "second_plot_id",
+              "Select Participant (second plot)",
+              choices = ids,
+              selected = selected_second_id,
+              multiple = FALSE
+            ),
+
+            fluidRow(
+              column(
+                6,
+                actionButton(
+                  "prev_second_id",
+                  "Previous Participant",
+                  icon = icon("arrow-left")
+                )
+              ),
+              column(
+                6,
+                actionButton(
+                  "next_second_id",
+                  "Next Participant",
+                  icon = icon("arrow-right")
+                )
+              )
+            ),
+            tags$div(
+              style = "margin-top: 0.5em;",
+              textOutput("current_second_participant")
+            ),
+            hr()
           )
         }
       },
-      selectInput("second_plot_type", "Second plot type",
-                  c(
-                    #"Raw Variable" = "raw",
-                    "Allan Factor (event data)" = "allan_factor",
-                    "Allan Deviation (continuous)" = "allan_deviation")),
-
-      # Raw variable selection
-      # conditionalPanel(
-      #   condition = "input.second_plot_type == 'raw'",
-      #   selectInput("second_yvar", "Variable", d$numeric, multiple = FALSE)
-      # ),
 
       # Allan Factor options
       conditionalPanel(
@@ -3302,6 +3597,46 @@ server <- function(input, output, session){
                       "Phase data" = "phase")),
         checkboxInput("ad_show_variance", "Show variance instead of deviation", FALSE)
       )
+    )
+  })
+
+  change_second_participant <- function(direction) {
+    ids <- as.character(all_ids())
+    req(length(ids) > 0)
+
+    current_id <- isolate(input$second_plot_id)
+    current_index <- match(as.character(current_id), ids)
+
+    if (is.na(current_index)) {
+      current_index <- 1L
+    }
+
+    new_index <- (
+      (current_index - 1L + direction) %% length(ids)
+    ) + 1L
+
+    updateSelectInput(
+      session,
+      "second_plot_id",
+      choices = ids,
+      selected = ids[new_index]
+    )
+  }
+
+  observeEvent(input$prev_second_id, {
+    change_second_participant(-1L)
+  })
+
+  observeEvent(input$next_second_id, {
+    change_second_participant(1L)
+  })
+
+  output$current_second_participant <- renderText({
+    req(input$second_plot_id)
+
+    paste(
+      "Plot 2 participant:",
+      input$second_plot_id
     )
   })
 
@@ -3423,7 +3758,6 @@ server <- function(input, output, session){
   selected_barcodes <- reactive(input$barcode_var) |>
     debounce(0)
 
-
   subset_data <- reactive({
     df <- data_reactive()
 
@@ -3431,12 +3765,7 @@ server <- function(input, output, session){
       return(df)
     }
     req(input$subset_var, input$subset_values)
-
-    df[
-      as.character(df[[input$subset_var]]) %in% as.character(input$subset_values),
-      ,
-      drop = FALSE
-    ]
+    df[as.character(df[[input$subset_var]]) %in% as.character(input$subset_values),,drop = FALSE]
   })
 
   filtered_data <- reactive({
@@ -3448,21 +3777,14 @@ server <- function(input, output, session){
     }
 
     req(input$idvar)
-
     id_col <- as.character(df[[input$idvar]])
 
     if (isTRUE(input$step_through)) {
-
       current_id <- as.character(all_ids()[id_index()])
-
       df[id_col == current_id, , drop = FALSE]
-
     } else {
-
       req(input$selected_ids)
-
       selected_ids <- as.character(input$selected_ids)
-
       df[id_col %in% selected_ids, , drop = FALSE]
     }
 
@@ -3552,16 +3874,18 @@ server <- function(input, output, session){
       p <- plotly::plot_ly()
 
       if (is_single_view) {
-        for (var in input$yvar) {
+        for (var in ordered_variables(input$yvar)) {
           check_plot_cancelled(my_request, my_cancel)
-          p <- plotly::add_trace(p, x = filtered_data()[[input$xvar]], y = filtered_data()[[var]], name = get_var_label(var),
+          p <- plotly::add_trace(p, x = filtered_data()[[input$xvar]], y = filtered_data()[[var]],
+                                 name = get_var_label(var),legendrank = plot_label_rank(make_variable_order_key(var)),
                                  type = "scatter", mode = ifelse(input$plot_type == "Line", "lines", "markers"))
         }
       } else {
-        for (var in input$yvar) {
+        for (var in ordered_variables(input$yvar)) {
           check_plot_cancelled(my_request, my_cancel)
           p <- plotly::add_trace(p, x = filtered_data()[[input$xvar]], y = filtered_data()[[var]],
                                  name = paste(filtered_data()[[input$idvar]], get_var_label(var)),
+                                 legendrank = plot_label_rank(make_variable_order_key(var)),
                                  type = "scatter", mode = ifelse(input$plot_type == "Line", "lines", "markers"))
         }
       }
@@ -3657,6 +3981,7 @@ server <- function(input, output, session){
         }
       }
 
+      plot_targets <- ordered_plot_targets(plot_targets) #anchor
 
       shapes <- list()
       legend_traces <- list()
@@ -3761,11 +4086,11 @@ server <- function(input, output, session){
       p <- plotly::plot_ly()
 
       # Add continuous lines
-      for (var in input$signal_overlay) {
+      for (var in ordered_variables(input$signal_overlay)) {
         check_plot_cancelled(my_request, my_cancel)
         y_data <- if (multi_participant) combined_signals[[var]] else filtered_data()[[var]]
-        p <- plotly::add_trace(p, x = time_vec, y = y_data,
-                               name = get_var_label(var), type = "scatter", mode = "lines")
+        p <- plotly::add_trace(p, x = time_vec, y = y_data, legendrank = plot_label_rank(
+          make_variable_order_key(var)), name = get_var_label(var), type = "scatter", mode = "lines")
       }
 
       for (tr in legend_traces) {
@@ -3790,6 +4115,7 @@ server <- function(input, output, session){
           ),
           name = trace_label,
           legendgroup = tr$legend_key,
+          legendrank = plot_label_rank(target_order_key(tr)),
           visible = "legendonly",
           hoverinfo = "skip"
         )
@@ -3849,14 +4175,29 @@ server <- function(input, output, session){
         x_vals <- win[seq_along(y_vals)]
       }
 
-      # Get labels
       labs <- get_labels(
-        default_title = paste("Event", i, "Trajectory"),
+        default_title = paste(
+          get_var_label(input$signal_var),
+          "around",
+          get_var_label(input$event_var),
+          "event",
+          i
+        ),
         default_x = "Time relative to event (s)",
-        default_y = input$signal_var,
+        default_y = get_var_label(input$signal_var),
         default_legend = ""
       )
-      p <- plotly::plot_ly(x = x_vals, y = y_vals, type = "scatter", mode = "lines", name = "Trajectory")
+
+      p <- plotly::plot_ly(
+        x = x_vals,
+        y = y_vals,
+        type = "scatter",
+        mode = "lines",
+        name = get_var_label(input$signal_var),
+        legendrank = plot_label_rank(
+          make_variable_order_key(input$signal_var)
+        )
+      )
 
 
 
@@ -3924,9 +4265,14 @@ server <- function(input, output, session){
 
       # Get Labels
       labs <- get_labels(
-        default_title = paste("Average Trajectory:", input$event_var),
+        default_title = paste(
+          "Average",
+          get_var_label(input$signal_var),
+          "trajectory around",
+          get_var_label(input$event_var)
+        ),
         default_x = "Time relative to event",
-        default_y = input$signal_var,
+        default_y = get_var_label(input$signal_var),
         default_legend = ""
       )
 
@@ -4146,6 +4492,12 @@ server <- function(input, output, session){
 
       pal <- get_accessible_palette(n_targets)
 
+      for (i in seq_along(plot_targets)) {
+        plot_targets[[i]]$color <- pal[i]
+      } #making sure colors stay the same when labels are reordered
+
+      plot_targets <- ordered_plot_targets(plot_targets)
+
       use_stacked <- isTRUE(input$barcode_layout == "stacked") && n_targets > 1
 
       p <- plotly::plot_ly()
@@ -4173,7 +4525,7 @@ server <- function(input, output, session){
               legend_key = target$legend_key,
               start = start_vec[active_idx],
               end = end_vec[active_idx],
-              color = pal[t_idx],
+              color = target$color,
               participant_id = if (isTRUE(input$use_id)) {
                 as.character(
                   df_clean[[input$idvar]][active_idx]
@@ -4203,7 +4555,7 @@ server <- function(input, output, session){
               legend_key = target$legend_key,
               start = time_vec[windows$start],
               end = time_vec[windows$end],
-              color = pal[t_idx],
+              color = target$color,
               participant_id = if (isTRUE(input$use_id)) {
                 as.character(
                   df_clean[[input$idvar]][windows$start]
@@ -4424,10 +4776,10 @@ server <- function(input, output, session){
 
       labs <- get_labels(
         default_title = paste0(
-          "Event Barcode:",
+          "Event Barcode: ",
           paste0(
             vapply(
-              selected_barcodes(),
+              ordered_variables(selected_barcodes()),
               get_var_label,
               character(1)
             ),
@@ -4544,7 +4896,58 @@ server <- function(input, output, session){
     }
 
     if (should_show) {
-      tagList(hr(), h4("Descriptive Statistics"), verbatimTextOutput("desc_stats"))
+      tagList(
+        hr(),
+
+        tags$div(
+          class = "panel panel-default",
+          style = "margin-bottom: 15px;",
+
+          tags$div(
+            class = "panel-heading",
+            style = "padding: 0;",
+
+            tags$a(
+              href = "#descriptive-stats-collapse",
+              `data-toggle` = "collapse",
+              `aria-expanded` = "false",
+              `aria-controls` = "descriptive-stats-collapse",
+              style = paste(
+                "display: flex;",
+                "align-items: center;",
+                "justify-content: space-between;",
+                "width: 100%;",
+                "padding: 11px 14px;",
+                "color: #333;",
+                "text-decoration: none;",
+                "cursor: pointer;"
+              ),
+
+              tags$span(
+                style = "font-size: 16px; font-weight: 500;",
+                icon("chart-simple"),
+                " Descriptive Statistics"
+              ),
+
+              tags$span(
+                style = "font-size: 13px; color: #337ab7;",
+                "View ",
+                icon("chevron-down")
+              )
+            )
+          ),
+
+          tags$div(
+            id = "descriptive-stats-collapse",
+            class = "panel-collapse collapse",
+
+            tags$div(
+              class = "panel-body",
+              verbatimTextOutput("desc_stats")
+            )
+          )
+        )
+      )
     } else {
       NULL
     }

@@ -68,8 +68,9 @@ function sendShinyEvent(inputId) {
 }
 
 function isTypingTarget(target) {
-  return $(target).is(
-    'input, textarea, select, button, .selectize-input, .selectize-control'
+  return (
+    $(target).is('input, textarea, select, [contenteditable="true"]') ||
+    $(target).closest('.selectize-input, .selectize-control').length > 0
   );
 }
 
@@ -271,6 +272,51 @@ $(document).on('click', '#labels-toggle', function(e) {
   e.preventDefault();
   $('#labels-dropdown').slideToggle(200);
   $('#labels-caret').toggleClass('caret-up');
+});
+
+function sendPlotLabelOrder() {
+  var order = $('#plot-label-order-list .label-order-item')
+    .map(function() {
+      return $(this).attr('data-order-key');
+    })
+    .get();
+
+  if (window.Shiny && order.length > 0) {
+    Shiny.setInputValue('plot_label_order', order, {
+      priority: 'event'
+    });
+  }
+}
+
+$(document).on('click', '.move-label-up', function(e) {
+  e.preventDefault();
+
+  var item = $(this).closest('.label-order-item');
+  var previousItem = item.prev('.label-order-item');
+
+  if (previousItem.length) {
+    item.insertBefore(previousItem);
+    sendPlotLabelOrder();
+  }
+});
+
+$(document).on('click', '.move-label-down', function(e) {
+  e.preventDefault();
+
+  var item = $(this).closest('.label-order-item');
+  var nextItem = item.next('.label-order-item');
+
+  if (nextItem.length) {
+    item.insertAfter(nextItem);
+    sendPlotLabelOrder();
+  }
+});
+
+// Send the initial order whenever Shiny rebuilds the label controls.
+$(document).on('shiny:value', function(e) {
+  if (e.name === 'legend_labels_ui') {
+    setTimeout(sendPlotLabelOrder, 0);
+  }
 });
 
 $(document).on('click', '#subset-toggle', function(e) {
