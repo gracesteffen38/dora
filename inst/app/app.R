@@ -524,10 +524,10 @@ ui <- shiny::fluidPage(
           conditionalPanel(
             condition = "input.step_through == true",
             fluidRow(
-              column(6, actionButton("prev_id", "Previous Participant",
-                                     title = "Previous Participant (← Left Arrow)", icon = icon("arrow-left"))),
-              column(6, actionButton("next_id", "Next Participant",
-                                     title = "Next Participant (→ Right Arrow)", icon = icon("arrow-right")))
+              column(6, actionButton("prev_id", "Previous Participant",`aria-keyshortcuts` = "A",
+                                     title = "Previous Participant (← A key)", icon = icon("arrow-left"))),
+              column(6, actionButton("next_id", "Next Participant",`aria-keyshortcuts` = "D",
+                                     title = "Next Participant (→ D key)", icon = icon("arrow-right")))
             ),
             tags$div(
               style = "margin-top: 0.5em;",
@@ -3555,14 +3555,19 @@ server <- function(input, output, session){
                 actionButton(
                   "prev_second_id",
                   "Previous Participant",
+                  title = "Previous Plot 2 participant (J key)",
+                  `aria-keyshortcuts` = "J",
                   icon = icon("arrow-left")
                 )
               ),
+
               column(
                 6,
                 actionButton(
                   "next_second_id",
                   "Next Participant",
+                  title = "Next Plot 2 participant (L key)",
+                  `aria-keyshortcuts` = "L",
                   icon = icon("arrow-right")
                 )
               )
@@ -3832,10 +3837,11 @@ server <- function(input, output, session){
 
       check_plot_cancelled(my_request, my_cancel)
 
-      t0 <- Sys.time()
-      on.exit({
-        print(Sys.time() - t0)
-      })
+      #check time elapsed to plot
+      # t0 <- Sys.time()
+      # on.exit({
+      #   print(Sys.time() - t0)
+      # })
 
       fonts <- get_plot_fonts()
       margins <- get_plot_margins()
@@ -4345,8 +4351,8 @@ server <- function(input, output, session){
       plot_df <- filtered_data()
 
       # Temporary check
-      print(unique(plot_df[[input$idvar]]))
-      print(nrow(plot_df))
+      # print(unique(plot_df[[input$idvar]]))
+      # print(nrow(plot_df))
 
       if (input$event_format == "interval") {
 

@@ -67,40 +67,58 @@ function sendShinyEvent(inputId) {
   });
 }
 
+
+//function isTypingTarget(target) {
+ // return (
+  //  $(target).is('input, textarea, select, [contenteditable="true"]') ||
+   // $(target).closest('.selectize-input, .selectize-control').length > 0
+  //);
+//}
+
 function isTypingTarget(target) {
-  return (
-    $(target).is('input, textarea, select, [contenteditable="true"]') ||
-    $(target).closest('.selectize-input, .selectize-control').length > 0
+  return $(target).is(
+    'input, textarea, select, button, .selectize-input, .selectize-control'
   );
 }
 
 // Keyboard shortcuts
-
 $(document).on('keydown', function(e) {
   var inInput = isTypingTarget(e.target);
 
-  // Arrow keys: participant/event navigation when not typing
-  if (!inInput) {
-    if (e.which === 37) {
-      $('#prev_id').click();
-      e.preventDefault();
-    }
+  var shortcutsEnabled =
+    $('#enable_participant_shortcuts').length === 0 ||
+    $('#enable_participant_shortcuts').is(':checked');
 
-    if (e.which === 39) {
-      $('#next_id').click();
-      e.preventDefault();
-    }
+  if (
+    !inInput &&
+    shortcutsEnabled &&
+    !e.altKey &&
+    !e.ctrlKey &&
+    !e.metaKey &&
+    !e.repeat
+  ) {
+    var key = String(e.key || '').toLowerCase();
 
-    if (e.which === 38) {
-      $('#prev_event').click();
-      e.preventDefault();
-    }
+    var participantShortcuts = {
+      a: '#prev_id',
+      d: '#next_id',
+      j: '#prev_second_id',
+      l: '#next_second_id'
+    };
 
-    if (e.which === 40) {
-      $('#next_event').click();
-      e.preventDefault();
+    var buttonSelector = participantShortcuts[key];
+
+    if (buttonSelector) {
+      var button = $(buttonSelector).filter(':visible');
+
+      // Only consume the key when its corresponding control is available.
+      if (button.length > 0) {
+        e.preventDefault();
+        button.first().click();
+      }
     }
   }
+
 
   // Alt shortcuts
   if (e.altKey) {
@@ -159,7 +177,7 @@ $(document).on('keydown', function(e) {
         $('#show_second_plot').click();
         break;
 
-      // Alt+I - Toggle step-through participants
+      // Alt+I - Toggle step-through participants ANCHOR
       case 73:
         e.preventDefault();
         $('#step_through').click();
