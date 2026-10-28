@@ -68,18 +68,13 @@ function sendShinyEvent(inputId) {
 }
 
 
-//function isTypingTarget(target) {
- // return (
-  //  $(target).is('input, textarea, select, [contenteditable="true"]') ||
-   // $(target).closest('.selectize-input, .selectize-control').length > 0
-  //);
-//}
-
 function isTypingTarget(target) {
-  return $(target).is(
-    'input, textarea, select, button, .selectize-input, .selectize-control'
+  return (
+    $(target).is('input, textarea, select, [contenteditable="true"]') ||
+    $(target).closest('.selectize-input, .selectize-control').length > 0
   );
 }
+
 
 // Keyboard shortcuts
 $(document).on('keydown', function(e) {
@@ -88,37 +83,6 @@ $(document).on('keydown', function(e) {
   var shortcutsEnabled =
     $('#enable_participant_shortcuts').length === 0 ||
     $('#enable_participant_shortcuts').is(':checked');
-
-  if (
-    !inInput &&
-    shortcutsEnabled &&
-    !e.altKey &&
-    !e.ctrlKey &&
-    !e.metaKey &&
-    !e.repeat
-  ) {
-    var key = String(e.key || '').toLowerCase();
-
-    var participantShortcuts = {
-      a: '#prev_id',
-      d: '#next_id',
-      j: '#prev_second_id',
-      l: '#next_second_id'
-    };
-
-    var buttonSelector = participantShortcuts[key];
-
-    if (buttonSelector) {
-      var button = $(buttonSelector).filter(':visible');
-
-      // Only consume the key when its corresponding control is available.
-      if (button.length > 0) {
-        e.preventDefault();
-        button.first().click();
-      }
-    }
-  }
-
 
   // Alt shortcuts
   if (e.altKey) {
@@ -129,10 +93,36 @@ $(document).on('keydown', function(e) {
         toggleToolbarMenu('#help-dropdown-menu', 'help');
         break;
 
-      // Alt+A - Accessibility menu
+      // Alt+A - Previous participant
       case 65:
-        e.preventDefault();
-        toggleToolbarMenu('#accessibility-dropdown-menu', 'accessibility');
+        if (!inInput && shortcutsEnabled && $('#prev_id').is(':visible')) {
+          e.preventDefault();
+          $('#prev_id').click();
+        }
+        break;
+
+      // Alt+D - Next participant
+      case 68:
+        if (!inInput && shortcutsEnabled && $('#next_id').is(':visible')) {
+          e.preventDefault();
+          $('#next_id').click();
+        }
+        break;
+
+      // Alt+W - Previous event
+      case 87:
+        if (!inInput && shortcutsEnabled && $('#prev_event').is(':visible')) {
+          e.preventDefault();
+          $('#prev_event').click();
+        }
+        break;
+
+      // Alt+S - Next event
+      case 83:
+        if (!inInput && shortcutsEnabled && $('#next_event').is(':visible')) {
+          e.preventDefault();
+          $('#next_event').click();
+        }
         break;
 
       // Alt+B - Back to data
@@ -147,10 +137,10 @@ $(document).on('keydown', function(e) {
         $('#go_viz').click();
         break;
 
-      // Alt+C - Convert data
+      // Alt+C - Accessibility menu
       case 67:
         e.preventDefault();
-        sendShinyEvent('open_converter_modal');
+        toggleToolbarMenu('#accessibility-dropdown-menu', 'accessibility');
         break;
 
       // Alt+P - Peek at data
@@ -159,25 +149,13 @@ $(document).on('keydown', function(e) {
         $('#peek_data').click();
         break;
 
-      // Alt+S - Save menu
-      case 83:
-        e.preventDefault();
-        toggleToolbarMenu('#save-dropdown-menu', 'save');
-        break;
-
       // Alt+T - Tools menu
       case 84:
         e.preventDefault();
         toggleToolbarMenu('#tools-dropdown-menu', 'tools');
         break;
 
-      // Alt+D - Toggle second plot
-      case 68:
-        e.preventDefault();
-        $('#show_second_plot').click();
-        break;
-
-      // Alt+I - Toggle step-through participants ANCHOR
+      // Alt+I - Toggle step-through participants
       case 73:
         e.preventDefault();
         $('#step_through').click();

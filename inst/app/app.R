@@ -19,10 +19,10 @@ ui <- shiny::fluidPage(
 
   titlePanel("Data Organization and Rhythm Analysis"),
 
-  # Sticky Toolbar (Top Toolbar)
+  # Sticky Toolbar (top)
   tags$div(id = "sticky-toolbar", class = "toolbar sticky-toolbar",
 
-           # Left side - Back button
+           # Back button
            tags$div(conditionalPanel(
              condition = "input.sidebar_state == 'viz'",
              actionButton("back_data", "← Back to Data Options",
@@ -76,188 +76,113 @@ ui <- shiny::fluidPage(
                  ),
 
                  fluidRow(
-                   column(
-                     4,
-                     tags$h6(
-                       "Visual",
-                       style = "font-weight: bold; margin-bottom: 10px;"
-                     ),
-                     checkboxInput(
-                       "high_contrast",
-                       "High Contrast",
-                       FALSE
-                     ),
-                     checkboxInput(
-                       "large_text",
-                       "Large Text",
-                       FALSE
-                     )
-                   ),
+                   column(4, tags$h6("Visual", style = "font-weight: bold; margin-bottom: 10px;"),
+                          checkboxInput("high_contrast", "High Contrast", FALSE),
+                          checkboxInput("large_text", "Large Text", FALSE)),
 
-                   column(
-                     4,
-                     tags$h6(
-                       "Motor",
-                       style = "font-weight: bold; margin-bottom: 10px;"
-                     ),
-                     checkboxInput(
-                       "large_targets",
-                       "Large Targets",
-                       FALSE
-                     ),
-                     checkboxInput(
-                       "reduce_motion",
-                       "Reduce Motion",
-                       FALSE
-                     )
-                   ),
+                   column(4, tags$h6("Motor", style = "font-weight: bold; margin-bottom: 10px;"),
+                          checkboxInput("large_targets", "Large Targets", FALSE),
+                          checkboxInput("reduce_motion", "Reduce Motion", FALSE)),
 
-                   column(
-                     4,
-                     tags$h6(
-                       "Cognitive",
-                       style = "font-weight: bold; margin-bottom: 10px;"
-                     ),
-                     checkboxInput(
-                       "simplified_ui",
-                       "Simplified UI",
-                       FALSE
-                     ),
-                     checkboxInput(
-                       "show_descriptions",
-                       "Extra Help",
-                       FALSE
-                     ),
-                     checkboxInput(
-                       "confirm_actions",
-                       "Confirm Actions",
-                       FALSE
-                     )
-                   )
+                   column(4, tags$h6("Cognitive", style = "font-weight: bold; margin-bottom: 10px;"),
+                          checkboxInput("simplified_ui", "Simplified UI", FALSE),
+                          checkboxInput("show_descriptions", "Extra Help", FALSE),
+                          checkboxInput("confirm_actions", "Confirm Actions", FALSE))
                  ),
 
                  tags$hr(),
 
                  fluidRow(
-                   column(
-                     6,
-                     actionButton(
-                       "preset_vision",
-                       "Vision Preset",
-                       class = "btn-sm btn-outline-primary",
-                       style = "width: 100%;"
-                     ),
-                     br(),
-                     br(),
-                     actionButton(
-                       "preset_motor",
-                       "Motor Preset",
-                       class = "btn-sm btn-outline-primary",
-                       style = "width: 100%;"
-                     )
-                   ),
+                   column(6,actionButton("preset_vision", "Vision Preset", class = "btn-sm btn-outline-primary",
+                                         style = "width: 100%;"), br(), br(),
+                          actionButton("preset_motor", "Motor Preset", class = "btn-sm btn-outline-primary",
+                                       style = "width: 100%;")),
 
-                   column(
-                     6,
-                     actionButton(
-                       "reset_accessibility",
-                       "Reset All",
-                       class = "btn-sm btn-outline-secondary",
-                       style = "width: 100%;"
-                     )
-                   )
+                   column(6, actionButton("reset_accessibility", "Reset All",
+                                          class = "btn-sm btn-outline-secondary",
+                                          style = "width: 100%;"))
                  )
                )
              )
            ),
 
            # Tools menu
-           tags$div(
-             style = "padding: 0px 10px 0px 0px;",
-             tags$div(
-               class = "btn-group",
-               tags$button(
-                 id = "tools-dropdown-btn",
-                 class = "btn btn-outline-secondary dropdown-toggle",
-                 type = "button",
-                 title = "Tools",
-                 icon("gear"), " Tools ", tags$span(class = "caret")
-               ),
-               tags$div(
-                 id = "tools-dropdown-menu",
-                 style = "display: none; position: absolute; right: 0; top: 100%;
+           tags$div(style = "padding: 0px 10px 0px 0px;",
+                    tags$div(
+                      class = "btn-group",
+                      tags$button(
+                        id = "tools-dropdown-btn",
+                        class = "btn btn-outline-secondary dropdown-toggle",
+                        type = "button",
+                        title = "Tools",
+                        icon("gear"), " Tools ", tags$span(class = "caret")
+                      ),
+                      tags$div(id = "tools-dropdown-menu",
+                               style = "display: none; position: absolute; right: 0; top: 100%;
                min-width: 240px; background: white; border: 1px solid #ddd;
                border-radius: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);
                z-index: 2000; padding: 8px 0;",
 
-                 tags$a(
-                   id = "open-converter-tool",
-                   href = "#",
-                   style = "display: block; padding: 9px 16px; color: #333;
+                               tags$a(id = "open-converter-tool",
+                                      href = "#",
+                                      style = "display: block; padding: 9px 16px; color: #333;
            text-decoration: none; font-size: 14px;",
-                   icon("right-left"), " Data Converter"
-                 ),
+                                      icon("right-left"), " Data Converter"
+                               ),
 
-                 tags$hr(style = "margin: 4px 0;"),
+                               tags$hr(style = "margin: 4px 0;"),
 
-                 tags$a(
-                   id = "open-structure-checker",
-                   href = "#",
-                   style = "display: block; padding: 9px 16px; color: #333;
+                               tags$a(id = "open-structure-checker",
+                                      href = "#",
+                                      style = "display: block; padding: 9px 16px; color: #333;
            text-decoration: none; font-size: 14px;",
-                   icon("magnifying-glass-chart"), " Dataset Structure Checker"
-                 ),
+                                      icon("magnifying-glass-chart"), " Dataset Structure Checker"
+                               ),
 
-                 tags$a(
-                   id = "open-template-tool",
-                   href = "#",
-                   style = "display: block; padding: 9px 16px; color: #333;
+                               tags$a(id = "open-template-tool",
+                                      href = "#",
+                                      style = "display: block; padding: 9px 16px; color: #333;
            text-decoration: none; font-size: 14px;",
-                   icon("file-csv"), " Download Data Templates"
-                 ),
+                                      icon("file-csv"), " Download Data Templates"
+                               ),
 
-                 tags$a(
-                   id = "open-missing-tool",
-                   href = "#",
-                   style = "display: block; padding: 9px 16px; color: #333;
+                               tags$a(id = "open-missing-tool",
+                                      href = "#",
+                                      style = "display: block; padding: 9px 16px; color: #333;
            text-decoration: none; font-size: 14px;",
-                   icon("circle-exclamation"), " Missing Data Inspector"
-                 ),
+                                      icon("circle-exclamation"), " Missing Data Inspector"
+                               ),
 
-                 tags$a(
-                   id = "open-participant-summary",
-                   href = "#",
-                   style = "display: block; padding: 9px 16px; color: #333;
+                               tags$a(id = "open-participant-summary",
+                                      href = "#",
+                                      style = "display: block; padding: 9px 16px; color: #333;
            text-decoration: none; font-size: 14px;",
-                   icon("users"), " Participant / Visit Summary"
-                 ),
+                                      icon("users"), " Participant / Visit Summary"
+                               ),
 
-                 tags$a(
-                   id = "open-event-summary",
-                   href = "#",
-                   style = "display: block; padding: 9px 16px; color: #333;
+                               tags$a(id = "open-event-summary",
+                                      href = "#",
+                                      style = "display: block; padding: 9px 16px; color: #333;
            text-decoration: none; font-size: 14px;",
-                   icon("bars-progress"), " Event Summary"
-                 ),
+                                      icon("bars-progress"), " Event Summary"
+                               ),
 
-                 tags$hr(style = "margin: 4px 0;"),
+                               tags$hr(style = "margin: 4px 0;"),
 
-                 tags$a(
-                   id = "download_quality_report",
-                   href = "",
-                   class = "shiny-download-link",
-                   download = "",
-                   target = "_blank",
-                   style = "display: block; padding: 9px 16px; color: #333;
+                               tags$a(id = "download_quality_report",
+                                      href = "",
+                                      class = "shiny-download-link",
+                                      download = "",
+                                      target = "_blank",
+                                      style = "display: block; padding: 9px 16px; color: #333;
            text-decoration: none; font-size: 14px;",
-                   icon("file-lines"), " Download Data Quality Report"
-                 )
-               )
-             )
+                                      icon("file-lines"), " Download Data Quality Report"
+                               )
+                      )
+                    )
            ),
 
-           # Save menu
-           # Right side - Save menu
+           # Save menu right corner
            tags$div(style ="padding: 0px 10px 0px 0px;",
                     conditionalPanel(
                       condition = "input.sidebar_state == 'viz'",
@@ -287,23 +212,6 @@ ui <- shiny::fluidPage(
                                                  actionButton("download_plot_svg", "Vector Image (SVG)",
                                                               class = "btn btn-outline-secondary btn-sm",
                                                               style = "width: 100%; display: block; text-align: center;")
-                                        ),
-
-                                        # Both Plots Section
-                                        conditionalPanel(
-                                          condition = "input.show_second_plot == true",
-                                          tags$hr(style = "margin: 8px 0;"),
-                                          tags$h6(style = "font-weight: bold; margin-bottom: 8px; color: #333;", "Both Plots"),
-                                          tags$div(style = "margin-bottom: 5px;",
-                                                   tags$a(id = "toolbar_download_both_html", href = "", class = "btn btn-info btn-sm shiny-download-link",
-                                                          download = "", target = "_blank", style = "width: 100%; display: block; text-align: center;",
-                                                          "Interactive (ZIP)")
-                                          ),
-                                          tags$div(style = "margin-bottom: 10px;",
-                                                   tags$a(id = "toolbar_download_both_png", href = "", class = "btn btn-outline-info btn-sm shiny-download-link",
-                                                          download = "", target = "_blank", style = "width: 100%; display: block; text-align: center;",
-                                                          "Static Images (ZIP)")
-                                          )
                                         ),
 
                                         # Descriptive Stats Section
@@ -355,7 +263,7 @@ ui <- shiny::fluidPage(
                                         icon("wand-magic-sparkles"), " Help me choose a plot..."
                                       ),
                                       tags$hr(style = "margin: 4px 0;"),
-                                      tags$a(href = "https://forms.gle/G3MxUSmnZzFqC5Yj8",
+                                      tags$a(href = "https://forms.gle/H1j31K1NnE9YTHYU9",
                                              target = "_blank",
                                              style = "display: block; padding: 8px 0px 8px 26px; color: #333;
                        text-decoration: none; font-size: 14px;",
@@ -390,8 +298,6 @@ ui <- shiny::fluidPage(
 
   sidebarLayout(
     sidebarPanel(
-
-      # DATA OPTIONS
       conditionalPanel(
         condition = "input.sidebar_state == 'data'",
 
@@ -458,21 +364,14 @@ ui <- shiny::fluidPage(
             )
           ),
 
-
           checkboxInput("use_id", "Multiple participants", FALSE),
-
-          conditionalPanel(
-            condition = "input.use_id",
-            uiOutput("idvar_ui")
-          ),
-
+          conditionalPanel(condition = "input.use_id", uiOutput("idvar_ui")),
           br(),
           actionButton("go_viz", "Go to Visualizations", class = "btn-primary", accesskey = "v",
                        title = "Go to Visualizations (Alt+V)")
         )
       ),
 
-      # VISUALIZATIONS
       conditionalPanel(
         condition = "input.sidebar_state == 'viz'",
 
@@ -506,18 +405,19 @@ ui <- shiny::fluidPage(
 
         selectInput("viz_mode", "Visualization type",
                     c("Raw time series", "Event + Continuous Overlay", "Event-locked average",
-                      "Event-locked single event", "Event durations (barcode)")),
+                      "Event-locked single event", "Event durations (barcode)",
+                      "Allan Factor (event data)", "Allan Deviation (continuous)")),
         tags$div(id = "viz-mode-help", class = "help-text", style = "font-size: 0.9em; color: #666; display: none;",
                  "Choose how to display your data: line plots, event overlays, or event-triggered averages"),
 
-        # Participant controls
+        # Participant selection
         conditionalPanel(
           condition = "input.use_id == true",
-          h4("Participants"),
+          h4("Participant Toggling"),
           checkboxInput("step_through", "View one participant at a time", FALSE),
 
           conditionalPanel(
-            condition = "input.step_through == false && input.viz_mode != 'Event-locked single event'",
+            condition = "input.step_through == false && input.viz_mode != 'Event-locked single event' && input.viz_mode != 'Allan Factor (event data)' && input.viz_mode != 'Allan Deviation (continuous)'",
             uiOutput("id_select_ui")
           ),
 
@@ -576,17 +476,19 @@ ui <- shiny::fluidPage(
         conditionalPanel(
           condition = "input.viz_mode == 'Event-locked average'",
           textOutput("n_events_averaged"),
-          checkboxInput(
-            "overlay_events",
-            "Overlay individual trajectories",
-            FALSE
-          ),
-          checkboxInput(
-            "show_se_ribbon",
-            "Show SE ribbon",
-            FALSE
-          )
+          checkboxInput("overlay_events", "Overlay individual trajectories", FALSE),
+          checkboxInput("show_se_ribbon", "Show SE ribbon", FALSE)),
+
+        conditionalPanel(
+          condition = "input.viz_mode == 'Allan Factor (event data)'",
+          uiOutput("af_ui")
         ),
+
+        conditionalPanel(
+          condition = "input.viz_mode == 'Allan Deviation (continuous)'",
+          uiOutput("ad_ui")
+        ),
+
         # Custom labels dropdown
         tags$div(class = "panel panel-default", style = "margin-bottom: 10px;",
                  tags$div(class = "panel-heading", style = "padding: 8px 12px; background-color: #f8f9fa;",
@@ -612,16 +514,14 @@ ui <- shiny::fluidPage(
                             )
                           ),
                           uiOutput("legend_labels_ui")
-                          # actionButton(
-                          #   "update_labels",
-                          #   "Apply Labels",
-                          #   class = "btn-outline-primary btn-sm",
-                          #   icon = icon("check"),
-                          #   style = "width: 100%; margin-top: 8px;",
-                          #   title = "Apply custom labels to the current plot"
-                          # )
                  ) ),
-        hr(),
+        checkboxInput("auto_height", "Auto-adjust plot height", TRUE),
+        conditionalPanel(
+          condition = "input.auto_height == false",
+          sliderInput("custom_plot_height", "Custom Plot Height (pixels)",
+                      min = 300, max = 3000, value = 550, step = 50, ticks = FALSE)
+        ),
+        #hr(),
         actionButton(
           "update_plot",
           "Update Plot",
@@ -629,17 +529,8 @@ ui <- shiny::fluidPage(
           icon = icon("rotate"),
           style = "width: 100%; margin-bottom: 10px;",
           title = "Update the plot using the current selections"
-        ),
-        hr(),
-        h4("Second Plot (Optional)"),
-        checkboxInput("show_second_plot", "Show second plot below main plot", FALSE),
-
-        conditionalPanel(
-          condition = "input.show_second_plot == true",
-          uiOutput("second_plot_ui")
         )
       ),
-      #),
       shinyjs::hidden(textInput("sidebar_state", "", value = "data"))
     ),
 
@@ -650,7 +541,7 @@ ui <- shiny::fluidPage(
                  style = "margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #007bff; border-radius: 4px; display: none;",
                  textOutput("plot_description")),
 
-        shinycssloaders::withSpinner(plotly::plotlyOutput("plot", height = "550px")),
+        shinycssloaders::withSpinner(uiOutput("dynamic_plot_container")),
         tags$div(
           style = "margin-top: 10px; margin-bottom: 12px;",
           actionButton(
@@ -661,22 +552,8 @@ ui <- shiny::fluidPage(
             title = "Explain what the current plot is showing"
           )
         ),
-        uiOutput("stats_section"),
-
-        conditionalPanel(
-          condition = "input.show_second_plot == true",
-          tags$div(
-            style = "margin-top: 40px; margin-bottom: 15px",
-          tags$div(class = "help-text",
-                   style = "margin-top: 15px; margin-bottom: 15px; padding: 10px; background-color: #f8f9fa; border-left: 4px solid #007bff; border-radius: 4px; display: none;",
-                   textOutput("plot2_description")),
-
-          shinycssloaders::withSpinner(plotly::plotlyOutput("plot2", height = "400px"))
-        )
-        )
+        uiOutput("stats_section")
       )
-
-
     )
   )
 )
@@ -855,22 +732,16 @@ server <- function(input, output, session){
   }
 
   get_event_category_label <- function(variable, category) {
-    key <- make_event_category_label_id(
-      variable = variable,
-      category = category
-    )
-
+    key <- make_event_category_label_id(variable = variable, category = category)
     current_val <- input[[key]]
     stored_val  <- label_values[[key]]
 
     if (isTruthy(current_val)) {
       return(current_val)
     }
-
     if (isTruthy(stored_val)) {
       return(stored_val)
     }
-
     as.character(category)
   }
 
@@ -896,7 +767,6 @@ server <- function(input, output, session){
     paste(variable_label, "-", category_label)
   }
 
-  #get_variable_label
   get_var_label <- function(var) {
     key <- make_label_id(var)
 
@@ -910,8 +780,7 @@ server <- function(input, output, session){
     if (isTruthy(stored_val)) {
       return(stored_val)
     }
-
-    paste("", var) #anchor
+    paste("", var)
   }
 
   add_legend_target <- function(legend_traces, target) {
@@ -951,7 +820,6 @@ server <- function(input, output, session){
     if (isTRUE(show_variable)) {
       variable_label <- get_var_label(variable)
 
-      # get_var_label() default begins with "-" that marker when building a combined label.
       if (identical(variable_label, paste("-", variable))) {
         variable_label <- variable
       }
@@ -964,8 +832,6 @@ server <- function(input, output, session){
     category_label
   }
 
-
-  # START anchor
   # Convert supported time variables to numeric values
   .numeric_event_time <- function(time) {
     if (is.numeric(time)) {
@@ -991,7 +857,6 @@ server <- function(input, output, session){
 
     converted
   }
-
 
   # Extract event onset times
   .extract_abney_onsets <- function(
@@ -1055,8 +920,6 @@ server <- function(input, output, session){
     ordered_time[onset]
   }
 
-
-  # Calculate the Abney et al. burstiness statistic from event times
   .abney_burstiness_from_times <- function(event_times) {
     event_times <- .numeric_event_time(event_times)
     event_times <- sort(event_times[is.finite(event_times)])
@@ -1086,22 +949,6 @@ server <- function(input, output, session){
     (sd_iei - mean_iei) / denominator
   }
 
-
-  #' Calculate burstiness following Abney et al. (2018)
-  #'
-  #' For continuous sampled data, consecutive occurrences of an event
-  #' are collapsed into a single onset. For interval data, each matching
-  #' row is treated as one event and its start time is used as the onset.
-  #'
-  #' @param vector Event or state vector.
-  #' @param event_format Either `"continuous"` or `"interval"`.
-  #' @param time Optional time vector for continuous data and required
-  #'   start-time vector for interval data. If omitted for continuous
-  #'   data, row positions are used.
-  #' @param event Event value to analyze. Defaults to `1`.
-  #'
-  #' @return Numeric burstiness estimate or `NA_real_`.
-  #' @export
   get_burstiness <- function(
     vector,
     event_format = c("continuous", "interval"),
@@ -1150,18 +997,6 @@ server <- function(input, output, session){
     )
   }
 
-
-  #' Calculate Abney et al. burstiness by event category
-  #'
-  #' @param vector Binary or categorical event vector.
-  #' @param event_format Either `"continuous"` or `"interval"`.
-  #' @param time Optional timestamp vector for continuous data and
-  #'   required onset-time vector for interval data.
-  #' @param events Optional values to analyze. If omitted, binary data
-  #'   analyze event 1; categorical data analyze all observed values.
-  #'
-  #' @return Data frame containing one row per event category.
-  #' @export
   get_burstiness_by_event <- function(
     vector,
     event_format = c("continuous", "interval"),
@@ -1231,7 +1066,6 @@ server <- function(input, output, session){
 
     do.call(rbind, results)
   }
-  #END anchor
   get_app_burstiness <- function(sub_df, event_variable) {
     event_values <- sub_df[[event_variable]]
 
@@ -1244,9 +1078,6 @@ server <- function(input, output, session){
         time = sub_df[[input$int_start]]
       )
     } else {
-      # Ideally use the same time variable displayed on the x-axis.
-      # If rows are guaranteed to be evenly spaced, time = NULL is
-      # mathematically sufficient.
       get_burstiness_by_event(
         vector = event_values,
         event_format = "continuous",
@@ -1271,7 +1102,6 @@ server <- function(input, output, session){
     if (n_events < 3L) {
       return("NA (<3 event episodes)")
     }
-
     "NA"
   }
 
@@ -1367,6 +1197,26 @@ server <- function(input, output, session){
           tags$li("This view is useful for checking whether event-locked averages are driven by a few unusual events.")
         ),
         tags$p(tags$strong("What to check next: "), "Compare several individual events before relying on the average.")
+      ))
+    }
+
+    if (mode == "Allan Factor (event data)") {
+      return(tagList(
+        tags$p("This plot shows the Allan Factor A(T) over different window sizes T."),
+        tags$ul(
+          tags$li(paste("Event variable:", input$af_var %||% "selected event")),
+          tags$li("A slope > 0 indicates fractal/bursty temporal structure.")
+        )
+      ))
+    }
+
+    if (mode == "Allan Deviation (continuous)") {
+      return(tagList(
+        tags$p("This plot shows the Allan Deviation (or Variance) over different time intervals (tau)."),
+        tags$ul(
+          tags$li(paste("Signal variable:", input$ad_var %||% "selected signal")),
+          tags$li("Used to measure stability of a continuous signal across time scales.")
+        )
       ))
     }
 
@@ -1630,7 +1480,6 @@ server <- function(input, output, session){
   }
 
   plot_store  <- reactiveVal(NULL)
-  plot2_store <- reactiveVal(NULL)
   stats_store <- reactiveVal(NULL)
   data_converted <- reactiveVal(NULL)
   conversion_done <- reactiveVal(FALSE)
@@ -1660,19 +1509,10 @@ server <- function(input, output, session){
       input$viz_mode,
       "Raw time series" =
         input$yvar,
-
-      "Event + Continuous Overlay" =
-        c(input$signal_overlay, input$event_overlay),
-
-      "Event durations (barcode)" =
-        input$barcode_var,
-
-      "Event-locked average" =
-        c(input$signal_var, input$event_var),
-
-      "Event-locked single event" =
-        c(input$signal_var, input$event_var),
-
+      "Event + Continuous Overlay" = c(input$signal_overlay, input$event_overlay),
+      "Event durations (barcode)" = input$barcode_var,
+      "Event-locked average" = c(input$signal_var, input$event_var),
+      "Event-locked single event" = c(input$signal_var, input$event_var),
       NULL
     )
 
@@ -1681,24 +1521,14 @@ server <- function(input, output, session){
 
   event_label_vars <- reactive({
     req(input$viz_mode)
-
     vars <- switch(
       input$viz_mode,
-      "Event + Continuous Overlay" =
-        input$event_overlay,
-
-      "Event durations (barcode)" =
-        input$barcode_var,
-
-      "Event-locked average" =
-        input$event_var,
-
-      "Event-locked single event" =
-        input$event_var,
-
+      "Event + Continuous Overlay" =  input$event_overlay,
+      "Event durations (barcode)" = input$barcode_var,
+      "Event-locked average" = input$event_var,
+      "Event-locked single event" = input$event_var,
       NULL
     )
-
     unique(vars)
   })
 
@@ -1745,8 +1575,6 @@ server <- function(input, output, session){
         categories <- unique(observed)
       }
 
-      # Standard binary event columns do not need category labels:
-      # the existing variable label describes the event represented by 1.
       is_standard_binary <- all(categories %in% c("0", "1"))
 
       if (is_standard_binary) {
@@ -2343,8 +2171,6 @@ server <- function(input, output, session){
     stop("PNG export failed. Please install kaleido (reticulate::py_install('kaleido')) or Chrome for webshot2.")
   }
 
-
-
   # Helper function to get font sizes based on accessibility settings
   get_plot_fonts <- function() {
     if (isTRUE(accessibility$large_text)) {
@@ -2363,7 +2189,6 @@ server <- function(input, output, session){
     }
   }
 
-  # Accessibility Settings Management
   accessibility_css <- reactiveVal("")
 
   show_confirmation <- function(message, action_id) {
@@ -2399,23 +2224,6 @@ server <- function(input, output, session){
 
     list(min = x_min, max = x_max)
   })
-
-  # observe({
-  #   vars <- current_label_vars()
-  #
-  #   if (is.null(vars) || length(vars) == 0) {
-  #     return()
-  #   }
-  #
-  #   for (v in vars) {
-  #     key <- make_label_id(v)
-  #     val <- input[[key]]
-  #
-  #     if (!is.null(val)) {
-  #       label_values[[key]] <- val
-  #     }
-  #   }
-  # }) # get labels - is this the right location?
 
   # Update CSS based on accessibility settings
   observe({
@@ -2530,7 +2338,6 @@ server <- function(input, output, session){
     updateTextInput(session, "sidebar_state", value = "viz")
     shinyjs::runjs("$('#accessibility-controls').collapse('hide');")
 
-
     # Determine which visualizations are allowed based on data structure
     cont   <- isTRUE(input$has_continuous)
     events <- isTRUE(input$has_events)
@@ -2543,11 +2350,11 @@ server <- function(input, output, session){
 
     allowed_choices <- if (cont && events) {
       c("Raw time series", "Event + Continuous Overlay", "Event-locked average",
-        "Event-locked single event", "Event durations (barcode)")
+        "Event-locked single event", "Event durations (barcode)", "Allan Factor (event data)", "Allan Deviation (continuous)")
     } else if (cont) {
-      c("Raw time series")
+      c("Raw time series", "Allan Deviation (continuous)")
     } else {
-      c("Event durations (barcode)")
+      c("Event durations (barcode)", "Allan Factor (event data)")
     }
 
     updateSelectInput(session, "viz_mode",
@@ -2555,15 +2362,12 @@ server <- function(input, output, session){
                       selected = allowed_choices[1])
   })
 
-  #check here
   observeEvent(input$back_data, {
     cancel_current_plot()
 
     updateTextInput(session, "sidebar_state", value = "data")
-    updateCheckboxInput(session, "show_second_plot", value = FALSE)
 
     plot_store(NULL)
-    plot2_store(NULL)
     stats_store(NULL)
 
     updateTextInput(session,"sidebar_state",value="data")
@@ -2648,7 +2452,6 @@ server <- function(input, output, session){
     conversion_done(FALSE)
 
     plot_store(NULL)
-    plot2_store(NULL)
     stats_store(NULL)
     removeModal()
 
@@ -2668,10 +2471,7 @@ server <- function(input, output, session){
       ),
 
       "biobehavioral_interactions" = list(
-        continuous = TRUE,
-        events = TRUE,
-        multiple = TRUE,
-        int_cont = "continuous"
+        continuous = TRUE, events = TRUE, multiple = TRUE, int_cont = "continuous"
       ),
 
       "music_bouts" = list(
@@ -2687,26 +2487,15 @@ server <- function(input, output, session){
       ),
 
       "cradling_diaries" = list(
-        continuous = FALSE,
-        events = TRUE,
-        multiple = TRUE,
-        int_cont = "interval"
+        continuous = FALSE, events = TRUE, multiple = TRUE, int_cont = "interval"
       )
     )
-    demo_interval_defaults$start <-
-      demo_types$start %||% NULL
 
-    demo_interval_defaults$mode <-
-      demo_types$interval_mode %||% "end"
-
-    demo_interval_defaults$end <-
-      demo_types$end %||% NULL
-
-    demo_interval_defaults$duration <-
-      demo_types$duration %||% NULL
-
-    demo_interval_defaults$options <-
-      demo_types$options %||% NULL
+    demo_interval_defaults$start <- demo_types$start %||% NULL
+    demo_interval_defaults$mode <- demo_types$interval_mode %||% "end"
+    demo_interval_defaults$end <- demo_types$end %||% NULL
+    demo_interval_defaults$duration <- demo_types$duration %||% NULL
+    demo_interval_defaults$options <- demo_types$options %||% NULL
 
     updateCheckboxInput(session, "has_continuous", value = demo_types$continuous)
     updateCheckboxInput(session, "has_events", value = demo_types$events)
@@ -2716,16 +2505,13 @@ server <- function(input, output, session){
 
   observeEvent(input$file, {
     cancel_current_plot()
-
     active_demo(NULL)
     last_data_source("file")
     data_converted(NULL)
     conversion_done(FALSE)
 
     plot_store(NULL)
-    plot2_store(NULL)
     stats_store(NULL)
-    #updateCheckboxInput(session, "is_interval_data", value = FALSE)
   }, ignoreInit = TRUE)
 
   diagnostics <- reactive({
@@ -2791,7 +2577,6 @@ server <- function(input, output, session){
         )
       ),
 
-      #hr(),
       # Independent participant control for this step
       checkboxInput("conv_has_id", "Dataset contains multiple participants", FALSE),
 
@@ -3136,8 +2921,8 @@ server <- function(input, output, session){
   })
 
   all_ids <- reactive({
-  req(input$idvar)
-  unique(as.character(data_reactive()[[input$idvar]]))
+    req(input$idvar)
+    unique(as.character(data_reactive()[[input$idvar]]))
   })
 
   id_index <- reactiveVal(1)
@@ -3160,7 +2945,7 @@ server <- function(input, output, session){
   }
 
   observeEvent(input$viz_mode, {
-    if (input$viz_mode == "Event-locked single event") {
+    if (input$viz_mode %in% c("Event-locked single event", "Allan Factor (event data)", "Allan Deviation (continuous)")) {
       updateCheckboxInput(session, "step_through", value = TRUE)
     }
   })
@@ -3335,6 +3120,31 @@ server <- function(input, output, session){
     )
   })
 
+  output$af_ui <- renderUI({
+    d <- diagnostics()
+    tagList(
+      selectInput("af_var", "Event variable (binary 0/1)", d$binary),
+      numericInput("af_binwidth", "Bin width (seconds)", value = 1, min = 0.001, step = 0.1),
+      numericInput("af_base", "Base", value = 4, min = 2, max = 10, step = 1),
+      numericInput("af_powers", "Max power", value = 10, min = 3, max = 20, step = 1),
+      numericInput("af_start", "Start power", value = 2, min = 1, max = 10, step = 1),
+      checkboxInput("af_show_shuffled", "Show shuffled comparison", TRUE)
+    )
+  })
+
+  output$ad_ui <- renderUI({
+    d <- diagnostics()
+    tagList(
+      selectInput("ad_var", "Continuous variable", d$numeric),
+      numericInput("ad_rate", "Sampling rate (Hz)", value = 1, min = 0.001, step = 0.1),
+      selectInput("ad_type", "Input type",
+                  c("Frequency data" = "frequency",
+                    "Phase data" = "phase")),
+      checkboxInput("ad_show_variance", "Show variance instead of deviation", FALSE),
+      checkboxInput("ad_show_shuffled", "Show shuffled comparison", TRUE)
+    )
+  })
+
   # Label UI
   output$legend_labels_ui <- renderUI({
     vars <- current_label_vars()
@@ -3438,28 +3248,13 @@ server <- function(input, output, session){
       if (nrow(variable_categories) > 0) {
         for (i in seq_len(nrow(variable_categories))) {
           category_value <- variable_categories$category[i]
-
-          category_input_id <- make_event_category_label_id(
-            variable = variable_name,
-            category = category_value
-          )
-
+          category_input_id <- make_event_category_label_id(variable = variable_name, category = category_value)
           records[[length(records) + 1]] <- list(
-            key = make_category_order_key(
-              variable_name,
-              category_value
-            ),
+            key = make_category_order_key(variable_name, category_value),
             node = make_order_item(
-              order_key = make_category_order_key(
-                variable_name,
-                category_value
-              ),
+              order_key = make_category_order_key(variable_name, category_value),
               input_id = category_input_id,
-              field_label = paste(
-                variable_name,
-                category_value,
-                sep = " — "
-              ),
+              field_label = paste(variable_name, category_value, sep = " — "),
               placeholder = category_value,
               item_type = "Category"
             )
@@ -3468,15 +3263,8 @@ server <- function(input, output, session){
       }
     }
 
-    record_keys <- vapply(
-      records,
-      function(record) record$key,
-      character(1)
-    )
-
-    records <- isolate(
-      order_by_plot_labels(records, record_keys)
-    )
+    record_keys <- vapply(records, function(record) record$key, character(1))
+    records <- isolate(order_by_plot_labels(records, record_keys))
 
     tags$div(
       tags$hr(style = "margin: 8px 0;"),
@@ -3502,148 +3290,14 @@ server <- function(input, output, session){
         )
       ),
 
-      tags$div(
-        id = "plot-label-order-list",
-        lapply(records, function(record) record$node)
+      tags$div(id = "plot-label-order-list",
+               lapply(records, function(record) record$node)
       )
     )
   })
-
-  outputOptions(
-    output,
-    "legend_labels_ui",
-    suspendWhenHidden = FALSE
-  )
 
   outputOptions(output, "legend_labels_ui", suspendWhenHidden = FALSE)
 
-  output$second_plot_ui <- renderUI({
-    data_reactive()
-    d <- diagnostics()
-    tagList(
-      if (isTRUE(input$use_id) && isTruthy(input$idvar)) {
-        ids <- tryCatch(
-          as.character(all_ids()),
-          error = function(e) NULL
-        )
-
-        if (!is.null(ids) && length(ids) > 0) {
-          selected_second_id <- isolate(input$second_plot_id)
-
-          if (
-            !isTruthy(selected_second_id) ||
-            !as.character(selected_second_id) %in% ids
-          ) {
-            selected_second_id <- ids[1]
-          }
-
-          tagList(
-            selectInput("second_plot_type", "Second plot type",
-                        c("Allan Factor (event data)" = "allan_factor",
-                          "Allan Deviation (continuous)" = "allan_deviation")),
-            selectInput(
-              "second_plot_id",
-              "Select Participant (second plot)",
-              choices = ids,
-              selected = selected_second_id,
-              multiple = FALSE
-            ),
-
-            fluidRow(
-              column(
-                6,
-                actionButton(
-                  "prev_second_id",
-                  "Previous Participant",
-                  title = "Previous Plot 2 participant (J key)",
-                  `aria-keyshortcuts` = "J",
-                  icon = icon("arrow-left")
-                )
-              ),
-
-              column(
-                6,
-                actionButton(
-                  "next_second_id",
-                  "Next Participant",
-                  title = "Next Plot 2 participant (L key)",
-                  `aria-keyshortcuts` = "L",
-                  icon = icon("arrow-right")
-                )
-              )
-            ),
-            tags$div(
-              style = "margin-top: 0.5em;",
-              textOutput("current_second_participant")
-            ),
-            hr()
-          )
-        }
-      },
-
-      # Allan Factor options
-      conditionalPanel(
-        condition = "input.second_plot_type == 'allan_factor'",
-        selectInput("af_var", "Event variable (binary 0/1)", d$binary),
-        numericInput("af_binwidth", "Bin width (seconds)", value = 1, min = 0.001, step = 0.1),
-        numericInput("af_base", "Base", value = 4, min = 2, max = 10, step = 1),
-        numericInput("af_powers", "Max power", value = 10, min = 3, max = 20, step = 1),
-        numericInput("af_start", "Start power", value = 2, min = 1, max = 10, step = 1),
-        checkboxInput("af_show_shuffled", "Show shuffled comparison", TRUE)
-      ),
-
-      # Allan Deviation options
-      conditionalPanel(
-        condition = "input.second_plot_type == 'allan_deviation'",
-        selectInput("ad_var", "Continuous variable", d$numeric),
-        numericInput("ad_rate", "Sampling rate (Hz)", value = 1, min = 0.001, step = 0.1),
-        selectInput("ad_type", "Input type",
-                    c("Frequency data" = "frequency",
-                      "Phase data" = "phase")),
-        checkboxInput("ad_show_variance", "Show variance instead of deviation", FALSE)
-      )
-    )
-  })
-
-  change_second_participant <- function(direction) {
-    ids <- as.character(all_ids())
-    req(length(ids) > 0)
-
-    current_id <- isolate(input$second_plot_id)
-    current_index <- match(as.character(current_id), ids)
-
-    if (is.na(current_index)) {
-      current_index <- 1L
-    }
-
-    new_index <- (
-      (current_index - 1L + direction) %% length(ids)
-    ) + 1L
-
-    updateSelectInput(
-      session,
-      "second_plot_id",
-      choices = ids,
-      selected = ids[new_index]
-    )
-  }
-
-  observeEvent(input$prev_second_id, {
-    change_second_participant(-1L)
-  })
-
-  observeEvent(input$next_second_id, {
-    change_second_participant(1L)
-  })
-
-  output$current_second_participant <- renderText({
-    req(input$second_plot_id)
-
-    paste(
-      "Plot 2 participant:",
-      input$second_plot_id
-    )
-  })
 
   output$overlay_ui <- renderUI({
     data_reactive()
@@ -3736,6 +3390,10 @@ server <- function(input, output, session){
         ),
         selected = "stacked",
         inline = TRUE
+      ),
+      conditionalPanel(
+        condition = "input.barcode_layout == 'stacked'",
+        checkboxInput("barcode_show_legend", "Show legend", TRUE)
       )
     )
   })
@@ -3818,8 +3476,55 @@ server <- function(input, output, session){
     starts + durs
   }
 
+  output$dynamic_plot_container <- renderUI({
+    req(input$sidebar_state == "viz")
 
-  # Plot
+    # Take dependency on the update button (same as the plot does)
+    plot_request_id()
+
+    isolate({
+      req(input$viz_mode)
+
+      calc_height <- 550 # Default height
+
+      # Use custom height if auto-adjust is turned off
+      if (!isTRUE(input$auto_height) && isTruthy(input$custom_plot_height)) {
+        calc_height <- input$custom_plot_height
+      } else {
+        calc_height <- 550 # Default height
+
+        if (input$viz_mode == "Event durations (barcode)") {
+
+          if (isTRUE(input$use_id) && !isTRUE(input$step_through)) {
+            n_ids <- length(input$selected_ids)
+          } else {
+            n_ids <- 1
+          }
+
+          if (isTRUE(input$barcode_layout == "stacked")) {
+            n_targets <- length(input$barcode_var)
+            n_rows <- n_ids * n_targets
+
+            # Expand vertically if there are more than 12 rows (approx 40px per row)
+            if (n_rows > 12) {
+              calc_height <- max(550, n_rows * 40)
+            }
+          } else {
+            # Overlaid layout: 1 row per participant
+            n_rows <- n_ids
+
+            # Expand vertically if there are more than 18 participants (approx 30px per row)
+            if (n_rows > 18) {
+              calc_height <- max(550, n_rows * 30)
+            }
+          }
+        }
+      }
+
+      plotly::plotlyOutput("plot", height = paste0(calc_height, "px"))
+    })
+  })
+
   output$plot <- plotly::renderPlotly({
 
     req(input$sidebar_state == "viz")
@@ -3834,14 +3539,7 @@ server <- function(input, output, session){
     my_cancel  <- plot_cancel_id()
 
     isolate({
-
       check_plot_cancelled(my_request, my_cancel)
-
-      #check time elapsed to plot
-      # t0 <- Sys.time()
-      # on.exit({
-      #   print(Sys.time() - t0)
-      # })
 
       fonts <- get_plot_fonts()
       margins <- get_plot_margins()
@@ -3855,160 +3553,204 @@ server <- function(input, output, session){
 
       req(input$viz_mode)
 
-    # Add mode-specific validation
-    if (input$viz_mode == "Raw time series") {
-      validate(
-        need(input$xvar, "Please select a time variable (X-axis)"),
-        need(input$yvar, "Please select at least one signal variable (Y-axis)")
-      )
-    }
-
-    # Raw time series
-    if (input$viz_mode == "Raw time series") {
-      check_plot_cancelled(my_request, my_cancel)
-      req(input$xvar, input$yvar)
-      is_single_view <- !isTRUE(input$use_id) || isTRUE(input$step_through)
-      time_vec <- filtered_data()[[input$xvar]]
-      # Get Labels
-      labs <- get_labels(
-        default_title = paste("Raw Time Series"),
-        default_x = input$xvar,
-        default_y = "Value",
-        default_legend = if(is_single_view) "Variable" else "Participant"
-      )
-
-      p <- plotly::plot_ly()
-
-      if (is_single_view) {
-        for (var in ordered_variables(input$yvar)) {
-          check_plot_cancelled(my_request, my_cancel)
-          p <- plotly::add_trace(p, x = filtered_data()[[input$xvar]], y = filtered_data()[[var]],
-                                 name = get_var_label(var),legendrank = plot_label_rank(make_variable_order_key(var)),
-                                 type = "scatter", mode = ifelse(input$plot_type == "Line", "lines", "markers"))
-        }
-      } else {
-        for (var in ordered_variables(input$yvar)) {
-          check_plot_cancelled(my_request, my_cancel)
-          p <- plotly::add_trace(p, x = filtered_data()[[input$xvar]], y = filtered_data()[[var]],
-                                 name = paste(filtered_data()[[input$idvar]], get_var_label(var)),
-                                 legendrank = plot_label_rank(make_variable_order_key(var)),
-                                 type = "scatter", mode = ifelse(input$plot_type == "Line", "lines", "markers"))
-        }
+      # Add mode-specific validation
+      if (input$viz_mode == "Raw time series") {
+        validate(
+          need(input$xvar, "Please select a time variable (X-axis)"),
+          need(input$yvar, "Please select at least one signal variable (Y-axis)")
+        )
       }
 
-      p <- p |> plotly::layout(
-        title = list(text = labs$title, font = list(size = fonts$title_size)),
-        xaxis =  get_datetime_axis(time_vec, labs$x, fonts),
-        yaxis = list(
-          title = list(text = labs$y, font = list(size = fonts$axis_title_size)),
-          tickfont = list(size = fonts$axis_text_size)
-        ),
-        legend = list(
-          title = list(text = labs$legend, font = list(size = fonts$legend_size)),
-          font = list(size = fonts$legend_size)
-        ),
-        margin = margins
-      )
-      plot_store(p)
+      # Raw time series
+      if (input$viz_mode == "Raw time series") {
+        check_plot_cancelled(my_request, my_cancel)
+        req(input$xvar, input$yvar)
+        is_single_view <- !isTRUE(input$use_id) || isTRUE(input$step_through)
+        time_vec <- filtered_data()[[input$xvar]]
+        # Get Labels
+        labs <- get_labels(
+          default_title = paste("Raw Time Series"),
+          default_x = input$xvar,
+          default_y = "Value",
+          default_legend = if(is_single_view) "Variable" else "Participant"
+        )
 
-      return(p)
-    }
+        p <- plotly::plot_ly()
 
-    # Event + Continuous Overlay
-    if (input$viz_mode == "Event + Continuous Overlay") {
-      check_plot_cancelled(my_request, my_cancel)
-      req(input$time_overlay, input$signal_overlay, selected_events)
-
-      time_vec <- filtered_data()[[input$time_overlay]]
-
-      # Calculate y-axis range for the rectangles
-      all_vals <- unlist(lapply(input$signal_overlay, function(v) filtered_data()[[v]]))
-      y_min <- min(all_vals, na.rm = TRUE)
-      y_max <- max(all_vals, na.rm = TRUE)
-
-      plot_targets <- list()
-
-      # Helper for colors - replace with colorblind friendly??
-      get_palette <- function(n) {
-        if(n <= 8) RColorBrewer::brewer.pal(max(3, n), "Set2")[1:n]
-        else colorRampPalette(RColorBrewer::brewer.pal(8, "Set2"))(n)
-      }
-
-      # 1. get total colors needed
-      total_items <- 0
-      for(col in selected_events()){
-        vals <- na.omit(unique(filtered_data()[[col]]))
-        # If binary (0/1), we count it as 1 item (the "1" state)
-        if(all(vals %in% c(0,1))) {
-          total_items <- total_items + 1
+        if (is_single_view) {
+          for (var in ordered_variables(input$yvar)) {
+            check_plot_cancelled(my_request, my_cancel)
+            p <- plotly::add_trace(p, x = filtered_data()[[input$xvar]], y = filtered_data()[[var]],
+                                   name = get_var_label(var),legendrank = plot_label_rank(make_variable_order_key(var)),
+                                   type = "scatter", mode = ifelse(input$plot_type == "Line", "lines", "markers"))
+          }
         } else {
-          # If categorical, we count the unique values (excluding 0)
-          vals <- vals[vals != "0" & vals != 0]
-          total_items <- total_items + length(vals)
-        }
-      }
-
-      # 2. Generate palette
-      master_pal <- get_accessible_palette(total_items)
-      color_idx <- 1
-
-      for(col in selected_events()){
-        raw_vals <- filtered_data()[[col]]
-        unique_vals <- unique(raw_vals[!is.na(raw_vals)])
-
-        # Check if strictly binary 0/1
-        is_binary <- all(unique_vals %in% c(0,1))
-
-        if(is_binary) {
-          # if binary column (e.g. "Freezing") -> One color
-          plot_targets[[length(plot_targets) + 1]] <- list(
-            col = col,
-            val = 1,
-            color = master_pal[color_idx],
-            legend_key = paste(col, "1", sep = "__"),
-            is_binary = TRUE
-          )
-          color_idx <- color_idx + 1
-        } else {
-          # if categorical col (e.g. "Activity") -> Multiple colors
-          unique_vals <- sort(unique_vals)
-          unique_vals <- unique_vals[unique_vals != 0 & unique_vals != "0"]
-
-          for(uv in unique_vals){
-            plot_targets[[length(plot_targets) + 1]] <- list(
-              col = col,
-              val = uv,
-              color = master_pal[color_idx],
-              legend_key = paste(col, as.character(uv), sep = "__"),
-              is_binary = FALSE
-            )
-            color_idx <- color_idx + 1
+          for (var in ordered_variables(input$yvar)) {
+            check_plot_cancelled(my_request, my_cancel)
+            p <- plotly::add_trace(p, x = filtered_data()[[input$xvar]], y = filtered_data()[[var]],
+                                   name = paste(filtered_data()[[input$idvar]], get_var_label(var)),
+                                   legendrank = plot_label_rank(make_variable_order_key(var)),
+                                   type = "scatter", mode = ifelse(input$plot_type == "Line", "lines", "markers"))
           }
         }
+
+        p <- p |> plotly::layout(
+          title = list(text = labs$title, font = list(size = fonts$title_size)),
+          xaxis =  get_datetime_axis(time_vec, labs$x, fonts),
+          yaxis = list(
+            title = list(text = labs$y, font = list(size = fonts$axis_title_size)),
+            tickfont = list(size = fonts$axis_text_size)
+          ),
+          legend = list(
+            title = list(text = labs$legend, font = list(size = fonts$legend_size)),
+            font = list(size = fonts$legend_size)
+          ),
+          margin = margins
+        )
+        plot_store(p)
+
+        return(p)
       }
 
-      plot_targets <- ordered_plot_targets(plot_targets) #anchor
+      # Event + Continuous Overlay
+      if (input$viz_mode == "Event + Continuous Overlay") {
+        check_plot_cancelled(my_request, my_cancel)
+        req(input$time_overlay, input$signal_overlay, selected_events)
 
-      shapes <- list()
-      legend_traces <- list()
-      multi_participant <- isTRUE(input$use_id) && !isTRUE(input$step_through)
+        time_vec <- filtered_data()[[input$time_overlay]]
 
-      if (multi_participant) {
-        req(input$idvar, input$selected_ids)
-        combined_time <- c()
-        combined_signals <- setNames(vector("list", length(input$signal_overlay)), input$signal_overlay)
-        for (v in input$signal_overlay) combined_signals[[v]] <- c()
+        # Calculate y-axis range for the rectangles
+        all_vals <- unlist(lapply(input$signal_overlay, function(v) filtered_data()[[v]]))
+        y_min <- min(all_vals, na.rm = TRUE)
+        y_max <- max(all_vals, na.rm = TRUE)
 
-        for (pid in input$selected_ids) {
-          check_plot_cancelled(my_request, my_cancel)
-          pdf <- filtered_data()[filtered_data()[[input$idvar]] == pid, ]
-          if (nrow(pdf) == 0) next
-          pt <- pdf[[input$time_overlay]]
-          combined_time <- c(combined_time, pt, NA)
-          for (v in input$signal_overlay) combined_signals[[v]] <- c(combined_signals[[v]], pdf[[v]], NA)
+        plot_targets <- list()
 
+        # Helper for colors - replace with colorblind friendly??
+        get_palette <- function(n) {
+          if(n <= 8) RColorBrewer::brewer.pal(max(3, n), "Set2")[1:n]
+          else colorRampPalette(RColorBrewer::brewer.pal(8, "Set2"))(n)
+        }
+
+        # 1. get total colors needed
+        total_items <- 0
+        for(col in selected_events()){
+          vals <- na.omit(unique(filtered_data()[[col]]))
+          # If binary (0/1), we count it as 1 item (the "1" state)
+          if(all(vals %in% c(0,1))) {
+            total_items <- total_items + 1
+          } else {
+            # If categorical, we count the unique values (excluding 0)
+            vals <- vals[vals != "0" & vals != 0]
+            total_items <- total_items + length(vals)
+          }
+        }
+
+        # 2. Generate palette
+        master_pal <- get_accessible_palette(total_items)
+        color_idx <- 1
+
+        for(col in selected_events()){
+          raw_vals <- filtered_data()[[col]]
+          unique_vals <- unique(raw_vals[!is.na(raw_vals)])
+
+          # Check if strictly binary 0/1
+          is_binary <- all(unique_vals %in% c(0,1))
+
+          if(is_binary) {
+            # if binary column (e.g. "Freezing") -> One color
+            plot_targets[[length(plot_targets) + 1]] <- list(
+              col = col,
+              val = 1,
+              color = master_pal[color_idx],
+              legend_key = paste(col, "1", sep = "__"),
+              is_binary = TRUE
+            )
+            color_idx <- color_idx + 1
+          } else {
+            # if categorical col (e.g. "Activity") -> Multiple colors
+            unique_vals <- sort(unique_vals)
+            unique_vals <- unique_vals[unique_vals != 0 & unique_vals != "0"]
+
+            for(uv in unique_vals){
+              plot_targets[[length(plot_targets) + 1]] <- list(
+                col = col,
+                val = uv,
+                color = master_pal[color_idx],
+                legend_key = paste(col, as.character(uv), sep = "__"),
+                is_binary = FALSE
+              )
+              color_idx <- color_idx + 1
+            }
+          }
+        }
+
+        plot_targets <- ordered_plot_targets(plot_targets) #anchor
+
+        shapes <- list()
+        legend_traces <- list()
+        multi_participant <- isTRUE(input$use_id) && !isTRUE(input$step_through)
+
+        if (multi_participant) {
+          req(input$idvar, input$selected_ids)
+          combined_time <- c()
+          combined_signals <- setNames(vector("list", length(input$signal_overlay)), input$signal_overlay)
+          for (v in input$signal_overlay) combined_signals[[v]] <- c()
+
+          for (pid in input$selected_ids) {
+            check_plot_cancelled(my_request, my_cancel)
+            pdf <- filtered_data()[filtered_data()[[input$idvar]] == pid, ]
+            if (nrow(pdf) == 0) next
+            pt <- pdf[[input$time_overlay]]
+            combined_time <- c(combined_time, pt, NA)
+            for (v in input$signal_overlay) combined_signals[[v]] <- c(combined_signals[[v]], pdf[[v]], NA)
+
+            for (target in plot_targets) {
+              vec <- pdf[[target$col]]
+              if (input$event_format == "interval") {
+                active_idx <- which(!is.na(vec) & vec == target$val)
+                if (length(active_idx) > 0) {
+                  rgba_col <- hex_to_rgba(target$color, alpha = 0.5)
+                  for (i in seq_along(active_idx)) {
+                    shapes[[length(shapes) + 1]] <- list(type = "rect", x0 = time_vec[active_idx[i]], x1 = end_vec[active_idx[i]], y0 = y_min, y1 = y_max, fillcolor = rgba_col, line = list(width = 0), layer = "below")
+                  }
+                  existing_keys <- vapply(
+                    legend_traces,
+                    function(lt) lt$legend_key,
+                    character(1)
+                  )
+
+                  legend_traces <- add_legend_target(
+                    legend_traces,
+                    target
+                  )
+                }
+              } else {
+                is_active <- as.numeric(!is.na(vec) & vec == target$val)
+                windows <- extract_event_windows_idx(is_active)
+                if (nrow(windows) > 0) {
+                  rgba_col <- hex_to_rgba(target$color, alpha = 0.5)
+                  for (i in seq_len(nrow(windows))) {
+                    shapes[[length(shapes) + 1]] <- list(
+                      type = "rect",
+                      x0 = pt[windows$start[i]], x1 = pt[windows$end[i]],
+                      y0 = y_min, y1 = y_max,
+                      fillcolor = rgba_col, line = list(width = 0), layer = "below"
+                    )
+                  }
+                  legend_traces <- add_legend_target(
+                    legend_traces,
+                    target
+                  )
+                }
+              }
+            }
+          }
+          time_vec <- combined_time
+
+        } else {
           for (target in plot_targets) {
-            vec <- pdf[[target$col]]
+            vec <- filtered_data()[[target$col]]
             if (input$event_format == "interval") {
               active_idx <- which(!is.na(vec) & vec == target$val)
               if (length(active_idx) > 0) {
@@ -4016,16 +3758,7 @@ server <- function(input, output, session){
                 for (i in seq_along(active_idx)) {
                   shapes[[length(shapes) + 1]] <- list(type = "rect", x0 = time_vec[active_idx[i]], x1 = end_vec[active_idx[i]], y0 = y_min, y1 = y_max, fillcolor = rgba_col, line = list(width = 0), layer = "below")
                 }
-                existing_keys <- vapply(
-                  legend_traces,
-                  function(lt) lt$legend_key,
-                  character(1)
-                )
-
-                legend_traces <- add_legend_target(
-                  legend_traces,
-                  target
-                )
+                legend_traces[[length(legend_traces) + 1]] <- target
               }
             } else {
               is_active <- as.numeric(!is.na(vec) & vec == target$val)
@@ -4035,857 +3768,1068 @@ server <- function(input, output, session){
                 for (i in seq_len(nrow(windows))) {
                   shapes[[length(shapes) + 1]] <- list(
                     type = "rect",
-                    x0 = pt[windows$start[i]], x1 = pt[windows$end[i]],
+                    x0 = time_vec[windows$start[i]], x1 = time_vec[windows$end[i]],
                     y0 = y_min, y1 = y_max,
                     fillcolor = rgba_col, line = list(width = 0), layer = "below"
                   )
                 }
-                legend_traces <- add_legend_target(
-                  legend_traces,
-                  target
-                )
+                legend_traces[[length(legend_traces) + 1]] <- target
               }
             }
           }
         }
-        time_vec <- combined_time
 
-      } else {
-        for (target in plot_targets) {
-          vec <- filtered_data()[[target$col]]
-          if (input$event_format == "interval") {
-            active_idx <- which(!is.na(vec) & vec == target$val)
-            if (length(active_idx) > 0) {
-              rgba_col <- hex_to_rgba(target$color, alpha = 0.5)
-              for (i in seq_along(active_idx)) {
-                shapes[[length(shapes) + 1]] <- list(type = "rect", x0 = time_vec[active_idx[i]], x1 = end_vec[active_idx[i]], y0 = y_min, y1 = y_max, fillcolor = rgba_col, line = list(width = 0), layer = "below")
-              }
-              legend_traces[[length(legend_traces) + 1]] <- target
-            }
-          } else {
-            is_active <- as.numeric(!is.na(vec) & vec == target$val)
-            windows <- extract_event_windows_idx(is_active)
-            if (nrow(windows) > 0) {
-              rgba_col <- hex_to_rgba(target$color, alpha = 0.5)
-              for (i in seq_len(nrow(windows))) {
-                shapes[[length(shapes) + 1]] <- list(
-                  type = "rect",
-                  x0 = time_vec[windows$start[i]], x1 = time_vec[windows$end[i]],
-                  y0 = y_min, y1 = y_max,
-                  fillcolor = rgba_col, line = list(width = 0), layer = "below"
-                )
-              }
-              legend_traces[[length(legend_traces) + 1]] <- target
-            }
-          }
-        }
-      }
-
-      # Get Labels
-      labs <- get_labels(
-        default_title = paste("Event Overlay"),
-        default_x = input$time_overlay,
-        default_y = "Value",
-        default_legend = "Legend"
-      )
-
-      p <- plotly::plot_ly()
-
-      # Add continuous lines
-      for (var in ordered_variables(input$signal_overlay)) {
-        check_plot_cancelled(my_request, my_cancel)
-        y_data <- if (multi_participant) combined_signals[[var]] else filtered_data()[[var]]
-        p <- plotly::add_trace(p, x = time_vec, y = y_data, legendrank = plot_label_rank(
-          make_variable_order_key(var)), name = get_var_label(var), type = "scatter", mode = "lines")
-      }
-
-      for (tr in legend_traces) {
-        trace_label <- if (isTRUE(tr$is_binary)) {
-          get_var_label(tr$col)
-        } else {
-          get_event_trace_label(
-            variable = tr$col,
-            category = tr$val
-          )
-        }
-
-        p <- plotly::add_trace(
-          p,
-          x = time_vec[1],
-          y = y_min,
-          type = "scatter",
-          mode = "markers",
-          marker = list(
-            color = tr$color,
-            symbol = "square"
-          ),
-          name = trace_label,
-          legendgroup = tr$legend_key,
-          legendrank = plot_label_rank(target_order_key(tr)),
-          visible = "legendonly",
-          hoverinfo = "skip"
+        # Get Labels
+        labs <- get_labels(
+          default_title = paste("Event Overlay"),
+          default_x = input$time_overlay,
+          default_y = "Value",
+          default_legend = "Legend"
         )
-      }
 
+        p <- plotly::plot_ly()
 
-
-      p <- p |> plotly::layout(
-        title = list(text = labs$title, font = list(size = fonts$title_size)),
-        xaxis = get_datetime_axis(time_vec, labs$x, fonts),
-        yaxis = list(
-          title = list(text = labs$y, font = list(size = fonts$axis_title_size)),
-          tickfont = list(size = fonts$axis_text_size)
-        ),
-        legend = list(
-          title = list(text = labs$legend, font = list(size = fonts$legend_size)),
-          font = list(size = fonts$legend_size)
-        ),
-        shapes = shapes,
-        margin = margins
-      )
-      plot_store(p)
-      return(p)
-    }
-
-    # Event-locked single event
-    if (input$viz_mode == "Event-locked single event") {
-      check_plot_cancelled(my_request, my_cancel)
-      req(input$event_var, input$signal_var)
-      windows <- extract_event_windows_idx(filtered_data()[[input$event_var]])
-      req(nrow(windows) > 0)
-      time_vec <- filtered_data()[[input$xvar]]
-      i <- min(event_index(), nrow(windows))
-      d <- diagnostics()
-      time_vec <- filtered_data()[[input$xvar]]
-      x_vals <- NULL
-      y_vals <- NULL
-
-      if (length(d$time) > 0) {
-        time_var <- d$time[1]
-        time_vals <- filtered_data()[[time_var]]
-        onset_time <- time_vals[windows$start[i]]
-        win_idx <- (windows$start[i] - input$pre):(windows$start[i] + input$post)
-        win_idx <- win_idx[win_idx > 0 & win_idx <= nrow(filtered_data())]
-        y_vals <- filtered_data()[[input$signal_var]][win_idx]
-
-        if (inherits(time_vals, c("POSIXct", "POSIXt", "POSIXlt"))) {
-          x_vals <- as.numeric(difftime(time_vals[win_idx], onset_time, units = "secs"))
-        } else {
-          x_vals <- time_vals[win_idx] - onset_time
-        }
-      } else {
-        win <- (-input$pre):input$post
-        idx <- windows$start[i] + win
-        idx <- idx[idx > 0 & idx <= nrow(filtered_data())]
-        y_vals <- filtered_data()[[input$signal_var]][idx]
-        x_vals <- win[seq_along(y_vals)]
-      }
-
-      labs <- get_labels(
-        default_title = paste(
-          get_var_label(input$signal_var),
-          "around",
-          get_var_label(input$event_var),
-          "event",
-          i
-        ),
-        default_x = "Time relative to event (s)",
-        default_y = get_var_label(input$signal_var),
-        default_legend = ""
-      )
-
-      p <- plotly::plot_ly(
-        x = x_vals,
-        y = y_vals,
-        type = "scatter",
-        mode = "lines",
-        name = get_var_label(input$signal_var),
-        legendrank = plot_label_rank(
-          make_variable_order_key(input$signal_var)
-        )
-      )
-
-
-
-      return(
-        p |>
-          plotly::layout(
-            title = list(text = labs$title, font = list(size = fonts$title_size)),
-            xaxis =  get_datetime_axis(time_vec, labs$x, fonts),
-            yaxis = list(
-              title = list(text = labs$y, font = list(size = fonts$axis_title_size)),
-              tickfont = list(size = fonts$axis_text_size)
-            ),
-            legend = list(
-              title = list(text = labs$legend, font = list(size = fonts$legend_size)),
-              font = list(size = fonts$legend_size)
-            ),
-            margin = margins,
-            shapes = list(list(type = "line", x0=0, x1=0, y0=0, y1=1, yref="paper", line=list(color="red", dash="dash")))
-          )
-      )
-    }
-    # Event-locked average
-    if (input$viz_mode == "Event-locked average") {
-      check_plot_cancelled(my_request, my_cancel)
-      req(input$event_var, input$signal_var)
-
-      win <- (-input$pre):input$post
-      win_len <- length(win)
-
-      # Loop per participant to avoid epoch windows bleeding across participant boundaries
-      multi_participant <- isTRUE(input$use_id) && !isTRUE(input$step_through)
-
-      if (multi_participant) {
-        req(input$idvar, input$selected_ids)
-        all_rows <- list()
-        for (pid in input$selected_ids) {
+        # Add continuous lines
+        for (var in ordered_variables(input$signal_overlay)) {
           check_plot_cancelled(my_request, my_cancel)
-          pdf <- filtered_data()[filtered_data()[[input$idvar]] == pid, ]
-          if (nrow(pdf) == 0) next
-          pw <- extract_event_windows_idx(pdf[[input$event_var]])
-          if (nrow(pw) == 0) next
-          for (i in seq_len(nrow(pw))) {
-            valid_win <- pw$start[i] + win
-            in_bounds <- valid_win > 0 & valid_win <= nrow(pdf)
-            snippet <- rep(NA_real_, win_len)
-            snippet[in_bounds] <- pdf[[input$signal_var]][valid_win[in_bounds]]
-            all_rows[[length(all_rows) + 1]] <- snippet
-          }
+          y_data <- if (multi_participant) combined_signals[[var]] else filtered_data()[[var]]
+          p <- plotly::add_trace(p, x = time_vec, y = y_data, legendrank = plot_label_rank(
+            make_variable_order_key(var)), name = get_var_label(var), type = "scatter", mode = "lines")
         }
-        validate(need(length(all_rows) > 0, "No events found across selected participants."))
-        mat <- do.call(rbind, all_rows)
-      } else {
+
+        for (tr in legend_traces) {
+          trace_label <- if (isTRUE(tr$is_binary)) {
+            get_var_label(tr$col)
+          } else {
+            get_event_trace_label(
+              variable = tr$col,
+              category = tr$val
+            )
+          }
+
+          p <- plotly::add_trace(
+            p,
+            x = time_vec[1],
+            y = y_min,
+            type = "scatter",
+            mode = "markers",
+            marker = list(
+              color = tr$color,
+              symbol = "square"
+            ),
+            name = trace_label,
+            legendgroup = tr$legend_key,
+            legendrank = plot_label_rank(target_order_key(tr)),
+            visible = "legendonly",
+            hoverinfo = "skip"
+          )
+        }
+
+
+
+        p <- p |> plotly::layout(
+          title = list(text = labs$title, font = list(size = fonts$title_size)),
+          xaxis = get_datetime_axis(time_vec, labs$x, fonts),
+          yaxis = list(
+            title = list(text = labs$y, font = list(size = fonts$axis_title_size)),
+            tickfont = list(size = fonts$axis_text_size)
+          ),
+          legend = list(
+            title = list(text = labs$legend, font = list(size = fonts$legend_size)),
+            font = list(size = fonts$legend_size)
+          ),
+          shapes = shapes,
+          margin = margins
+        )
+        plot_store(p)
+        return(p)
+      }
+
+      # Event-locked single event
+      if (input$viz_mode == "Event-locked single event") {
+        check_plot_cancelled(my_request, my_cancel)
+        req(input$event_var, input$signal_var)
         windows <- extract_event_windows_idx(filtered_data()[[input$event_var]])
         req(nrow(windows) > 0)
-        mat <- do.call(rbind, lapply(seq_len(nrow(windows)), function(i) {
-          valid_win <- windows$start[i] + win
-          in_bounds <- valid_win > 0 & valid_win <= nrow(filtered_data())
-          snippet <- rep(NA_real_, win_len)
-          snippet[in_bounds] <- filtered_data()[[input$signal_var]][valid_win[in_bounds]]
-          snippet
-        }))
-      }
-
-      avg <- colMeans(mat, na.rm = TRUE)
-
-      # Get Labels
-      labs <- get_labels(
-        default_title = paste(
-          "Average",
-          get_var_label(input$signal_var),
-          "trajectory around",
-          get_var_label(input$event_var)
-        ),
-        default_x = "Time relative to event",
-        default_y = get_var_label(input$signal_var),
-        default_legend = ""
-      )
-
-      p <- plotly::plot_ly(x = win, y = avg, type = "scatter", mode = "lines",
-                           name = "Mean", line = list(width = 3, color = "blue"))
-
-      # SE ribbon
-      if (isTRUE(input$show_se_ribbon)) {
-        n_events <- nrow(mat)
-        se <- apply(mat, 2, sd, na.rm = TRUE) / sqrt(n_events)
-        upper <- avg + se
-        lower <- avg - se
-
-        # Upper bound (invisible line, serves as ribbon top)
-        p <- plotly::add_trace(p,
-                               x = win, y = upper,
-                               type = "scatter", mode = "lines",
-                               line = list(color = "transparent"),
-                               showlegend = FALSE,
-                               name = "Upper SE"
-        )
-
-        # Lower bound with fill to the upper trace
-        p <- plotly::add_trace(p,
-                               x = win, y = lower,
-                               type = "scatter", mode = "lines",
-                               fill = "tonexty",
-                               fillcolor = "rgba(0, 0, 255, 0.15)",
-                               line = list(color = "transparent"),
-                               showlegend = TRUE,
-                               name = "± 1 SE"
-        )
-      }
-
-      # Overlay individual events
-      if (isTRUE(input$overlay_events)) {
-        for (i in seq_len(nrow(mat))) {
-          p <- plotly::add_lines(p, x = win, y = mat[i, ],
-                                 opacity = 0.3, line = list(color = "gray"),
-                                 showlegend = FALSE)
-        }
-      }
-      p <- p |> plotly::layout(
-        title = list(text = labs$title, font = list(size = fonts$title_size)),
-        xaxis = list(
-          title = list(text = labs$x, font = list(size = fonts$axis_title_size), standoff = 5),
-          tickfont = list(size = fonts$axis_text_size)
-        ),
-        yaxis = list(
-          title = list(text = labs$y, font = list(size = fonts$axis_title_size)),
-          tickfont = list(size = fonts$axis_text_size)
-        ),
-        legend = list(
-          title = list(text = labs$legend, font = list(size = fonts$legend_size)),
-          font = list(size = fonts$legend_size)
-        ),
-        margin = margins
-      )
-      plot_store(p)
-
-      return(p)
-    }
-
-    # event durations (barcode anchor)
-    if (input$viz_mode == "Event durations (barcode)") {
-      check_plot_cancelled(my_request, my_cancel)
-
-      req(selected_barcodes())
-
-      plot_df <- filtered_data()
-
-      # Temporary check
-      # print(unique(plot_df[[input$idvar]]))
-      # print(nrow(plot_df))
-
-      if (input$event_format == "interval") {
-
-        req(input$int_start)
-
-        if (input$interval_mode == "end") {
-          req(input$int_end)
-          start_vec_all <- plot_df[[input$int_start]]
-          end_vec_all   <- plot_df[[input$int_end]]
-        } else {
-          req(input$int_dur)
-          start_vec_all <- plot_df[[input$int_start]]
-          end_vec_all   <- plot_df[[input$int_start]] + as.numeric(plot_df[[input$int_dur]])
-        }
-
-        valid_idx <- !is.na(start_vec_all) & !is.na(end_vec_all)
-
-        df_clean  <- plot_df[valid_idx, , drop = FALSE]
-        time_vec  <- start_vec_all[valid_idx]
-        start_vec <- start_vec_all[valid_idx]
-        end_vec   <- end_vec_all[valid_idx]
-
-      } else {
-
-        req(input$barcode_time)
-
-        valid_idx <- !is.na(plot_df[[input$barcode_time]])
-
-        df_clean <- plot_df[valid_idx, , drop = FALSE]
-        time_vec <- df_clean[[input$barcode_time]]
-      }
-
-      req(nrow(df_clean) > 0)
-      print(nrow(df_clean))
-      # If the column came in as character or factor, try to parse it
-      if (is.character(time_vec) || is.factor(time_vec)) {
-        time_vec_char <- as.character(time_vec)
-        parsed <- tryCatch(
-          lubridate::parse_date_time(time_vec_char, orders = c(
-            "ymd HMS", "ymd HM", "ymd",
-            "mdy HMS", "mdy HM", "mdy",
-            "dmy HMS", "dmy HM", "dmy",
-            "ymd_HMS", "ymd_HM",
-            "HMS", "HM"
-          ), quiet = TRUE),
-          error = function(e) NULL
-        )
-        if (!is.null(parsed) && sum(!is.na(parsed)) > 0.5 * length(parsed)) {
-          time_vec <- parsed
-        }
-      }
-
-      # If the column is numeric and looks like Unix epoch seconds, convert
-      if (is.numeric(time_vec) && !inherits(time_vec, c("POSIXct", "POSIXt", "Date"))) {
-        rng <- range(time_vec, na.rm = TRUE)
-        if (rng[1] > 9e8 && rng[2] < 2.5e9) {
-          time_vec <- as.POSIXct(time_vec, origin = "1970-01-01", tz = "UTC")
-        }
-      }
-
-      is_datetime <- inherits(time_vec, c("POSIXct", "POSIXt", "Date"))
-
-      if (is_datetime) {
-        numeric_time <- as.numeric(time_vec)
-
-        # Detect overnight wraps: if time jumps backwards by more than
-        # a small tolerance, assume a day boundary was crossed
-        diffs <- diff(numeric_time)
-        wrap_indices <- which(diffs < -60)
-
-        if (length(wrap_indices) > 0) {
-          offset <- rep(0, length(numeric_time))
-          for (wi in wrap_indices) {
-            offset[(wi + 1):length(offset)] <- offset[(wi + 1):length(offset)] + 86400
-          }
-          numeric_time <- numeric_time + offset
-          tv_tz <- attr(time_vec, "tzone")
-          if (is.null(tv_tz)) tv_tz <- "UTC"
-          time_vec_plot <- as.POSIXct(numeric_time, origin = "1970-01-01", tz = tv_tz)
-        } else {
-          time_vec_plot <- time_vec
-        }
-
-        x_positions <- time_vec_plot
-      } else {
-        x_positions <- as.numeric(time_vec)
-      }
-
-      plot_targets <- list()
-
-      multiple_barcode_vars <- length(selected_barcodes()) > 1
-
-      for (col in selected_barcodes()) {
-        col_data <- df_clean[[col]]
-
-        unique_vals <- unique(
-          col_data[!is.na(col_data)]
-        )
-
-        # Sort when possible, but avoid errors for unusual classes.
-        unique_vals <- tryCatch(
-          sort(unique_vals),
-          error = function(e) unique_vals
-        )
-
-        is_binary <- all(
-          as.character(unique_vals) %in% c("0", "1")
-        )
-
-        if (is_binary) {
-          plot_targets[[length(plot_targets) + 1]] <- list(
-            col = col,
-            val = 1,
-            is_binary = TRUE,
-            legend_key = paste(
-              col,
-              "1",
-              sep = "__"
-            )
-          )
-        } else {
-          unique_vals <- unique_vals[
-            !as.character(unique_vals) %in% c("0")
-          ]
-
-          for (uv in unique_vals) {
-            plot_targets[[length(plot_targets) + 1]] <- list(
-              col = col,
-              val = uv,
-              is_binary = FALSE,
-              legend_key = paste(
-                col,
-                as.character(uv),
-                sep = "__"
-              )
-            )
-          }
-        }
-      }
-
-      n_targets <- length(plot_targets)
-      req(n_targets > 0)
-
-      pal <- get_accessible_palette(n_targets)
-
-      for (i in seq_along(plot_targets)) {
-        plot_targets[[i]]$color <- pal[i]
-      } #making sure colors stay the same when labels are reordered
-
-      plot_targets <- ordered_plot_targets(plot_targets)
-
-      use_stacked <- isTRUE(input$barcode_layout == "stacked") && n_targets > 1
-
-      p <- plotly::plot_ly()
-
-      row_height <- if (use_stacked) 1 / n_targets else 1
-
-      event_df <- data.frame()
-
-      for (t_idx in seq_along(plot_targets)) {
-
-        target <- plot_targets[[t_idx]]
-        col_data <- df_clean[[target$col]]
-
-        if (input$event_format == "interval") {
-
-          active_idx <- which(!is.na(col_data) & col_data == target$val)
-
-          if (length(active_idx) > 0) {
-
-            tmp <- data.frame(
-              target_idx = t_idx,
-              variable = target$col,
-              category = as.character(target$val),
-              is_binary = target$is_binary,
-              legend_key = target$legend_key,
-              start = start_vec[active_idx],
-              end = end_vec[active_idx],
-              color = target$color,
-              participant_id = if (isTRUE(input$use_id)) {
-                as.character(
-                  df_clean[[input$idvar]][active_idx]
-                )
-              } else {
-                NA_character_
-              },
-              stringsAsFactors = FALSE
-            )
-
-            event_df <- rbind(event_df, tmp)
-          }
-
-        } else {
-
-          is_active <- as.numeric(!is.na(col_data) & col_data == target$val)
-
-          windows <- extract_event_windows_idx(is_active)
-
-          if (nrow(windows) > 0) {
-
-            tmp <- data.frame(
-              target_idx = t_idx,
-              variable = target$col,
-              category = as.character(target$val),
-              is_binary = target$is_binary,
-              legend_key = target$legend_key,
-              start = time_vec[windows$start],
-              end = time_vec[windows$end],
-              color = target$color,
-              participant_id = if (isTRUE(input$use_id)) {
-                as.character(
-                  df_clean[[input$idvar]][windows$start]
-                )
-              } else {
-                NA_character_
-              },
-              stringsAsFactors = FALSE
-            )
-
-            event_df <- rbind(event_df, tmp)
-          }
-        }
-      }
-
-      legend_added <- rep(FALSE, n_targets)
-
-      for (i in seq_len(nrow(event_df))) {
-
-        ev <- event_df[i, ]
-
-        t_idx <- ev$target_idx
-
-        display_label <- get_barcode_target_label(
-          variable = as.character(ev$variable),
-          category = as.character(ev$category),
-          is_binary = isTRUE(as.logical(ev$is_binary)),
-          show_variable = multiple_barcode_vars
-        )
-
-        if (use_stacked) {
-
-          gap <- row_height * 0.05
-
-          y_bottom <- 1 - (t_idx * row_height) + gap
-          y_top <- 1 - ((t_idx - 1) * row_height) - gap
-
-        } else {
-
-          y_bottom <- 0
-          y_top <- 1
-        }
-
-        start_time <- ev$start
-        end_time <- ev$end
-
-        if (input$event_format == "interval") {
-
-          if (is_datetime) {
-
-            x_start <- as.numeric(start_time)
-            x_end <- as.numeric(end_time)
-
+        time_vec <- filtered_data()[[input$xvar]]
+        i <- min(event_index(), nrow(windows))
+        d <- diagnostics()
+        time_vec <- filtered_data()[[input$xvar]]
+        x_vals <- NULL
+        y_vals <- NULL
+
+        if (length(d$time) > 0) {
+          time_var <- d$time[1]
+          time_vals <- filtered_data()[[time_var]]
+          onset_time <- time_vals[windows$start[i]]
+          win_idx <- (windows$start[i] - input$pre):(windows$start[i] + input$post)
+          win_idx <- win_idx[win_idx > 0 & win_idx <= nrow(filtered_data())]
+          y_vals <- filtered_data()[[input$signal_var]][win_idx]
+
+          if (inherits(time_vals, c("POSIXct", "POSIXt", "POSIXlt"))) {
+            x_vals <- as.numeric(difftime(time_vals[win_idx], onset_time, units = "secs"))
           } else {
-
-            x_start <- start_time
-            x_end <- end_time
+            x_vals <- time_vals[win_idx] - onset_time
           }
-
         } else {
-
-          start_idx <- which(time_vec == start_time)[1]
-          end_idx <- which(time_vec == end_time)[1]
-
-          x_start <- x_positions[start_idx]
-          x_end <- x_positions[end_idx]
+          win <- (-input$pre):input$post
+          idx <- windows$start[i] + win
+          idx <- idx[idx > 0 & idx <= nrow(filtered_data())]
+          y_vals <- filtered_data()[[input$signal_var]][idx]
+          x_vals <- win[seq_along(y_vals)]
         }
 
-        is_point <- isTRUE(all.equal(x_start, x_end))
-
-        if (is_point) {
-
-          x_vals <- c(
-            x_start,
-            x_start,
-            NA
-          )
-
-          y_vals <- c(
-            y_bottom,
-            y_top,
-            NA
-          )
-
-          hover_text <- rep(
-            paste0(
-              display_label,
-              "<br>",
-              as.character(start_time)
-            ),
-            3
-          )
-
-          p <- plotly::add_trace(
-            p,
-            x = x_vals,
-            y = y_vals,
-            type = "scatter",
-            mode = "lines",
-            line = list(
-              color = hex_to_rgba(ev$color, alpha = 0.8),
-              width = 1.75
-            ),
-            hoverinfo = "text",
-            text = hover_text,
-            name = display_label,
-            legendgroup = ev$legend_key,
-            showlegend= !use_stacked && !legend_added[t_idx] #anchor
-          )
-
-        } else {
-
-          x_poly <- c(
-            x_start,
-            x_end,
-            x_end,
-            x_start,
-            x_start,
-            NA
-          )
-
-          y_poly <- c(
-            y_bottom,
-            y_bottom,
-            y_top,
-            y_top,
-            y_bottom,
-            NA
-          )
-
-          hover_text <- rep(
-            paste0(
-              display_label,
-              "<br>Start: ",
-              as.character(start_time),
-              "<br>End: ",
-              as.character(end_time)
-            ),
-            length(x_poly)
-          )
-
-          p <- plotly::add_trace(
-            p,
-            x = x_poly,
-            y = y_poly,
-            type = "scatter",
-            mode = "lines",
-            fill = "toself",
-            fillcolor = hex_to_rgba(
-              ev$color,
-              alpha = if (use_stacked) 0.9 else 0.65
-            ),
-            line = list(
-              color = ev$color,
-              width = 1
-            ),
-            hoverinfo = "text",
-            text = hover_text,
-            name = display_label,
-            legendgroup = ev$legend_key,
-            showlegend = !use_stacked && !legend_added[t_idx]
-          )
-        }
-
-        legend_added[t_idx] <- TRUE
-      }
-
-      if (use_stacked) {
-
-        tick_vals_y <- sapply(seq_along(plot_targets), function(i) {
-
-          y_bottom <- 1 - (i * row_height)
-          y_top <- 1 - ((i - 1) * row_height)
-
-          (y_bottom + y_top) / 2
-        })
-
-        tick_labels_y <- paste0(
-          vapply(
-            plot_targets,
-            function(target) {
-              get_barcode_target_label(
-                variable = target$col,
-                category = target$val,
-                is_binary = target$is_binary,
-                show_variable = multiple_barcode_vars
-              )
-            },
-            character(1)
+        labs <- get_labels(
+          default_title = paste(
+            get_var_label(input$signal_var),
+            "around",
+            get_var_label(input$event_var),
+            "event",
+            i
           ),
-          "  "
+          default_x = "Time relative to event (s)",
+          default_y = get_var_label(input$signal_var),
+          default_legend = ""
         )
 
-        y_axis_config <- list(
-          title = list(text = ""),
-          range = c(0, 1),
-          showgrid = FALSE,
-          zeroline = FALSE,
-          tickmode = "array",
-          tickvals = tick_vals_y,
-          ticktext = tick_labels_y,
-          tickfont = list(size = fonts$axis_text_size),
-          automargin = TRUE
-        )
-
-      } else {
-
-        y_axis_config <- list(
-          title = list(text = ""),
-          range = c(0, 1),
-          showgrid = FALSE,
-          zeroline = FALSE,
-          showticklabels = FALSE,
-          automargin = TRUE
-        )
-      }
-
-
-      labs <- get_labels(
-        default_title = paste0(
-          "Event Barcode: ",
-          paste0(
-            vapply(
-              ordered_variables(selected_barcodes()),
-              get_var_label,
-              character(1)
-            ),
-            collapse = ", "
-          )
-        ),
-        default_x = if (input$event_format == "interval")
-          input$int_start
-        else
-          input$barcode_time,
-        default_y = "",
-        default_legend = "Events"
-      )
-
-      if (use_stacked)
-        margins$l <- max(margins$l, 0)
-
-      margins$b <- max(margins$b, 0)
-
-      if (is_datetime) {
-
-        time_range_secs <- as.numeric(
-          difftime(
-            max(time_vec, na.rm = TRUE),
-            min(time_vec, na.rm = TRUE),
-            units = "secs"
+        p <- plotly::plot_ly(
+          x = x_vals,
+          y = y_vals,
+          type = "scatter",
+          mode = "lines",
+          name = get_var_label(input$signal_var),
+          legendrank = plot_label_rank(
+            make_variable_order_key(input$signal_var)
           )
         )
 
-        if (time_range_secs < 3600) {
 
-          tick_fmt <- "%H:%M:%S"
 
-        } else if (time_range_secs < 86400) {
-
-          tick_fmt <- "%H:%M"
-
-        } else {
-
-          tick_fmt <- "%m-%d %H:%M"
-        }
-
-        x_axis_config <- list(
-          title = list(
-            text = labs$x,
-            font = list(size = fonts$axis_title_size),
-            standoff = 5
-          ),
-          tickfont = list(
-            size = fonts$axis_text_size
-          ),
-          type = "date",
-          tickformat = tick_fmt,
-          nticks = 10,
-          tickangle = -45
-        )
-
-      } else {
-
-        x_axis_config <- list(
-          title = list(
-            text = labs$x,
-            font = list(size = fonts$axis_title_size),
-            standoff = 5
-          ),
-          tickfont = list(
-            size = fonts$axis_text_size
-          )
-        )
-      }
-
-      p <- p |>
-        plotly::layout(
-          title = list(
-            text = labs$title,
-            font = list(size = fonts$title_size)
-          ),
-          xaxis = x_axis_config,
-          yaxis = y_axis_config,
-          showlegend = !use_stacked,
-          legend = list(
-            title = list(
-              text = labs$legend,
-              font = list(size = fonts$legend_size)
-            ),
-            font = list(
-              size = fonts$legend_size
+        return(
+          p |>
+            plotly::layout(
+              title = list(text = labs$title, font = list(size = fonts$title_size)),
+              xaxis =  get_datetime_axis(time_vec, labs$x, fonts),
+              yaxis = list(
+                title = list(text = labs$y, font = list(size = fonts$axis_title_size)),
+                tickfont = list(size = fonts$axis_text_size)
+              ),
+              legend = list(
+                title = list(text = labs$legend, font = list(size = fonts$legend_size)),
+                font = list(size = fonts$legend_size)
+              ),
+              margin = margins,
+              shapes = list(list(type = "line", x0=0, x1=0, y0=0, y1=1, yref="paper", line=list(color="red", dash="dash")))
             )
+        )
+      }
+      # Event-locked average
+      if (input$viz_mode == "Event-locked average") {
+        check_plot_cancelled(my_request, my_cancel)
+        req(input$event_var, input$signal_var)
+
+        win <- (-input$pre):input$post
+        win_len <- length(win)
+
+        # Loop per participant to avoid epoch windows bleeding across participant boundaries
+        multi_participant <- isTRUE(input$use_id) && !isTRUE(input$step_through)
+
+        if (multi_participant) {
+          req(input$idvar, input$selected_ids)
+          all_rows <- list()
+          for (pid in input$selected_ids) {
+            check_plot_cancelled(my_request, my_cancel)
+            pdf <- filtered_data()[filtered_data()[[input$idvar]] == pid, ]
+            if (nrow(pdf) == 0) next
+            pw <- extract_event_windows_idx(pdf[[input$event_var]])
+            if (nrow(pw) == 0) next
+            for (i in seq_len(nrow(pw))) {
+              valid_win <- pw$start[i] + win
+              in_bounds <- valid_win > 0 & valid_win <= nrow(pdf)
+              snippet <- rep(NA_real_, win_len)
+              snippet[in_bounds] <- pdf[[input$signal_var]][valid_win[in_bounds]]
+              all_rows[[length(all_rows) + 1]] <- snippet
+            }
+          }
+          validate(need(length(all_rows) > 0, "No events found across selected participants."))
+          mat <- do.call(rbind, all_rows)
+        } else {
+          windows <- extract_event_windows_idx(filtered_data()[[input$event_var]])
+          req(nrow(windows) > 0)
+          mat <- do.call(rbind, lapply(seq_len(nrow(windows)), function(i) {
+            valid_win <- windows$start[i] + win
+            in_bounds <- valid_win > 0 & valid_win <= nrow(filtered_data())
+            snippet <- rep(NA_real_, win_len)
+            snippet[in_bounds] <- filtered_data()[[input$signal_var]][valid_win[in_bounds]]
+            snippet
+          }))
+        }
+
+        avg <- colMeans(mat, na.rm = TRUE)
+
+        # Get Labels
+        labs <- get_labels(
+          default_title = paste(
+            "Average",
+            get_var_label(input$signal_var),
+            "trajectory around",
+            get_var_label(input$event_var)
+          ),
+          default_x = "Time relative to event",
+          default_y = get_var_label(input$signal_var),
+          default_legend = ""
+        )
+
+        p <- plotly::plot_ly(x = win, y = avg, type = "scatter", mode = "lines",
+                             name = "Mean", line = list(width = 3, color = "blue"))
+
+        # SE ribbon
+        if (isTRUE(input$show_se_ribbon)) {
+          n_events <- nrow(mat)
+          se <- apply(mat, 2, sd, na.rm = TRUE) / sqrt(n_events)
+          upper <- avg + se
+          lower <- avg - se
+
+          # Upper bound (invisible line, serves as ribbon top)
+          p <- plotly::add_trace(p,
+                                 x = win, y = upper,
+                                 type = "scatter", mode = "lines",
+                                 line = list(color = "transparent"),
+                                 showlegend = FALSE,
+                                 name = "Upper SE"
+          )
+
+          # Lower bound with fill to the upper trace
+          p <- plotly::add_trace(p,
+                                 x = win, y = lower,
+                                 type = "scatter", mode = "lines",
+                                 fill = "tonexty",
+                                 fillcolor = "rgba(0, 0, 255, 0.15)",
+                                 line = list(color = "transparent"),
+                                 showlegend = TRUE,
+                                 name = "± 1 SE"
+          )
+        }
+
+        # Overlay individual events
+        if (isTRUE(input$overlay_events)) {
+          for (i in seq_len(nrow(mat))) {
+            p <- plotly::add_lines(p, x = win, y = mat[i, ],
+                                   opacity = 0.3, line = list(color = "gray"),
+                                   showlegend = FALSE)
+          }
+        }
+        p <- p |> plotly::layout(
+          title = list(text = labs$title, font = list(size = fonts$title_size)),
+          xaxis = list(
+            title = list(text = labs$x, font = list(size = fonts$axis_title_size), standoff = 5),
+            tickfont = list(size = fonts$axis_text_size)
+          ),
+          yaxis = list(
+            title = list(text = labs$y, font = list(size = fonts$axis_title_size)),
+            tickfont = list(size = fonts$axis_text_size)
+          ),
+          legend = list(
+            title = list(text = labs$legend, font = list(size = fonts$legend_size)),
+            font = list(size = fonts$legend_size)
           ),
           margin = margins
         )
+        plot_store(p)
 
-      plot_store(p)
-      return(p)
-    }
+        return(p)
+      }
+
+      # event durations (barcode anchor)
+      if (input$viz_mode == "Event durations (barcode)") {
+        check_plot_cancelled(my_request, my_cancel)
+
+        req(selected_barcodes())
+
+        plot_df <- filtered_data()
+
+        if (input$event_format == "interval") {
+
+          req(input$int_start)
+
+          if (input$interval_mode == "end") {
+            req(input$int_end)
+            start_vec_all <- plot_df[[input$int_start]]
+            end_vec_all   <- plot_df[[input$int_end]]
+          } else {
+            req(input$int_dur)
+            start_vec_all <- plot_df[[input$int_start]]
+            end_vec_all   <- plot_df[[input$int_start]] + as.numeric(plot_df[[input$int_dur]])
+          }
+
+          valid_idx <- !is.na(start_vec_all) & !is.na(end_vec_all)
+
+          df_clean  <- plot_df[valid_idx, , drop = FALSE]
+          time_vec  <- start_vec_all[valid_idx]
+          start_vec <- start_vec_all[valid_idx]
+          end_vec   <- end_vec_all[valid_idx]
+
+        } else {
+
+          req(input$barcode_time)
+
+          valid_idx <- !is.na(plot_df[[input$barcode_time]])
+
+          df_clean <- plot_df[valid_idx, , drop = FALSE]
+          time_vec <- df_clean[[input$barcode_time]]
+        }
+
+        req(nrow(df_clean) > 0)
+        #print(nrow(df_clean))
+        # If the column came in as character or factor, try to parse it
+        if (is.character(time_vec) || is.factor(time_vec)) {
+          time_vec_char <- as.character(time_vec)
+          parsed <- tryCatch(
+            lubridate::parse_date_time(time_vec_char, orders = c(
+              "ymd HMS", "ymd HM", "ymd",
+              "mdy HMS", "mdy HM", "mdy",
+              "dmy HMS", "dmy HM", "dmy",
+              "ymd_HMS", "ymd_HM",
+              "HMS", "HM"
+            ), quiet = TRUE),
+            error = function(e) NULL
+          )
+          if (!is.null(parsed) && sum(!is.na(parsed)) > 0.5 * length(parsed)) {
+            time_vec <- parsed
+          }
+        }
+
+        # If the column is numeric and looks like Unix epoch seconds, convert
+        if (is.numeric(time_vec) && !inherits(time_vec, c("POSIXct", "POSIXt", "Date"))) {
+          rng <- range(time_vec, na.rm = TRUE)
+          if (rng[1] > 9e8 && rng[2] < 2.5e9) {
+            time_vec <- as.POSIXct(time_vec, origin = "1970-01-01", tz = "UTC")
+          }
+        }
+
+        is_datetime <- inherits(time_vec, c("POSIXct", "POSIXt", "Date"))
+
+        if (is_datetime) {
+          numeric_time <- as.numeric(time_vec)
+
+          # Detect overnight wraps: if time jumps backwards by more than
+          # a small tolerance, assume a day boundary was crossed
+          diffs <- diff(numeric_time)
+          wrap_indices <- which(diffs < -60)
+
+          if (length(wrap_indices) > 0) {
+            offset <- rep(0, length(numeric_time))
+            for (wi in wrap_indices) {
+              offset[(wi + 1):length(offset)] <- offset[(wi + 1):length(offset)] + 86400
+            }
+            numeric_time <- numeric_time + offset
+            tv_tz <- attr(time_vec, "tzone")
+            if (is.null(tv_tz)) tv_tz <- "UTC"
+            time_vec_plot <- as.POSIXct(numeric_time, origin = "1970-01-01", tz = tv_tz)
+          } else {
+            time_vec_plot <- time_vec
+          }
+
+          x_positions <- time_vec_plot
+        } else {
+          x_positions <- as.numeric(time_vec)
+        }
+
+        plot_targets <- list()
+
+        multiple_barcode_vars <- length(selected_barcodes()) > 1
+
+        for (col in selected_barcodes()) {
+          col_data <- df_clean[[col]]
+
+          unique_vals <- unique(
+            col_data[!is.na(col_data)]
+          )
+
+          # Sort when possible, but avoid errors for unusual classes.
+          unique_vals <- tryCatch(
+            sort(unique_vals),
+            error = function(e) unique_vals
+          )
+
+          is_binary <- all(
+            as.character(unique_vals) %in% c("0", "1")
+          )
+
+          if (is_binary) {
+            plot_targets[[length(plot_targets) + 1]] <- list(
+              col = col,
+              val = 1,
+              is_binary = TRUE,
+              legend_key = paste(
+                col,
+                "1",
+                sep = "__"
+              )
+            )
+          } else {
+            unique_vals <- unique_vals[
+              !as.character(unique_vals) %in% c("0")
+            ]
+
+            for (uv in unique_vals) {
+              plot_targets[[length(plot_targets) + 1]] <- list(
+                col = col,
+                val = uv,
+                is_binary = FALSE,
+                legend_key = paste(
+                  col,
+                  as.character(uv),
+                  sep = "__"
+                )
+              )
+            }
+          }
+        }
+
+        n_targets <- length(plot_targets)
+        req(n_targets > 0)
+
+        pal <- get_accessible_palette(n_targets)
+
+        for (i in seq_along(plot_targets)) {
+          plot_targets[[i]]$color <- pal[i]
+        } #making sure colors stay the same when labels are reordered
+
+        plot_targets <- ordered_plot_targets(plot_targets)
+
+        use_stacked <- isTRUE(input$barcode_layout == "stacked")
+
+        # Determine ordered participants
+        if (isTRUE(input$use_id)) {
+          if (isTRUE(input$step_through)) {
+            plot_ids <- as.character(all_ids()[id_index()])
+          } else {
+            plot_ids <- as.character(input$selected_ids)
+          }
+        } else {
+          plot_ids <- c("All Data")
+        }
+
+        # Clean up to valid IDs
+        valid_ids <- unique(if(isTRUE(input$use_id)) as.character(df_clean[[input$idvar]]) else "All Data")
+        plot_ids <- plot_ids[plot_ids %in% valid_ids]
+        if (length(plot_ids) == 0) plot_ids <- valid_ids
+
+        n_ids <- length(plot_ids)
+
+        n_rows <- if (use_stacked) (n_ids * n_targets) else n_ids
+        row_height <- if (n_rows > 0) 1 / n_rows else 1
+
+        p <- plotly::plot_ly()
+
+        event_df <- data.frame()
+
+        for (t_idx in seq_along(plot_targets)) {
+
+          target <- plot_targets[[t_idx]]
+          col_data <- df_clean[[target$col]]
+
+          if (input$event_format == "interval") {
+
+            active_idx <- which(!is.na(col_data) & col_data == target$val)
+
+            if (length(active_idx) > 0) {
+
+              tmp <- data.frame(
+                target_idx = t_idx,
+                variable = target$col,
+                category = as.character(target$val),
+                is_binary = target$is_binary,
+                legend_key = target$legend_key,
+                start = start_vec[active_idx],
+                end = end_vec[active_idx],
+                color = target$color,
+                participant_id = if (isTRUE(input$use_id)) {
+                  as.character(
+                    df_clean[[input$idvar]][active_idx]
+                  )
+                } else {
+                  "All Data"
+                },
+                stringsAsFactors = FALSE
+              )
+
+              event_df <- rbind(event_df, tmp)
+            }
+
+          } else {
+
+            is_active <- as.numeric(!is.na(col_data) & col_data == target$val)
+
+            windows <- extract_event_windows_idx(is_active)
+
+            if (nrow(windows) > 0) {
+
+              tmp <- data.frame(
+                target_idx = t_idx,
+                variable = target$col,
+                category = as.character(target$val),
+                is_binary = target$is_binary,
+                legend_key = target$legend_key,
+                start = time_vec[windows$start],
+                end = time_vec[windows$end],
+                color = target$color,
+                participant_id = if (isTRUE(input$use_id)) {
+                  as.character(
+                    df_clean[[input$idvar]][windows$start]
+                  )
+                } else {
+                  "All Data"
+                },
+                stringsAsFactors = FALSE
+              )
+
+              event_df <- rbind(event_df, tmp)
+            }
+          }
+        }
+        legend_added <- rep(FALSE, n_targets)
+
+        # Determine if the legend should be shown
+        show_plot_legend <- if (use_stacked) isTRUE(input$barcode_show_legend) else TRUE
+
+        # 1. LOOP TO DRAW THE RECTANGLES
+        for (i in seq_len(nrow(event_df))) {
+
+          ev <- event_df[i, ]
+
+          t_idx <- ev$target_idx
+          id_idx <- match(ev$participant_id, plot_ids)
+          if (is.na(id_idx)) id_idx <- 1
+
+          display_label <- get_barcode_target_label(
+            variable = as.character(ev$variable),
+            category = as.character(ev$category),
+            is_binary = isTRUE(as.logical(ev$is_binary)),
+            show_variable = multiple_barcode_vars
+          )
+
+          if (use_stacked) {
+            r <- (id_idx - 1) * n_targets + t_idx
+            gap <- row_height * 0.05
+            y_bottom <- 1 - (r * row_height) + gap
+            y_top <- 1 - ((r - 1) * row_height) - gap
+          } else {
+            r <- id_idx
+            gap <- if (n_rows > 1) row_height * 0.05 else 0
+            y_bottom <- 1 - (r * row_height) + gap
+            y_top <- 1 - ((r - 1) * row_height) - gap
+          }
+
+          start_time <- ev$start
+          end_time <- ev$end
+
+          if (input$event_format == "interval") {
+            if (is_datetime) {
+              x_start <- as.numeric(start_time)
+              x_end <- as.numeric(end_time)
+            } else {
+              x_start <- start_time
+              x_end <- end_time
+            }
+          } else {
+            start_idx <- which(time_vec == start_time)[1]
+            end_idx <- which(time_vec == end_time)[1]
+            x_start <- x_positions[start_idx]
+            x_end <- x_positions[end_idx]
+          }
+
+          is_point <- isTRUE(all.equal(x_start, x_end))
+
+          # Only enable the legend on the FIRST trace of each event type
+          trace_showlegend <- show_plot_legend && !legend_added[t_idx]
+
+          if (is_point) {
+            x_vals <- c(x_start, x_start, NA)
+            y_vals <- c(y_bottom, y_top, NA)
+
+            hover_text <- rep(
+              paste0(
+                if(n_ids > 1) paste0("ID: ", ev$participant_id, "<br>") else "",
+                display_label, "<br>", as.character(start_time)
+              ), 3
+            )
+
+            p <- plotly::add_trace(
+              p, x = x_vals, y = y_vals, type = "scatter", mode = "lines",
+              line = list(color = hex_to_rgba(ev$color, alpha = 0.8), width = 1.75),
+              hoverinfo = "text", text = hover_text, name = display_label,
+              legendgroup = ev$legend_key,
+              showlegend = trace_showlegend
+            )
+
+          } else {
+            x_poly <- c(x_start, x_end, x_end, x_start, x_start, NA)
+            y_poly <- c(y_bottom, y_bottom, y_top, y_top, y_bottom, NA)
+
+            hover_text <- rep(
+              paste0(
+                if(n_ids > 1) paste0("ID: ", ev$participant_id, "<br>") else "",
+                display_label, "<br>Start: ", as.character(start_time),
+                "<br>End: ", as.character(end_time)
+              ), length(x_poly)
+            )
+
+            p <- plotly::add_trace(
+              p, x = x_poly, y = y_poly, type = "scatter", mode = "lines",
+              fill = "toself", fillcolor = hex_to_rgba(ev$color, alpha = if (use_stacked) 0.9 else 0.65),
+              line = list(color = ev$color, width = 1),
+              hoverinfo = "text", text = hover_text, name = display_label,
+              legendgroup = ev$legend_key,
+              showlegend = trace_showlegend
+            )
+          }
+
+          legend_added[t_idx] <- TRUE
+        }
+
+        # 2. GENERATE Y-AXIS LABELS
+        if (use_stacked) {
+
+          if (isTRUE(input$barcode_show_legend)) {
+            # Legend is ON: Only show centered Participant IDs
+            tick_vals_y <- numeric(n_ids)
+            tick_labels_y <- character(n_ids)
+
+            for (i in seq_len(n_ids)) {
+              r_start <- (i - 1) * n_targets + 1
+              r_end <- i * n_targets
+
+              y_b <- 1 - (r_end * row_height)
+              y_t <- 1 - ((r_start - 1) * row_height)
+
+              tick_vals_y[i] <- (y_b + y_t) / 2
+
+              if (n_ids > 1) {
+                tick_labels_y[i] <- paste0(plot_ids[i], "  ")
+              } else {
+                tick_labels_y[i] <- "  "
+              }
+            }
+
+            y_axis_config <- list(
+              title = list(text = ""), range = c(0, 1), showgrid = FALSE, zeroline = FALSE,
+              tickmode = "array", tickvals = tick_vals_y, ticktext = tick_labels_y,
+              tickfont = list(size = fonts$axis_text_size, weight = "bold"),
+              showticklabels = TRUE, automargin = TRUE
+            )
+
+          } else {
+            # Legend is OFF: Show individual labels for every row
+            tick_vals_y <- numeric(n_rows)
+            tick_labels_y <- character(n_rows)
+
+            for (i in seq_len(n_ids)) {
+              for (j in seq_len(n_targets)) {
+                r <- (i - 1) * n_targets + j
+                y_b <- 1 - (r * row_height)
+                y_t <- 1 - ((r - 1) * row_height)
+
+                tick_vals_y[r] <- (y_b + y_t) / 2
+
+                tgt <- plot_targets[[j]]
+                tgt_label <- get_barcode_target_label(
+                  variable = tgt$col,
+                  category = tgt$val,
+                  is_binary = tgt$is_binary,
+                  show_variable = multiple_barcode_vars
+                )
+
+                if (n_ids > 1) {
+                  tick_labels_y[r] <- paste0(plot_ids[i], " - ", tgt_label, "  ")
+                } else {
+                  tick_labels_y[r] <- paste0(tgt_label, "  ")
+                }
+              }
+            }
+
+            y_axis_config <- list(
+              title = list(text = ""), range = c(0, 1), showgrid = FALSE, zeroline = FALSE,
+              tickmode = "array", tickvals = tick_vals_y, ticktext = tick_labels_y,
+              tickfont = list(size = fonts$axis_text_size),
+              showticklabels = TRUE, automargin = TRUE
+            )
+          }
+
+        } else {
+          # OVERLAID: Show single tick per ID
+          tick_vals_y <- numeric(n_rows)
+          tick_labels_y <- character(n_rows)
+
+          for (i in seq_len(n_ids)) {
+            r <- i
+            y_b <- 1 - (r * row_height)
+            y_t <- 1 - ((r - 1) * row_height)
+            tick_vals_y[r] <- (y_b + y_t) / 2
+
+            if (n_ids > 1) {
+              tick_labels_y[r] <- paste0(plot_ids[i], "  ")
+            } else {
+              tick_labels_y[r] <- "  "
+            }
+          }
+
+          y_axis_config <- list(
+            title = list(text = ""), range = c(0, 1), showgrid = FALSE, zeroline = FALSE,
+            tickmode = "array", tickvals = tick_vals_y, ticktext = tick_labels_y,
+            tickfont = list(size = fonts$axis_text_size),
+            showticklabels = (n_rows > 1), automargin = TRUE
+          )
+        }
+
+
+        labs <- get_labels(
+          default_title = paste0(
+            "Event Barcode: ",
+            paste0(
+              vapply(
+                ordered_variables(selected_barcodes()),
+                get_var_label,
+                character(1)
+              ),
+              collapse = ", "
+            )
+          ),
+          default_x = if (input$event_format == "interval")
+            input$int_start
+          else
+            input$barcode_time,
+          default_y = "",
+          default_legend = "Events"
+        )
+
+        if (use_stacked)
+          margins$l <- max(margins$l, 0)
+
+        margins$b <- max(margins$b, 0)
+
+        if (is_datetime) {
+
+          time_range_secs <- as.numeric(
+            difftime(
+              max(time_vec, na.rm = TRUE),
+              min(time_vec, na.rm = TRUE),
+              units = "secs"
+            )
+          )
+
+          if (time_range_secs < 3600) {
+
+            tick_fmt <- "%H:%M:%S"
+
+          } else if (time_range_secs < 86400) {
+
+            tick_fmt <- "%H:%M"
+
+          } else {
+
+            tick_fmt <- "%m-%d %H:%M"
+          }
+
+          x_axis_config <- list(
+            title = list(
+              text = labs$x,
+              font = list(size = fonts$axis_title_size),
+              standoff = 5
+            ),
+            tickfont = list(
+              size = fonts$axis_text_size
+            ),
+            type = "date",
+            tickformat = tick_fmt,
+            nticks = 10,
+            tickangle = -45
+          )
+
+        } else {
+
+          x_axis_config <- list(
+            title = list(
+              text = labs$x,
+              font = list(size = fonts$axis_title_size),
+              standoff = 5
+            ),
+            tickfont = list(
+              size = fonts$axis_text_size
+            )
+          )
+        }
+
+        p <- p |>
+          plotly::layout(
+            title = list(
+              text = labs$title,
+              font = list(size = fonts$title_size)
+            ),
+            xaxis = x_axis_config,
+            yaxis = y_axis_config,
+            showlegend = show_plot_legend,
+            legend = list(
+              title = list(
+                text = labs$legend,
+                font = list(size = fonts$legend_size)
+              ),
+              font = list(
+                size = fonts$legend_size
+              )
+            ),
+            margin = margins
+          )
+
+        plot_store(p)
+        return(p)
+      }
+
+      # Allan factor
+      if (input$viz_mode == "Allan Factor (event data)") {
+        check_plot_cancelled(my_request, my_cancel)
+        req(input$af_var, input$af_binwidth, input$af_base, input$af_powers, input$af_start)
+
+        event_data <- filtered_data()[[input$af_var]]
+        req(length(event_data) > 0)
+
+        validate(
+          need(all(na.omit(unique(event_data)) %in% c(0, 1)),
+               "Allan Factor requires binary (0/1) event data"),
+          need(input$af_base^input$af_powers < length(event_data),
+               paste0("base^powers must be < data length (", length(event_data), "). Try reducing max power to ",
+                      floor(log(length(event_data)) / log(input$af_base))))
+        )
+
+        if (input$af_base^input$af_start < 10) {
+          showNotification(
+            "Warning: base^start < 10. Allan Factor estimates may be unreliable at small divisions.",
+            type = "warning", duration = 5
+          )
+        }
+        af_result <- compute_allan_factor_curve(
+          fin = event_data,
+          binwidth = input$af_binwidth,
+          base = input$af_base,
+          powers = input$af_powers,
+          start = input$af_start,
+          include_shuffled = isTRUE(input$af_show_shuffled)
+        )
+
+        validate(need(!is.null(af_result) && length(af_result$actual) > 0,
+                      "Could not compute Allan Factor. Try adjusting parameters."))
+
+        # Build plot
+        p <- plotly::plot_ly()
+
+        p <- plotly::add_trace(p,
+                               x = af_result$abcis, y = af_result$actual,
+                               type = "scatter", mode = "lines+markers",
+                               name = "Actual",
+                               line = list(color = "red"),
+                               marker = list(color = "red", symbol = "circle")
+        )
+
+        if (isTRUE(input$af_show_shuffled) && !is.null(af_result$shuffled)) {
+          p <- plotly::add_trace(p,
+                                 x = af_result$abcis_shuffled, y = af_result$shuffled,
+                                 type = "scatter", mode = "lines+markers",
+                                 name = "Shuffled",
+                                 line = list(color = "blue", dash = "dash"),
+                                 marker = list(color = "blue", symbol = "triangle-up")
+          )
+        }
+
+        # Add reference line at AF = 1
+        p <- plotly::add_trace(p,
+                               x = range(af_result$abcis), y = c(1, 1),
+                               type = "scatter", mode = "lines",
+                               name = "AF = 1 (Poisson)",
+                               line = list(color = "gray", dash = "dot", width = 1),
+                               showlegend = TRUE
+        )
+
+        slope_text <- if (!is.null(af_result$slope)) {
+          "Allan Factor"
+        } else {
+          "Allan Factor"
+        }
+
+        # Generate clean tick values based on data range
+        x_range <- range(af_result$abcis, na.rm = TRUE)
+        y_all <- af_result$actual
+        if (isTRUE(input$af_show_shuffled) && !is.null(af_result$shuffled)) {
+          y_all <- c(y_all, af_result$shuffled)
+        }
+        y_range <- range(y_all, na.rm = TRUE)
+
+        # Generate log-spaced tick values for x-axis
+        x_log_min <- floor(log10(x_range[1]))
+        x_log_max <- ceiling(log10(x_range[2]))
+        x_ticks <- unlist(lapply(x_log_min:x_log_max, function(p) {
+          c(1, 3) * 10^p
+        }))
+        x_ticks <- x_ticks[x_ticks >= x_range[1] * 0.5 & x_ticks <= x_range[2] * 2]
+
+        # Generate log-spaced tick values for y-axis
+        y_log_min <- floor(log10(max(y_range[1], 0.1)))
+        y_log_max <- ceiling(log10(y_range[2]))
+        y_ticks <- unlist(lapply(y_log_min:y_log_max, function(p) {
+          c(1, 3) * 10^p
+        }))
+        y_ticks <- y_ticks[y_ticks >= y_range[1] * 0.5 & y_ticks <= y_range[2] * 2]
+
+        if (!1 %in% y_ticks) y_ticks <- sort(c(y_ticks, 1))
+
+        p <- p |> plotly::layout(
+          title = list(text = slope_text, font = list(size = fonts$title_size)),
+          xaxis = list(
+            title = list(text = "Window Size T (sec)", font = list(size = fonts$axis_title_size)),
+            tickfont = list(size = fonts$axis_text_size),
+            type = "log",
+            tickmode = "array",
+            showgrid = TRUE,
+            gridcolor = "lightgray",
+            gridwidth = 0.5,
+            dtick = NULL
+          ),
+          yaxis = list(
+            title = list(text = "Allan Factor A(T)", font = list(size = fonts$axis_title_size)),
+            tickfont = list(size = fonts$axis_text_size),
+            type = "log",
+            tickmode = "array",
+            showgrid = TRUE,
+            gridcolor = "lightgray",
+            gridwidth = 0.5,
+            dtick = NULL
+          ),
+          legend = list(font = list(size = fonts$legend_size)),
+          margin = margins,
+          plot_bgcolor = "white"
+        )
+
+        plot_store(p)
+        return(p)
+      }
+
+      # Allan deviation
+      if (input$viz_mode == "Allan Deviation (continuous)") {
+        check_plot_cancelled(my_request, my_cancel)
+        req(input$ad_var, input$ad_rate, input$ad_type)
+
+        cont_data <- filtered_data()[[input$ad_var]]
+        req(length(cont_data) > 10)
+
+        ad_result <- compute_allan_deviation(
+          data = cont_data,
+          rate = input$ad_rate,
+          type = input$ad_type
+        )
+
+        validate(need(nrow(ad_result) > 0,
+                      "Could not compute Allan Deviation. Try adjusting parameters."))
+
+        # Shuffled computation
+        ad_shuffled_result <- NULL
+        if (isTRUE(input$ad_show_shuffled)) {
+          shuffled_data <- sample(cont_data)
+          ad_shuffled_result <- tryCatch({
+            compute_allan_deviation(
+              data = shuffled_data,
+              rate = input$ad_rate,
+              type = input$ad_type
+            )
+          }, error = function(e) NULL)
+        }
+
+        # Choose y-axis: deviation or variance
+        if (isTRUE(input$ad_show_variance)) {
+          y_vals <- ad_result$adev^2
+          if (!is.null(ad_shuffled_result)) y_shuffled_vals <- ad_shuffled_result$adev^2
+          y_label <- "Allan Variance"
+          plot_title <- paste("Allan Variance:", input$ad_var)
+        } else {
+          y_vals <- ad_result$adev
+          if (!is.null(ad_shuffled_result)) y_shuffled_vals <- ad_shuffled_result$adev
+          y_label <- "Allan Deviation"
+          plot_title <- paste("Allan Deviation:", input$ad_var)
+        }
+
+        p <- plotly::plot_ly()
+
+        p <- plotly::add_trace(p,
+                               x = ad_result$tau, y = y_vals,
+                               type = "scatter", mode = "lines+markers",
+                               name = "Actual",
+                               line = list(color = "blue"),
+                               marker = list(color = "blue", symbol = "circle")
+        )
+
+        # Add shuffled trace
+        if (isTRUE(input$ad_show_shuffled) && !is.null(ad_shuffled_result) && nrow(ad_shuffled_result) > 0) {
+          p <- plotly::add_trace(p,
+                                 x = ad_shuffled_result$tau, y = y_shuffled_vals,
+                                 type = "scatter", mode = "lines+markers",
+                                 name = "Shuffled",
+                                 line = list(color = "red", dash = "dash"),
+                                 marker = list(color = "red", symbol = "triangle-up")
+          )
+        }
+
+        # Adjust axes to encompass both Actual and Shuffled data ranges
+        x_all <- ad_result$tau
+        y_all <- y_vals
+        if (isTRUE(input$ad_show_shuffled) && !is.null(ad_shuffled_result) && nrow(ad_shuffled_result) > 0) {
+          x_all <- c(x_all, ad_shuffled_result$tau)
+          y_all <- c(y_all, y_shuffled_vals)
+        }
+
+        x_range_ad <- range(x_all, na.rm = TRUE)
+        y_range_ad <- range(y_all, na.rm = TRUE)
+
+        x_log_min_ad <- floor(log10(max(x_range_ad[1], 1e-10)))
+        x_log_max_ad <- ceiling(log10(x_range_ad[2]))
+        x_ticks_ad <- 10^(x_log_min_ad:x_log_max_ad)
+        x_ticks_ad <- x_ticks_ad[x_ticks_ad >= x_range_ad[1] * 0.5 &
+                                   x_ticks_ad <= x_range_ad[2] * 2]
+
+        y_log_min_ad <- floor(log10(max(y_range_ad[1], 1e-10)))
+        y_log_max_ad <- ceiling(log10(y_range_ad[2]))
+        y_ticks_ad <- 10^(y_log_min_ad:y_log_max_ad)
+        y_ticks_ad <- y_ticks_ad[y_ticks_ad >= y_range_ad[1] * 0.5 &
+                                   y_ticks_ad <= y_range_ad[2] * 2]
+
+        p <- p |> plotly::layout(
+          title = list(text = plot_title, font = list(size = fonts$title_size)),
+          xaxis = list(
+            title = list(text = "Tau (s)", font = list(size = fonts$axis_title_size)),
+            tickfont = list(size = fonts$axis_text_size),
+            type = "log",
+            tickmode = "array",
+            tickvals = x_ticks_ad,
+            ticktext = as.character(x_ticks_ad)
+          ),
+          yaxis = list(
+            title = list(text = y_label, font = list(size = fonts$axis_title_size)),
+            tickfont = list(size = fonts$axis_text_size),
+            type = "log",
+            tickmode = "array",
+            tickvals = y_ticks_ad,
+            ticktext = as.character(y_ticks_ad)
+          ),
+          legend = list(font = list(size = fonts$legend_size)),
+          margin = margins
+        )
+
+        plot_store(p)
+        return(p)
+      }
 
     })
 
   })
-    # End of plotting
+  # End of plotting
 
   #Dynamic desc stats
   output$stats_section <- renderUI({
@@ -5200,237 +5144,6 @@ server <- function(input, output, session){
     cat(stats_text())
   })
 
-  output$plot2 <- plotly::renderPlotly({
-    req(input$show_second_plot)
-    req(input$second_plot_type)
-
-    df <- data_reactive()
-
-    # single ID filtering
-    if (isTRUE(input$use_id)) {
-      req(input$idvar)
-      pid <- if (isTruthy(input$second_plot_id)) {
-        input$second_plot_id
-      } else {
-        all_ids()[1]
-      }
-      df <- df[df[[input$idvar]] == pid, ]
-    }
-
-    fonts <- get_plot_fonts()
-    margins <- get_plot_margins()
-
-    # Allan factor
-    if (input$second_plot_type == "allan_factor") {
-      req(input$af_var, input$af_binwidth, input$af_base, input$af_powers, input$af_start)
-
-      event_data <- df[[input$af_var]]
-      req(length(event_data) > 0)
-
-      validate(
-        need(all(na.omit(unique(event_data)) %in% c(0, 1)),
-             "Allan Factor requires binary (0/1) event data"),
-        # need(input$af_base^input$af_start >= 10,
-        #      "base^start must be >= 10"),
-        need(input$af_base^input$af_powers < length(event_data),
-             paste0("base^powers must be < data length (", length(event_data), "). Try reducing max power to ",
-                    floor(log(length(event_data)) / log(input$af_base))))
-      )
-
-      if (input$af_base^input$af_start < 10) {
-        showNotification(
-          "Warning: base^start < 10. Allan Factor estimates may be unreliable at small divisions.",
-          type = "warning", duration = 5
-        )
-      }
-      af_result <- compute_allan_factor_curve(
-        fin = event_data,
-        binwidth = input$af_binwidth,
-        base = input$af_base,
-        powers = input$af_powers,
-        start = input$af_start,
-        include_shuffled = isTRUE(input$af_show_shuffled)
-      )
-
-      validate(need(!is.null(af_result) && length(af_result$actual) > 0,
-                    "Could not compute Allan Factor. Try adjusting parameters."))
-
-      # Build plot
-      p2 <- plotly::plot_ly()
-
-      p2 <- plotly::add_trace(p2,
-                              x = af_result$abcis, y = af_result$actual,
-                              type = "scatter", mode = "lines+markers",
-                              name = "Actual",
-                              line = list(color = "red"),
-                              marker = list(color = "red", symbol = "circle")
-      )
-
-      if (isTRUE(input$af_show_shuffled) && !is.null(af_result$shuffled)) {
-        p2 <- plotly::add_trace(p2,
-                                x = af_result$abcis_shuffled, y = af_result$shuffled,
-                                type = "scatter", mode = "lines+markers",
-                                name = "Shuffled",
-                                line = list(color = "blue", dash = "dash"),
-                                marker = list(color = "blue", symbol = "triangle-up")
-        )
-      }
-
-      # Add reference line at AF = 1
-      p2 <- plotly::add_trace(p2,
-                              x = range(af_result$abcis), y = c(1, 1),
-                              type = "scatter", mode = "lines",
-                              name = "AF = 1 (Poisson)",
-                              line = list(color = "gray", dash = "dot", width = 1),
-                              showlegend = TRUE
-      )
-
-      slope_text <- if (!is.null(af_result$slope)) {
-        "Allan Factor"
-        #paste0("Allan Factor (slope = ", round(af_result$slope, 3), ")")
-      } else {
-        "Allan Factor"
-      }
-
-      # Generate clean tick values based on data range
-      x_range <- range(af_result$abcis, na.rm = TRUE)
-      y_all <- af_result$actual
-      if (isTRUE(input$af_show_shuffled) && !is.null(af_result$shuffled)) {
-        y_all <- c(y_all, af_result$shuffled)
-      }
-      y_range <- range(y_all, na.rm = TRUE)
-
-      # Generate log-spaced tick values for x-axis
-      x_log_min <- floor(log10(x_range[1]))
-      x_log_max <- ceiling(log10(x_range[2]))
-      x_ticks <- unlist(lapply(x_log_min:x_log_max, function(p) {
-        c(1, 3) * 10^p
-      }))
-      x_ticks <- x_ticks[x_ticks >= x_range[1] * 0.5 & x_ticks <= x_range[2] * 2]
-
-      # Generate log-spaced tick values for y-axis
-      y_log_min <- floor(log10(max(y_range[1], 0.1)))
-      y_log_max <- ceiling(log10(y_range[2]))
-      y_ticks <- unlist(lapply(y_log_min:y_log_max, function(p) {
-        c(1, 3) * 10^p
-      }))
-      y_ticks <- y_ticks[y_ticks >= y_range[1] * 0.5 & y_ticks <= y_range[2] * 2]
-
-      if (!1 %in% y_ticks) y_ticks <- sort(c(y_ticks, 1))
-
-      p2 <- p2 |> plotly::layout(
-        title = list(text = slope_text, font = list(size = fonts$title_size)),
-        xaxis = list(
-          title = list(text = "Window Size T (sec)", font = list(size = fonts$axis_title_size)),
-          tickfont = list(size = fonts$axis_text_size),
-          type = "log",
-          tickmode = "array",
-          # tickvals = x_ticks,
-          # ticktext = as.character(x_ticks),
-          showgrid = TRUE,
-          gridcolor = "lightgray",
-          gridwidth = 0.5,
-          dtick = NULL
-        ),
-        yaxis = list(
-          title = list(text = "Allan Factor A(T)", font = list(size = fonts$axis_title_size)),
-          tickfont = list(size = fonts$axis_text_size),
-          type = "log",
-          tickmode = "array",
-          # tickvals = log10(y_ticks),
-          # ticktext = as.character(log10(y_ticks)),
-          showgrid = TRUE,
-          gridcolor = "lightgray",
-          gridwidth = 0.5,
-          dtick = NULL
-        ),
-        legend = list(font = list(size = fonts$legend_size)),
-        margin = margins,
-        plot_bgcolor = "white"
-      )
-
-      plot2_store(p2)
-      return(p2)
-    }
-
-    # Allan deviation
-    if (input$second_plot_type == "allan_deviation") {
-      req(input$ad_var, input$ad_rate, input$ad_type)
-
-      cont_data <- df[[input$ad_var]]
-      req(length(cont_data) > 10)
-
-      ad_result <- compute_allan_deviation(
-        data = cont_data,
-        rate = input$ad_rate,
-        type = input$ad_type
-      )
-
-      validate(need(nrow(ad_result) > 0,
-                    "Could not compute Allan Deviation. Try adjusting parameters."))
-
-      # Choose y-axis: deviation or variance
-      if (isTRUE(input$ad_show_variance)) {
-        y_vals <- ad_result$adev^2
-        y_label <- "Allan Variance"
-        plot_title <- paste("Allan Variance:", input$ad_var)
-      } else {
-        y_vals <- ad_result$adev
-        y_label <- "Allan Deviation"
-        plot_title <- paste("Allan Deviation:", input$ad_var)
-      }
-
-      p2 <- plotly::plot_ly()
-
-      p2 <- plotly::add_trace(p2,
-                              x = ad_result$tau, y = y_vals,
-                              type = "scatter", mode = "lines+markers",
-                              name = y_label,
-                              line = list(color = "blue"),
-                              marker = list(color = "blue", symbol = "circle")
-      )
-
-      x_range_ad <- range(ad_result$tau, na.rm = TRUE)
-      y_range_ad <- range(y_vals, na.rm = TRUE)
-
-      x_log_min_ad <- floor(log10(x_range_ad[1]))
-      x_log_max_ad <- ceiling(log10(x_range_ad[2]))
-      x_ticks_ad <- 10^(x_log_min_ad:x_log_max_ad)
-      x_ticks_ad <- x_ticks_ad[x_ticks_ad >= x_range_ad[1] * 0.5 &
-                                 x_ticks_ad <= x_range_ad[2] * 2]
-
-      y_log_min_ad <- floor(log10(max(y_range_ad[1], 1e-10)))
-      y_log_max_ad <- ceiling(log10(y_range_ad[2]))
-      y_ticks_ad <- 10^(y_log_min_ad:y_log_max_ad)
-      y_ticks_ad <- y_ticks_ad[y_ticks_ad >= y_range_ad[1] * 0.5 &
-                                 y_ticks_ad <= y_range_ad[2] * 2]
-
-      p2 <- p2 |> plotly::layout(
-        title = list(text = plot_title, font = list(size = fonts$title_size)),
-        xaxis = list(
-          title = list(text = "Tau (s)", font = list(size = fonts$axis_title_size)),
-          tickfont = list(size = fonts$axis_text_size),
-          type = "log",
-          tickmode = "array",
-          tickvals = x_ticks_ad,
-          ticktext = as.character(x_ticks_ad)
-        ),
-        yaxis = list(
-          title = list(text = y_label, font = list(size = fonts$axis_title_size)),
-          tickfont = list(size = fonts$axis_text_size),
-          type = "log",
-          tickmode = "array",
-          tickvals = y_ticks_ad,
-          ticktext = as.character(y_ticks_ad)
-        ),
-        legend = list(font = list(size = fonts$legend_size)),
-        margin = margins
-      )
-
-      plot2_store(p2)
-      return(p2)
-    }
-  })
 
   # plot descriptions
   output$plot_description <- renderText({
@@ -5486,27 +5199,26 @@ server <- function(input, output, session){
                      }
                    },
 
+                   "Allan Factor (event data)" = {
+                     if (!is.null(input$af_var)) {
+                       paste("Log-log plot of Allan Factor vs window size for", input$af_var)
+                     } else {
+                       "Allan Factor plot - select an event variable to view description"
+                     }
+                   },
+
+                   "Allan Deviation (continuous)" = {
+                     if (!is.null(input$ad_var)) {
+                       paste("Log-log plot of", if(isTRUE(input$ad_show_variance)) "Allan Variance" else "Allan Deviation", "vs tau for", input$ad_var)
+                     } else {
+                       "Allan Deviation plot - select a continuous variable to view description"
+                     }
+                   },
+
                    "Select a visualization type to see plot description"
     )
 
     paste("Plot Description:", desc)
-  })
-
-  # Description for second plot
-  output$plot2_description <- renderText({
-    req(input$show_second_plot, input$second_plot_type)
-
-    desc <- switch(input$second_plot_type,
-                   "raw" = paste("📈 Secondary Plot: Line plot showing", input$second_yvar, "over time"),
-                   "allan_factor" = paste("📈 Allan Factor: Log-log plot of Allan Factor A(T) vs window size T for",
-                                          input$af_var,
-                                          "- slope > 0 indicates fractal/bursty temporal structure"),
-                   "allan_deviation" = paste("📈 Allan Deviation: Log-log plot of",
-                                             if(isTRUE(input$ad_show_variance)) "Allan Variance" else "Allan Deviation",
-                                             "vs tau for", input$ad_var)
-    )
-
-    desc
   })
 
   # Main Plot HTML
@@ -5686,8 +5398,6 @@ server <- function(input, output, session){
       write.csv(final, file, row.names = FALSE)
     }
   )
-
-
   # Save Everything - ZIP
   output$toolbar_download_all <- downloadHandler(
     filename = function() {
@@ -5713,25 +5423,6 @@ server <- function(input, output, session){
         }, error = function(e) {
           message("Main PNG failed: ", e$message)
         })
-      }
-
-      if (isTRUE(input$show_second_plot)) {
-        p2 <- isolate(plot2_store())
-        if (!is.null(p2)) {
-          second_html <- file.path(tmpdir, "second_plot.html")
-          p2_widget <- plotly::as_widget(p2)
-          htmlwidgets::saveWidget(p2_widget, second_html, selfcontained = TRUE)
-          files_to_zip <- c(files_to_zip, second_html)
-
-          second_png <- file.path(tmpdir, "second_plot.png")
-          tryCatch({
-            p2_built <- plotly::plotly_build(p2)
-            save_plotly_png(p2_built, second_png)
-            files_to_zip <- c(files_to_zip, second_png)
-          }, error = function(e) {
-            message("Second PNG failed: ", e$message)
-          })
-        }
       }
 
       stats_text <- isolate(stats_store())
