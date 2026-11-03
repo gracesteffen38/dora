@@ -263,7 +263,7 @@ ui <- shiny::fluidPage(
                                         icon("wand-magic-sparkles"), " Help me choose a plot..."
                                       ),
                                       tags$hr(style = "margin: 4px 0;"),
-                                      tags$a(href = "https://forms.gle/H1j31K1NnE9YTHYU9",
+                                      tags$a(href = "https://forms.gle/pVQ2R7oHZN9ybdvf9",
                                              target = "_blank",
                                              style = "display: block; padding: 8px 0px 8px 26px; color: #333;
                        text-decoration: none; font-size: 14px;",
