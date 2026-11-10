@@ -2487,7 +2487,12 @@ server <- function(input, output, session){
       ),
 
       "cradling_diaries" = list(
-        continuous = FALSE, events = TRUE, multiple = TRUE, int_cont = "interval"
+        continuous = FALSE, events = TRUE, multiple = TRUE, int_cont = "interval",
+        start = "diaryon",
+        interval_mode = "end",
+        duration = "diaryoff",
+        interval = NULL,
+        options = c("diaryloc",	"diarysleep",	"diarybreast",	"diaryfeed")
       )
     )
 
