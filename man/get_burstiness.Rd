@@ -2,16 +2,34 @@
 % Please edit documentation in R/burstiness.R
 \name{get_burstiness}
 \alias{get_burstiness}
-\title{Compute burstiness of a binary event vector}
+\title{Compute burstiness for one event type}
 \usage{
-get_burstiness(vector)
+get_burstiness(
+  vector,
+  event_format = c("continuous", "interval"),
+  time = NULL,
+  event = 1,
+  method = c("finite", "original")
+)
 }
 \arguments{
-\item{vector}{A binary (0/1) numeric vector}
+\item{vector}{Event/state vector.}
+
+\item{event_format}{Either `"continuous"` or `"interval"`.}
+
+\item{time}{Optional timestamp vector for continuous data; required
+for interval data.}
+
+\item{event}{Event value to analyze. Defaults to `1`.}
+
+\item{method}{`"finite"` for the finite-size-adjusted measure or
+`"original"` for the Goh-Barabási measure.}
 }
 \value{
-Numeric burstiness value, or NA if not computable
+Numeric burstiness value or `NA_real_`.
 }
 \description{
-Compute burstiness of a binary event vector
+For continuous/state-format data, each contiguous run of `event`
+is treated as one event episode. For interval data, each matching
+row is treated as one episode and `time` supplies its onset.
 }

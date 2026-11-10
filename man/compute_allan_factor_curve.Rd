@@ -6,7 +6,7 @@
 \usage{
 compute_allan_factor_curve(
   fin,
-  rate,
+  binwidth,
   base = 2,
   powers = 10,
   start = 2,
@@ -16,6 +16,8 @@ compute_allan_factor_curve(
 \arguments{
 \item{fin}{Binary event vector}
 
+\item{binwidth}{Bin width in seconds}
+
 \item{base}{Logarithm base}
 
 \item{powers}{Maximum power}
@@ -23,8 +25,6 @@ compute_allan_factor_curve(
 \item{start}{Starting power}
 
 \item{include_shuffled}{Whether to include shuffled comparison}
-
-\item{binwidth}{Bin width in seconds}
 }
 \value{
 List with actual, abcis, shuffled, slope

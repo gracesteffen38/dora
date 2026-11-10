@@ -97,16 +97,21 @@
 #'
 #' @format A data frame with 6073 rows and 105 columns:
 #' \describe{
-#'   \item{id}{Participant identifier}
-#'   \item{agegrp}{The age group that the subject is in. Format should be digits only (0, 4, 8, 12, 16, 20, 24).}
-#'   \item{sex}{Sex of participant; m = male, f = female}
-#'   \item{marital}{The marital status of the subject’s mother. s = single, m = married, w = widowed, d = divorced, p = separated}
-#'   \item{region}{The region where data collection occurred (e.g., k = Khatlon, r = Rasht, d = Dushanbe)}
-#'   \item{numkids}{The number of children the mother has}
-#'   \item{mworktyp}{Mother's work type outside the home}
-#'   \item{fworktyp}{Father's work type outside the home}
-#'   \item{tempout}{The temperature outdoors (in degrees Celsius)}
-#'   \item{tempin}{The temperature indoors (in degrees Celsius)}
+#'   \item{id}{Participant identifier.}
+#'   \item{agegrp}{The age group that the subject is in (12, 16, or 20 months).}
+#'   \item{tempout}{The temperature outdoors in degrees Celsius.}
+#'   \item{tempin}{The temperature indoors in degrees Celsius.}
+#'   \item{condon}{Start time of the specific video observation task/condition in milliseconds elapsed.}
+#'   \item{condoff}{End time of the specific video observation task/condition in milliseconds elapsed.}
+#'   \item{task}{Code for the specific task being observed (e.g., o = naturalistic observation, g = infant placement in gahvora, c = containers).}
+#'   \item{diaryon}{Start time of the 24-hour diary interval in milliseconds elapsed.}
+#'   \item{diaryoff}{End time of the 24-hour diary interval in milliseconds elapsed.}
+#'   \item{diaryontime}{Start time of the 24-hour diary interval in standard clock time (HH:MM:SS).}
+#'   \item{diaryofftime}{End time of the 24-hour diary interval in standard clock time (HH:MM:SS).}
+#'   \item{diaryloc}{Location of the infant during the diary interval (c = cradle, a = arms, g = ground/floor, e = bed, n = chair/stroller).}
+#'   \item{diarysleep}{Whether the infant was asleep during the diary interval (y = yes, n = no).}
+#'   \item{diarybreast}{Whether the infant was breastfed during the diary interval (y = yes, n = no).}
+#'   \item{show, give, point, shrug}{Codes for specific communicative gestures elicited during the video observation condition.}
 #' }
 #' @source Karasik, L., Tamis-LeMonda, C. & Adolph, K. (2014). The Ties That Bind: Cradling in Tajikistan. Databrary. Retrieved May 14, 2026 from https://www.databrary.org/volume/11.
 "cradling_diaries"
